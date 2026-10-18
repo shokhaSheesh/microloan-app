@@ -12,6 +12,8 @@ export const ROUTES = {
   payments: '/payments',
   profile: '/profile',
   personal: '/profile/me',
+  changePhone: '/profile/me/phone',
+  notifications: '/notifications',
   cards: '/profile/cards',
   security: '/profile/security',
   notifySettings: '/profile/notifications',

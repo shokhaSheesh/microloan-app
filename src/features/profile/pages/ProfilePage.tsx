@@ -1,5 +1,4 @@
 import {
-  Bell,
   ChevronRight,
   CircleHelp,
   CreditCard,
@@ -9,7 +8,6 @@ import {
   MessageCircle,
   Phone,
   ShieldCheck,
-  UserRound,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -26,14 +24,14 @@ import { MenuList, MenuRow } from '@/shared/ui/MenuList'
 import { Section } from '@/shared/ui/Section'
 
 /**
- * Profil: who is signed in, then Hisob (personal data, cards), Sozlamalar (security,
- * notifications, language), Yordam (FAQ, chat, contacts), the documents, and "Chiqish".
+ * Profil: who is signed in (opens the personal data), then Hisob (cards), Sozlamalar (security,
+ * language), Yordam (FAQ, chat, contacts), the documents, and "Chiqish".
  */
 export function ProfilePage() {
   const { t, lang } = useI18n()
   const navigate = useNavigate()
   const borrower = useBorrower()
-  const cards = useCards(borrower?.phone)
+  const cards = useCards(borrower?.passport)
   const [leaving, setLeaving] = useState(false)
   if (!borrower) return null
   const initials = borrower.fullName
@@ -62,7 +60,6 @@ export function ProfilePage() {
 
       <Section title={t('profile.account')}>
         <MenuList>
-          <MenuRow icon={UserRound} label={t('profile.personal')} to={ROUTES.personal} />
           <MenuRow
             icon={CreditCard}
             label={t('cards.title')}
@@ -75,7 +72,6 @@ export function ProfilePage() {
       <Section title={t('profile.settings')}>
         <MenuList>
           <MenuRow icon={ShieldCheck} label={t('profile.security')} to={ROUTES.security} />
-          <MenuRow icon={Bell} label={t('profile.notifications')} to={ROUTES.notifySettings} />
           <MenuRow
             icon={Globe}
             label={t('lang.title')}
@@ -104,7 +100,6 @@ export function ProfilePage() {
               >
                 <FileText size={22} className="shrink-0 text-brand" />
                 <span className="min-w-0 flex-1 font-medium">{t(`profile.doc.${doc}`)}</span>
-                <span className="text-sm text-ink-subtle">PDF</span>
               </button>
             </li>
           ))}

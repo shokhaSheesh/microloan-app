@@ -49,7 +49,7 @@ glass bar floats over the screen; the active tab is a red tint with red text.
 
 ## Asosiy
 
-- Header: initials, "Salom, {name}", the brand name, and a bell with a red dot.
+- Header: initials, "Salom, {name}", the brand name, and the bell (Bildirishnomalar).
 - **With a running loan:** a dark card with the product and contract number, "Qolgan qarz"
   (principal left, large) and the total with interest under it, a progress bar "5 / 18 toʻlov",
   and the next payment with date and a red "Toʻlash". A red line above it when a payment is late.
@@ -111,17 +111,34 @@ glass bar floats over the screen; the active tab is a red tint with red text.
   brand and its STIR, the line paid, cheque number, date, card, VAT, total, fiscal module and
   sign, and a QR and link to ofd.soliq.uz.
 
+## Bildirishnomalar
+
+- From the bell on Asosiy (`/notifications`); the bell's red dot shows only while something is
+  unread. The gear at the top right opens the push and SMS settings.
+- Chips: Hammasi · Toʻlovlar · Qarzlar · Yangiliklar. "Hammasini oʻqildi deb belgilash" while
+  anything is unread.
+- Newest first under Bugun / Kecha / date. Each row: a round icon by kind (reminder blue, overdue
+  red, paid and issued green, closed grey, news amber), title (bold with a red dot when unread),
+  time, and a line of detail. A tap marks it read and opens what it is about (the payment sheet,
+  the loan, Toʻlovlar, the calculator for an offer).
+- Kinds: payment day coming, payment late, payment received (also added after paying in the app),
+  loan issued, loan closed, news and offers. Sample ones are made from the borrower's loans.
+
 ## Profil
 
-- A card with initials, full name and phone (opens personal data).
-- **Hisob**: Shaxsiy maʼlumotlar (MyID data, read only), Kartalarim (dark tiles; a card a running
+- A card with initials, full name and phone; it opens Shaxsiy maʼlumotlar: the MyID data (read
+  only) and, under "Aloqa", the phone with "Oʻzgartirish": the new number (not the current one, not
+  one another account uses), then the SMS code sent to it. Loans and cards are kept by passport,
+  so they stay with the new number.
+- **Hisob**: Kartalarim (dark tiles; a card a running
   loan uses shows "Qarzga ulangan" and cannot be removed; "Karta qoʻshish": number and expiry,
   then the SMS code sent to the phone the card is tied to; the card is saved once the code fits,
   `000000` is the wrong code in the mock).
 - **Sozlamalar**: Xavfsizlik (change PIN: current, new, again; Face ID or fingerprint, one at a
-  time, confirmed by the phone), Bildirishnomalar (push and SMS switches for payments, application
-  status, news; late-payment messages always go out), Til. No theme setting (user decision).
+  time, confirmed by the phone), Til. No theme setting (user decision). The notification settings
+  open from the gear in Bildirishnomalar.
 - **Yordam**: Savol-javoblar (accordion, then a link to the chat), Yordam chati (operator, quick
-  topics, input; sample replies), Kontaktlar (the brand's phones, email, Telegram, Instagram, site,
+  topics, input, and photos: up to five at a time, shown as thumbnails before sending, opened full
+  screen on tap; sample replies), Kontaktlar (the brand's phones, email, Telegram, Instagram, site,
   head office and hours, and its branches by region — Fortuna's from fortunabiznes.uz).
-- **Hujjatlar**: offer and privacy policy (PDF). "Chiqish" asks first. The version below.
+- **Hujjatlar**: offer and privacy policy. "Chiqish" asks first. The version below.

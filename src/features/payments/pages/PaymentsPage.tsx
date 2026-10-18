@@ -23,8 +23,8 @@ const autoDebit = (due: Date) => new Date(due.getFullYear(), due.getMonth(), due
 export function PaymentsPage() {
   const { t, lang } = useI18n()
   const borrower = useBorrower()
-  const loans = useLoans(borrower?.phone)
-  const cards = useCards(borrower?.phone)
+  const loans = useLoans(borrower?.passport)
+  const cards = useCards(borrower?.passport)
   const [params, setParams] = useSearchParams()
   const paying = loans.find((loan) => loan.id === params.get('pay') && !loan.closedAt)
   const active = loans.filter((loan) => !loan.closedAt)
@@ -144,7 +144,7 @@ export function PaymentsPage() {
       {paying && (
         <PaySheet
           loan={paying}
-          phone={borrower.phone}
+          owner={borrower.passport}
           cards={cards}
           onClose={() => setParams({}, { replace: true })}
         />

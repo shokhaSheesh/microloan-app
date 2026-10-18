@@ -8,7 +8,7 @@ import { ChoiceGrid } from '@/shared/ui/ChoiceGrid'
 import { NumberField } from '@/shared/ui/NumberField'
 import { Sheet } from '@/shared/ui/Sheet'
 
-type Props = { open: boolean; onClose: () => void; loan: Loan; phone: string; card: string }
+type Props = { open: boolean; onClose: () => void; loan: Loan; owner: string; card: string }
 
 const MIN_PART = 100_000
 const now = () => new Date()
@@ -18,7 +18,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
  * Paying ahead: close the whole loan (the principal left and this month's interest so far), or
  * pay part of it, which lowers every payment after it. Taken from the loan's card.
  */
-export function EarlyRepaySheet({ open, onClose, loan, phone, card }: Props) {
+export function EarlyRepaySheet({ open, onClose, loan, owner, card }: Props) {
   const { t } = useI18n()
   const [kind, setKind] = useState<'full' | 'partial'>('full')
   const [amount, setAmount] = useState<number | null>(null)
@@ -54,7 +54,7 @@ export function EarlyRepaySheet({ open, onClose, loan, phone, card }: Props) {
     setBusy(true)
     await delay(1200)
     const extra = { at: now(), amount: sum, kind, afterPaid: loan.paidCount }
-    updateLoan(phone, loan.id, {
+    updateLoan(owner, loan.id, {
       prepayments: [...(loan.prepayments ?? []), extra],
       ...(kind === 'full' ? { closedAt: now() } : {}),
     })

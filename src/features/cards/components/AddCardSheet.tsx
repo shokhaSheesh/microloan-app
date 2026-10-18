@@ -19,11 +19,12 @@ const WRONG_CODE = '000000'
  * processing sends to the phone the card is tied to. The card is saved only once the code fits.
  */
 export function AddCardSheet({
-  phone,
+  owner,
   onClose,
   onAdded,
 }: {
-  phone: string
+  /** Whose cards, see `entities/cards`. */
+  owner: string
   onClose: () => void
   /** The card just linked, e.g. to pick it at once. */
   onAdded?: (card: Card) => void
@@ -61,7 +62,7 @@ export function AddCardSheet({
       setBusy(false)
       return
     }
-    const added = addCard(phone, card)
+    const added = addCard(owner, card)
     onAdded?.(added)
     toast(t('cards.added'))
     onClose()

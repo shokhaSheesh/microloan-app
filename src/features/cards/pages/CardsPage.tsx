@@ -16,8 +16,8 @@ import { AddCardSheet } from '../components/AddCardSheet'
 export function CardsPage() {
   const { t } = useI18n()
   const borrower = useBorrower()
-  const cards = useCards(borrower?.phone)
-  const loans = useLoans(borrower?.phone)
+  const cards = useCards(borrower?.passport)
+  const loans = useLoans(borrower?.passport)
   const [adding, setAdding] = useState(false)
   if (!borrower) return null
   const inUse = (last4: string) => loans.some((loan) => !loan.closedAt && loan.card.last4 === last4)
@@ -53,7 +53,7 @@ export function CardsPage() {
                 type="button"
                 aria-label={t('cards.remove')}
                 onClick={() => {
-                  removeCard(borrower.phone, card.id)
+                  removeCard(borrower.passport, card.id)
                   toast(t('cards.removed'))
                 }}
                 className="-mr-2 grid size-10 place-items-center rounded-full opacity-80 active:bg-white/15"
@@ -68,7 +68,7 @@ export function CardsPage() {
           {t('cards.add')}
         </Button>
       </div>
-      {adding && <AddCardSheet phone={borrower.phone} onClose={() => setAdding(false)} />}
+      {adding && <AddCardSheet owner={borrower.passport} onClose={() => setAdding(false)} />}
     </div>
   )
 }

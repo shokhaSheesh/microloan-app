@@ -11,7 +11,8 @@ export const cardText = (card: Pick<Card, 'brand' | 'last4'>) =>
 export const brandOf = (number: string): Card['brand'] =>
   number.startsWith('9860') ? 'humo' : 'uzcard'
 
-const byPhone: Record<string, Card[]> = {}
+// By the borrower's passport, like the loans, so a new phone number keeps them
+const byOwner: Record<string, Card[]> = {}
 const NONE: Card[] = []
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach((listener) => listener())
@@ -23,32 +24,32 @@ const subscribe = (listener: () => void) => {
 }
 
 // The sample borrower starts with the card their loans use. Replace with the API.
-function seeded(phone: string) {
-  if (!byPhone[phone]) {
+function seeded(owner: string) {
+  if (!byOwner[owner]) {
     const seen = new Map<string, Card>()
-    for (const loan of loansOf(phone))
+    for (const loan of loansOf(owner))
       seen.set(loan.card.last4, { id: `c${loan.card.last4}`, ...loan.card, expiry: '0829' })
-    byPhone[phone] = [...seen.values()]
+    byOwner[owner] = [...seen.values()]
   }
-  return byPhone[phone]
+  return byOwner[owner]
 }
 
-export const cardsOf = (phone: string | undefined) => (phone ? seeded(phone) : NONE)
-export const useCards = (phone: string | undefined) =>
-  useSyncExternalStore(subscribe, () => cardsOf(phone))
+export const cardsOf = (owner: string | undefined) => (owner ? seeded(owner) : NONE)
+export const useCards = (owner: string | undefined) =>
+  useSyncExternalStore(subscribe, () => cardsOf(owner))
 
 /** Adds a card unless one with the same last four digits is there. Returns the card kept. */
-export function addCard(phone: string, card: Omit<Card, 'id'>) {
-  const list = seeded(phone)
+export function addCard(owner: string, card: Omit<Card, 'id'>) {
+  const list = seeded(owner)
   const same = list.find((item) => item.last4 === card.last4 && item.brand === card.brand)
   if (same) return same
   const created = { ...card, id: `c${Date.now()}` }
-  byPhone[phone] = [...list, created]
+  byOwner[owner] = [...list, created]
   emit()
   return created
 }
 
-export function removeCard(phone: string, id: string) {
-  byPhone[phone] = seeded(phone).filter((card) => card.id !== id)
+export function removeCard(owner: string, id: string) {
+  byOwner[owner] = seeded(owner).filter((card) => card.id !== id)
   emit()
 }

@@ -106,13 +106,14 @@ export function payoffOf(loan: Loan, today: Date) {
 export const productOf = (loan: Pick<Loan, 'productId'>) =>
   BRAND.products.find((product) => product.id === loan.productId)
 
-// Sample loans by phone number. The registered sample borrower (90 123 45 67) has one running
-// and one closed; anyone new has none. Replace with the API.
+// Sample loans by the borrower's passport, which stays when the phone number changes. The
+// registered sample borrower (90 123 45 67, AB1234567) has one running and one closed; anyone
+// new has none. Replace with the API.
 const today = new Date()
 const monthsAgo = (n: number, day: number) =>
   new Date(today.getFullYear(), today.getMonth() - n, day)
 const SAMPLES: Record<string, Loan[]> = {
-  '901234567': [
+  AB1234567: [
     {
       id: 'l1',
       number: 'FB-2026-004512',
@@ -151,23 +152,23 @@ const subscribe = (listener: () => void) => {
 }
 
 /** The borrower's loans, newest first. The same list until one is added, so it is safe in render. */
-export const loansOf = (phone: string | undefined) => (phone ? SAMPLES[phone] : undefined) ?? NONE
+export const loansOf = (owner: string | undefined) => (owner ? SAMPLES[owner] : undefined) ?? NONE
 
 /** The borrower's loans; re-renders when a new one is paid out. */
-export const useLoans = (phone: string | undefined) =>
-  useSyncExternalStore(subscribe, () => loansOf(phone))
+export const useLoans = (owner: string | undefined) =>
+  useSyncExternalStore(subscribe, () => loansOf(owner))
 
 /** Changes one loan, e.g. after an early repayment. */
-export function updateLoan(phone: string, id: string, patch: Partial<Loan>) {
-  SAMPLES[phone] = (SAMPLES[phone] ?? []).map((loan) =>
+export function updateLoan(owner: string, id: string, patch: Partial<Loan>) {
+  SAMPLES[owner] = (SAMPLES[owner] ?? []).map((loan) =>
     loan.id === id ? { ...loan, ...patch } : loan,
   )
   listeners.forEach((listener) => listener())
 }
 
 /** A loan just paid out to the card goes to the top of the list. */
-export function addLoan(phone: string, loan: Loan) {
-  SAMPLES[phone] = [loan, ...(SAMPLES[phone] ?? [])]
+export function addLoan(owner: string, loan: Loan) {
+  SAMPLES[owner] = [loan, ...(SAMPLES[owner] ?? [])]
   listeners.forEach((listener) => listener())
 }
 

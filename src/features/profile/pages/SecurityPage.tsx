@@ -54,7 +54,6 @@ export function SecurityPage() {
             onChange={(on) => toggle('finger', on)}
           />
         </MenuList>
-        <p className="px-1 text-sm text-ink-muted">{t('security.hint')}</p>
       </div>
       {asking && (
         <BiometricPrompt

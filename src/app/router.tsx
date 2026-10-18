@@ -9,6 +9,8 @@ import { LoansPage } from '@/features/loans/pages/LoansPage'
 import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
 import { PaymentsPage } from '@/features/payments/pages/PaymentsPage'
 import { CardsPage } from '@/features/cards/pages/CardsPage'
+import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
+import { ChangePhonePage } from '@/features/profile/pages/ChangePhonePage'
 import { ChatPage } from '@/features/profile/pages/ChatPage'
 import { ContactsPage } from '@/features/profile/pages/ContactsPage'
 import { FaqPage } from '@/features/profile/pages/FaqPage'
@@ -33,6 +35,8 @@ export const router = createBrowserRouter([
       { path: ROUTES.application, element: <ApplicationPage /> },
       { path: ROUTES.loan, element: <LoanPage /> },
       { path: ROUTES.personal, element: <PersonalPage /> },
+      { path: ROUTES.changePhone, element: <ChangePhonePage /> },
+      { path: ROUTES.notifications, element: <NotificationsPage /> },
       { path: ROUTES.cards, element: <CardsPage /> },
       { path: ROUTES.security, element: <SecurityPage /> },
       { path: ROUTES.notifySettings, element: <NotifySettingsPage /> },

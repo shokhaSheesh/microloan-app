@@ -46,3 +46,15 @@ export async function verifyFace(phone: string, passport: string, birthDate: str
     address: 'Toshkent sh., Yunusobod tumani, 11-mavze, 23-uy',
   } satisfies Borrower
 }
+
+/** Another account already signs in with this number. */
+export const isRegistered = (phone: string) => phone in REGISTERED
+
+/** After the code to the new number fits: the account now signs in with it. */
+export async function changePhone(from: string, to: string) {
+  await delay(500)
+  const account = REGISTERED[from]
+  if (!account) return
+  delete REGISTERED[from]
+  REGISTERED[to] = { ...account, phone: to }
+}

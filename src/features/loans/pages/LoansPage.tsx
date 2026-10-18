@@ -18,7 +18,7 @@ export function LoansPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const borrower = useBorrower()
-  const loans = useLoans(borrower?.phone)
+  const loans = useLoans(borrower?.passport)
   const active = loans.filter((loan) => !loan.closedAt)
   const closed = loans.filter((loan) => loan.closedAt)
   const [tab, setTab] = useState<Tab>(active.length || !closed.length ? 'active' : 'closed')

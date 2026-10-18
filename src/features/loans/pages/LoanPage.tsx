@@ -39,7 +39,7 @@ export function LoanPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const borrower = useBorrower()
-  const loans = useLoans(borrower?.phone)
+  const loans = useLoans(borrower?.passport)
   const loan = loans.find((item) => item.id === id)
   const [tab, setTab] = useState<Tab>('schedule')
   const [early, setEarly] = useState(false)
@@ -257,7 +257,7 @@ export function LoanPage() {
           open
           onClose={() => setEarly(false)}
           loan={loan}
-          phone={borrower.phone}
+          owner={borrower.passport}
           card={card}
         />
       )}

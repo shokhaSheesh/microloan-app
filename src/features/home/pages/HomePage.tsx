@@ -8,6 +8,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { useNotifications } from '@/entities/notifications/notifications'
 import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND, type Product } from '@/shared/config/brand'
@@ -29,7 +30,8 @@ const rateText = ([from, to]: [number, number]) => (from === to ? `${from}%` : `
 export function HomePage() {
   const { t } = useI18n()
   const borrower = useBorrower()
-  const loans = useLoans(borrower?.phone)
+  const loans = useLoans(borrower?.passport)
+  const unread = useNotifications(borrower?.passport).some((item) => !item.read)
   if (!borrower || !session.hasPin()) return <Navigate to={ROUTES.auth} replace />
   const active = loans.find((loan) => !loan.closedAt)
   const initials = borrower.fullName
@@ -50,14 +52,16 @@ export function HomePage() {
           </p>
           <p className="text-sm text-ink-muted">{BRAND.name}</p>
         </div>
-        <button
-          type="button"
+        <Link
+          to={ROUTES.notifications}
           aria-label={t('home.notifications')}
           className="relative grid size-11 place-items-center rounded-full border border-line bg-canvas text-brand active:bg-neutral-100"
         >
           <Bell size={22} />
-          <span className="absolute top-2.5 right-2.5 size-2.5 rounded-full bg-primary ring-2 ring-canvas" />
-        </button>
+          {unread && (
+            <span className="absolute top-2.5 right-2.5 size-2.5 rounded-full bg-primary ring-2 ring-canvas" />
+          )}
+        </Link>
       </header>
 
       {active ? <ActiveLoan loan={active} /> : <Offer />}

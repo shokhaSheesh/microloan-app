@@ -58,7 +58,7 @@ export function ApplicationPage() {
   const [income, setIncome] = useState<number | null>(null)
   const [work, setWork] = useState('')
   // Picked from the linked cards; "Karta qoʻshish" links a new one and picks it
-  const cards = useCards(borrower?.phone)
+  const cards = useCards(borrower?.passport)
   const [cardId, setCardId] = useState<string | undefined>(cards[0]?.id)
   const [addingCard, setAddingCard] = useState(false)
   const [agreed, setAgreed] = useState(false)
@@ -105,7 +105,7 @@ export function ApplicationPage() {
   const pay = async () => {
     setStep('payout')
     await payOut()
-    addLoan(borrower.phone, {
+    addLoan(borrower.passport, {
       id: `l${stamp()}`,
       number: `FB-${today.getFullYear()}-${String(stamp()).slice(-6)}`,
       productId: product.id,
@@ -476,7 +476,7 @@ export function ApplicationPage() {
       </section>
       {addingCard && (
         <AddCardSheet
-          phone={borrower.phone}
+          owner={borrower.passport}
           onClose={() => setAddingCard(false)}
           onAdded={(added) => setCardId(added.id)}
         />

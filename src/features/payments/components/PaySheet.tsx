@@ -1,21 +1,23 @@
 import { CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import { cardText, type Card } from '@/entities/cards/cards'
+import { pushNotification } from '@/entities/notifications/notifications'
 import { productOf, progressOf, updateLoan, type Loan } from '@/entities/loans/loans'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
+import { ROUTES } from '@/shared/config/routes'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/Button'
 import { Sheet } from '@/shared/ui/Sheet'
 
-type Props = { loan: Loan; phone: string; cards: Card[]; onClose: () => void }
+type Props = { loan: Loan; owner: string; cards: Card[]; onClose: () => void }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const now = () => new Date()
 
 /** Pays one loan's next monthly payment now, from a card the borrower picks. */
-export function PaySheet({ loan, phone, cards, onClose }: Props) {
+export function PaySheet({ loan, owner, cards, onClose }: Props) {
   const { t } = useI18n()
   const { next, schedule } = progressOf(loan)
   const product = productOf(loan)
@@ -30,11 +32,20 @@ export function PaySheet({ loan, phone, cards, onClose }: Props) {
     setBusy(true)
     await delay(1200)
     const paidCount = loan.paidCount + 1
-    updateLoan(phone, loan.id, {
+    updateLoan(owner, loan.id, {
       paidCount,
       paidOn: { ...loan.paidOn, [next.n]: now() },
       overdueSince: undefined,
       ...(paidCount >= schedule.length ? { closedAt: now() } : {}),
+    })
+    pushNotification(owner, {
+      id: `${loan.id}-paid${next.n}-${now().getTime()}`,
+      kind: 'paid',
+      title: 'notif.paid',
+      body: 'notif.paid.body',
+      params: { product: product?.name ?? '', sum: formatSum(next.amount), n: String(next.n) },
+      at: now(),
+      to: ROUTES.payments,
     })
     toast(t(paidCount >= schedule.length ? 'early.closed' : 'pay.done'))
     onClose()
