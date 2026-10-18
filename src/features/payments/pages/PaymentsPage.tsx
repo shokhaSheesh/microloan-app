@@ -9,6 +9,7 @@ import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/Button'
+import { EmptyState } from '@/shared/ui/EmptyState'
 import { Section } from '@/shared/ui/Section'
 import { PaymentDetailSheet, type PaidItem } from '../components/PaymentDetailSheet'
 import { PaySheet } from '../components/PaySheet'
@@ -80,65 +81,73 @@ export function PaymentsPage() {
     <div className="flex min-h-full flex-col gap-7 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-tabbar">
       <h1 className="text-2xl font-bold">{t('nav.payments')}</h1>
 
-      <Section title={t('pay.toPay')}>
-        {active.length === 0 ? (
-          <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
-            {t('pay.nothing')}
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {active.map((loan) => (
-              <li key={loan.id}>
-                <DueCard loan={loan} onPay={() => setParams({ pay: loan.id })} />
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="flex items-start gap-2 px-1 text-xs text-ink-muted">
-          <CalendarClock size={16} className="shrink-0" />
-          {t('pay.auto')}
-        </p>
-      </Section>
+      {loans.length === 0 ? (
+        <EmptyState title={t('history.empty')} hint={t('pay.empty.hint')} />
+      ) : (
+        <>
+          <Section title={t('pay.toPay')}>
+            {active.length === 0 ? (
+              <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
+                {t('pay.nothing')}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {active.map((loan) => (
+                  <li key={loan.id}>
+                    <DueCard loan={loan} onPay={() => setParams({ pay: loan.id })} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="flex items-start gap-2 px-1 text-xs text-ink-muted">
+              <CalendarClock size={16} className="shrink-0" />
+              {t('pay.auto')}
+            </p>
+          </Section>
 
-      <Section title={t('pay.history')}>
-        {months.length === 0 ? (
-          <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
-            {t('history.empty')}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {months.map((month) => (
-              <div key={month.key} className="flex flex-col gap-2">
-                <p className="px-1 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                  {month.label}
-                </p>
-                <ul className="flex flex-col rounded-card border border-line bg-canvas px-4">
-                  {month.items.map((item) => (
-                    <li key={item.key} className="border-b border-line last:border-b-0">
-                      <button
-                        type="button"
-                        onClick={() => setOpen(item)}
-                        className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-3 px-4 py-3 text-left active:bg-neutral-100"
-                      >
-                        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success-soft text-success">
-                          <Check size={18} strokeWidth={2.5} />
-                        </span>
-                        <div className="flex min-w-0 flex-1 flex-col">
-                          <span className="truncate font-medium">{item.label}</span>
-                          <span className="text-xs text-ink-muted tabular-nums">
-                            {formatDate(item.at)} · {item.card}
-                          </span>
-                        </div>
-                        <span className="font-semibold tabular-nums">{formatSum(item.amount)}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+          <Section title={t('pay.history')}>
+            {months.length === 0 ? (
+              <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
+                {t('history.empty')}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {months.map((month) => (
+                  <div key={month.key} className="flex flex-col gap-2">
+                    <p className="px-1 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+                      {month.label}
+                    </p>
+                    <ul className="flex flex-col rounded-card border border-line bg-canvas px-4">
+                      {month.items.map((item) => (
+                        <li key={item.key} className="border-b border-line last:border-b-0">
+                          <button
+                            type="button"
+                            onClick={() => setOpen(item)}
+                            className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-3 px-4 py-3 text-left active:bg-neutral-100"
+                          >
+                            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success-soft text-success">
+                              <Check size={18} strokeWidth={2.5} />
+                            </span>
+                            <div className="flex min-w-0 flex-1 flex-col">
+                              <span className="truncate font-medium">{item.label}</span>
+                              <span className="text-xs text-ink-muted tabular-nums">
+                                {formatDate(item.at)} · {item.card}
+                              </span>
+                            </div>
+                            <span className="font-semibold tabular-nums">
+                              {formatSum(item.amount)}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </Section>
+            )}
+          </Section>
+        </>
+      )}
 
       {open && <PaymentDetailSheet item={open} onClose={() => setOpen(null)} />}
       {paying && (

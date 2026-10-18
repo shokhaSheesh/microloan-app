@@ -1,7 +1,8 @@
 # Microloan apps (Fortuna Biznes, Vodiy Taraqqiyot)
 
-One React + Vite + Tailwind v4 codebase, two branded apps. `VITE_BRAND` picks the brand
-(`npm run dev:fortuna` on :5175, `npm run dev:vodiy` on :5176); Fortuna is the default.
+One React + Vite + Tailwind v4 codebase, two branded apps. The URL picks the brand:
+http://localhost:5175/fortuna/... or /vodiy/... (router `basename`); a bare `/` goes to the brand
+last used, else `VITE_BRAND` (`npm run dev:fortuna` on :5175, `npm run dev:vodiy` on :5176).
 
 - Brand data (name, kind, products, support phone) lives in `src/shared/config/brand.ts`; brand
   colours live in `src/shared/styles/index.css` (Fortuna in `@theme`, others under

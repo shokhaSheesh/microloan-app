@@ -6,6 +6,7 @@ import { useBorrower } from '@/entities/session/session'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/Button'
+import { EmptyState } from '@/shared/ui/EmptyState'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { AddCardSheet } from '../components/AddCardSheet'
 
@@ -26,11 +27,7 @@ export function CardsPage() {
     <div className="flex h-full flex-col bg-page">
       <PageHeader title={t('cards.title')} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-2 pb-6">
-        {cards.length === 0 && (
-          <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
-            {t('cards.empty')}
-          </p>
-        )}
+        {cards.length === 0 && <EmptyState title={t('cards.empty')} hint={t('cards.empty.hint')} />}
         {cards.map((card) => (
           <div
             key={card.id}

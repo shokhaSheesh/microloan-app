@@ -19,41 +19,52 @@ import { NotifySettingsPage } from '@/features/profile/pages/NotifySettingsPage'
 import { PersonalPage } from '@/features/profile/pages/PersonalPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { SecurityPage } from '@/features/profile/pages/SecurityPage'
+import { BRAND_BASE } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { DeviceLayout } from './layouts/DeviceLayout'
+import { SignedInLayout } from './layouts/SignedInLayout'
 import { TabLayout } from './layouts/TabLayout'
 import { tabs } from './tabs'
 
-export const router = createBrowserRouter([
-  {
-    element: <DeviceLayout />,
-    children: [
-      { path: ROUTES.auth, element: <AuthPage /> },
-      { path: ROUTES.pinSetup, element: <PinSetupPage /> },
-      { path: ROUTES.onboarding, element: <OnboardingPage /> },
-      { path: ROUTES.apply, element: <ApplyPage /> },
-      { path: ROUTES.application, element: <ApplicationPage /> },
-      { path: ROUTES.loan, element: <LoanPage /> },
-      { path: ROUTES.personal, element: <PersonalPage /> },
-      { path: ROUTES.changePhone, element: <ChangePhonePage /> },
-      { path: ROUTES.notifications, element: <NotificationsPage /> },
-      { path: ROUTES.cards, element: <CardsPage /> },
-      { path: ROUTES.security, element: <SecurityPage /> },
-      { path: ROUTES.notifySettings, element: <NotifySettingsPage /> },
-      { path: ROUTES.language, element: <LanguagePage /> },
-      { path: ROUTES.faq, element: <FaqPage /> },
-      { path: ROUTES.chat, element: <ChatPage /> },
-      { path: ROUTES.contacts, element: <ContactsPage /> },
-      {
-        element: <TabLayout tabs={tabs} />,
-        children: [
-          { path: ROUTES.home, element: <HomePage /> },
-          { path: ROUTES.loans, element: <LoansPage /> },
-          { path: ROUTES.payments, element: <PaymentsPage /> },
-          { path: ROUTES.profile, element: <ProfilePage /> },
-        ],
-      },
-      { path: '*', element: <Navigate to={ROUTES.auth} replace /> },
-    ],
-  },
-])
+// Every route sits under the brand's path, e.g. /vodiy/home
+export const router = createBrowserRouter(
+  [
+    {
+      element: <DeviceLayout />,
+      children: [
+        { path: ROUTES.auth, element: <AuthPage /> },
+        { path: ROUTES.pinSetup, element: <PinSetupPage /> },
+        {
+          element: <SignedInLayout />,
+          children: [
+            { path: ROUTES.onboarding, element: <OnboardingPage /> },
+            { path: ROUTES.apply, element: <ApplyPage /> },
+            { path: ROUTES.application, element: <ApplicationPage /> },
+            { path: ROUTES.loan, element: <LoanPage /> },
+            { path: ROUTES.personal, element: <PersonalPage /> },
+            { path: ROUTES.changePhone, element: <ChangePhonePage /> },
+            { path: ROUTES.notifications, element: <NotificationsPage /> },
+            { path: ROUTES.cards, element: <CardsPage /> },
+            { path: ROUTES.security, element: <SecurityPage /> },
+            { path: ROUTES.notifySettings, element: <NotifySettingsPage /> },
+            { path: ROUTES.language, element: <LanguagePage /> },
+            { path: ROUTES.faq, element: <FaqPage /> },
+            { path: ROUTES.chat, element: <ChatPage /> },
+            { path: ROUTES.contacts, element: <ContactsPage /> },
+            {
+              element: <TabLayout tabs={tabs} />,
+              children: [
+                { path: ROUTES.home, element: <HomePage /> },
+                { path: ROUTES.loans, element: <LoansPage /> },
+                { path: ROUTES.payments, element: <PaymentsPage /> },
+                { path: ROUTES.profile, element: <ProfilePage /> },
+              ],
+            },
+          ],
+        },
+        { path: '*', element: <Navigate to={ROUTES.auth} replace /> },
+      ],
+    },
+  ],
+  { basename: BRAND_BASE },
+)

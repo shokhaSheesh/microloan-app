@@ -27,9 +27,13 @@ limits on the welcome card come from fortunabiznes.uz: Rivoj up to 50 mln, Tezko
 - Contacts: +998 73 529 14 34, vodiymko@mail.ru, head office in Buvayda, Mon–Fri 9:00–18:00,
   20 branches in seven regions. No Telegram or Instagram on the site.
 - Welcome says "100 000 000 soʻmgacha mikroqarz" (Mikrokredit's 300 mln is business).
-- **Switching (prototype only):** Profil ends with "{other brand} ilovasiga oʻtish"; it stores
-  the brand in `microloan.brand` and reloads at the start. Each brand keeps its own sign-in,
-  PIN and settings. A real build is still one brand by `VITE_BRAND`.
+- **URLs:** each brand lives under its own path, `/fortuna/...` and `/vodiy/...`, so a screen
+  only one brand has goes into that brand's routes. A bare `/` (or an old path without a brand)
+  moves under the brand last used, else `VITE_BRAND`.
+- **Switching (prototype only):** Profil ends with "{other brand} ilovasiga oʻtish", which opens
+  `/{brand}/`. Each brand keeps its own sign-in, PIN and settings.
+- **Empty states** have a picture per brand: Fortuna's logo bars lifting out of an empty tray;
+  Vodiy's empty card in a green valley with a sprout and the logo's ring as the sun.
 - The sample borrower has no loans in Vodiy yet.
 ## Sign-in
 
@@ -131,9 +135,8 @@ glass bar floats over the screen; the active tab is a red tint with red text.
 ## Bildirishnomalar
 
 - From the bell on Asosiy (`/notifications`); the bell's red dot shows only while something is
-  unread. The gear at the top right opens the push and SMS settings.
-- Chips: Hammasi · Toʻlovlar · Qarzlar · Yangiliklar. "Hammasini oʻqildi deb belgilash" while
-  anything is unread.
+  unread. A double-tick icon at the top right (no text) marks them all read; greyed when
+  nothing is unread. No filter chips.
 - Newest first under Bugun / Kecha / date. Each row: a round icon by kind (reminder blue, overdue
   red, paid and issued green, closed grey, news amber), title (bold with a red dot when unread),
   time, and a line of detail. A tap marks it read and opens what it is about (the payment sheet,
@@ -152,8 +155,8 @@ glass bar floats over the screen; the active tab is a red tint with red text.
   then the SMS code sent to the phone the card is tied to; the card is saved once the code fits,
   `000000` is the wrong code in the mock).
 - **Sozlamalar**: Xavfsizlik (change PIN: current, new, again; Face ID or fingerprint, one at a
-  time, confirmed by the phone), Til. No theme setting (user decision). The notification settings
-  open from the gear in Bildirishnomalar.
+  time, confirmed by the phone), Til. No theme setting (user decision). The push and SMS settings
+  screen exists (`/profile/notifications`) but nothing links to it now.
 - **Yordam**: Savol-javoblar (accordion, then a link to the chat), Yordam chati (operator, quick
   topics, input, and photos: up to five at a time, shown as thumbnails before sending, opened full
   screen on tap; sample replies), Kontaktlar (the brand's phones, email, Telegram, Instagram, site,

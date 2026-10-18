@@ -290,8 +290,11 @@ const BRANDS: Record<BrandId, Brand> = {
   },
 }
 
-// The prototype can switch brands at run time from Profil; a real build is one brand
+// Each brand lives under its own path, /fortuna/... and /vodiy/..., so screens only one brand has
+// can be added to its routes. A bare "/" opens the brand last used, else the build's VITE_BRAND.
 const BRAND_KEY = 'microloan.brand'
+const isBrand = (id: string | null | undefined): id is BrandId => !!id && id in BRANDS
+const fromPath = window.location.pathname.split('/')[1]
 const stored = (() => {
   try {
     return localStorage.getItem(BRAND_KEY)
@@ -299,18 +302,28 @@ const stored = (() => {
     return null
   }
 })()
-const requested = (stored ?? import.meta.env.VITE_BRAND) as BrandId | undefined
-export const BRAND: Brand = BRANDS[requested && requested in BRANDS ? requested : 'fortuna']
+const chosen = [fromPath, stored, import.meta.env.VITE_BRAND].find(isBrand) ?? 'fortuna'
+try {
+  localStorage.setItem(BRAND_KEY, chosen)
+} catch {
+  // Private mode: the path alone decides
+}
+export const BRAND: Brand = BRANDS[chosen]
+
+/** The path every route of this brand sits under, e.g. "/vodiy". */
+export const BRAND_BASE = `/${BRAND.id}`
+
+// A path without the brand, e.g. "/" or an old "/home", moves under it before the router starts
+{
+  const { pathname, search, hash } = window.location
+  if (pathname !== BRAND_BASE && !pathname.startsWith(`${BRAND_BASE}/`))
+    window.history.replaceState(null, '', `${BRAND_BASE}${pathname}${search}${hash}`)
+}
 
 /** Every brand, for the switcher in Profil. */
 export const ALL_BRANDS = Object.values(BRANDS)
 
 /** Opens the other brand's app from the start. Each brand keeps its own sign-in. */
 export function switchBrand(id: BrandId) {
-  try {
-    localStorage.setItem(BRAND_KEY, id)
-  } catch {
-    // Private mode: the switch lasts until the page reloads
-  }
-  window.location.assign('/')
+  window.location.assign(`/${id}/`)
 }
