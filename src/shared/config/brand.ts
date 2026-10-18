@@ -17,6 +17,20 @@ export type Brand = {
   phone: string
   /** The loan products, as the brand's site names them. */
   products: Product[]
+  contacts: Contacts
+}
+
+/** How to reach the brand, as its site lists them. */
+export type Contacts = {
+  /** Nine digits after +998 each; the first is the main line. */
+  phones: string[]
+  email: string
+  address: LocalizedText
+  hours: LocalizedText
+  telegram?: string
+  instagram?: string
+  website: string
+  branches: { region: LocalizedText; address: string; phone?: string }[]
 }
 
 /** One loan product: its name, kind, who it is for, the largest sum, yearly rate and longest term. */
@@ -38,6 +52,61 @@ const BRANDS: Record<BrandId, Brand> = {
     kind: { uz: 'Mikromoliya tashkiloti', ru: 'Микрофинансовая организация' },
     maxAmount: 50_000_000,
     phone: '732444000',
+    // From fortunabiznes.uz, "Kontaktlar" and "Filiallar"
+    contacts: {
+      phones: ['732444000', '558084000'],
+      email: 'info@fortunabiznes.uz',
+      address: {
+        uz: 'Fargʻona viloyati, Fargʻona shahri, B. Margʻinoniy koʻchasi, 12-uy',
+        ru: 'Ферганская область, г. Фергана, ул. Б. Маргиноний, 12',
+      },
+      hours: { uz: 'Dushanba–shanba, 9:00–18:00', ru: 'Пн–сб, 9:00–18:00' },
+      telegram: 'fortunabiznes_mmt',
+      instagram: 'fortunabiznes.mko',
+      website: 'fortunabiznes.uz',
+      branches: [
+        {
+          region: { uz: 'Fargʻona', ru: 'Фергана' },
+          address: 'Margʻilon sh., B. Margʻiloniy koʻchasi, 97-b',
+          phone: '732534000',
+        },
+        {
+          region: { uz: 'Fargʻona', ru: 'Фергана' },
+          address: 'Rishton t., B. Roshidoniy koʻchasi, 195 A',
+          phone: '558014111',
+        },
+        {
+          region: { uz: 'Samarqand', ru: 'Самарканд' },
+          address: 'Samarqand sh., Narpay koʻchasi, 77-uy',
+          phone: '557024000',
+        },
+        {
+          region: { uz: 'Buxoro', ru: 'Бухара' },
+          address: 'Buxoro sh., I. Karimov shoh koʻchasi, 328-uy',
+          phone: '553034000',
+        },
+        {
+          region: { uz: 'Andijon', ru: 'Андижан' },
+          address: 'Andijon sh., A. Temur shoh koʻchasi, 44-B',
+          phone: '782980040',
+        },
+        {
+          region: { uz: 'Xorazm', ru: 'Хорезм' },
+          address: 'Urganch t., Farxod koʻchasi, 33/75-uy',
+          phone: '556010040',
+        },
+        {
+          region: { uz: 'Jizzax', ru: 'Джизак' },
+          address: 'Jizzax sh., Sh. Rashidov koʻchasi',
+          phone: '788884400',
+        },
+        {
+          region: { uz: 'Qoraqalpogʻiston', ru: 'Каракалпакстан' },
+          address: 'Nukus sh., Ernazar Alakoz koʻchasi, 83-uy',
+          phone: '551050030',
+        },
+      ],
+    },
     // From fortunabiznes.uz, "Moliyaviy xizmatlar"
     products: [
       {
@@ -86,6 +155,14 @@ const BRANDS: Record<BrandId, Brand> = {
     maxAmount: 50_000_000,
     phone: '000000000',
     products: [],
+    contacts: {
+      phones: [],
+      email: '',
+      address: { uz: '', ru: '' },
+      hours: { uz: '', ru: '' },
+      website: 'vodiytaraqqiyot.uz',
+      branches: [],
+    },
   },
 }
 

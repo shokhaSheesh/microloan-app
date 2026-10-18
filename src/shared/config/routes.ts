@@ -11,6 +11,14 @@ export const ROUTES = {
   application: '/apply/new',
   payments: '/payments',
   profile: '/profile',
+  personal: '/profile/me',
+  cards: '/profile/cards',
+  security: '/profile/security',
+  notifySettings: '/profile/notifications',
+  language: '/profile/language',
+  faq: '/profile/faq',
+  chat: '/profile/chat',
+  contacts: '/profile/contacts',
 } as const
 
 /** Toʻlovlar with one loan's payment sheet open. */

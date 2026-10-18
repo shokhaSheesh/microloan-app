@@ -174,17 +174,20 @@ export function ApplyPage() {
         </button>
       </section>
 
-      <Button
-        block
-        disabled={tooBig || tooSmall || typed === null}
-        onClick={() => {
-          setDraft({ productId, amount, term })
-          navigate(ROUTES.application)
-        }}
-      >
-        {t('apply.continue')}
-      </Button>
-      <p className="-mt-3 text-center text-xs text-ink-subtle">{t('apply.note')}</p>
+      {/* Stays above the tab bar while the calculator scrolls under it */}
+      <div className="sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-10 -mx-5 mt-auto flex flex-col gap-1.5 bg-gradient-to-t from-page from-70% to-transparent px-5 pt-6 pb-2">
+        <Button
+          block
+          disabled={tooBig || tooSmall || typed === null}
+          onClick={() => {
+            setDraft({ productId, amount, term })
+            navigate(ROUTES.application)
+          }}
+        >
+          {t('apply.continue')}
+        </Button>
+        <p className="text-center text-xs text-ink-subtle">{t('apply.note')}</p>
+      </div>
 
       <ScheduleSheet
         open={schedule}

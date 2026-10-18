@@ -71,8 +71,8 @@ export function HomePage() {
             [
               [CalendarDays, 'home.action.schedule', loanPath(active.id)],
               [Zap, 'home.action.early', loanPath(active.id)],
-              [CreditCard, 'home.action.cards', ROUTES.payments],
-              [Headset, 'home.action.support', ROUTES.profile],
+              [CreditCard, 'home.action.cards', ROUTES.cards],
+              [Headset, 'home.action.support', ROUTES.chat],
             ] as const
           ).map(([Icon, label, to]) => (
             <Link
@@ -129,7 +129,7 @@ export function HomePage() {
           <p className="text-sm text-ink-muted tabular-nums">{formatPhone(BRAND.phone)}</p>
         </div>
         <Link
-          to={ROUTES.profile}
+          to={ROUTES.chat}
           className="h-10 rounded-full border border-line px-4 text-sm leading-10 font-semibold text-brand active:bg-neutral-100"
         >
           {t('home.chat')}

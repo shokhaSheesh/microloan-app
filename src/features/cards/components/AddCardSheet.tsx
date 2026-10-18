@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { addCard, brandOf } from '@/entities/cards/cards'
+import { addCard, brandOf, type Card } from '@/entities/cards/cards'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/Button'
@@ -9,7 +9,16 @@ import { Sheet } from '@/shared/ui/Sheet'
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /** Links a new Uzcard or Humo card: the number and its expiry. */
-export function AddCardSheet({ phone, onClose }: { phone: string; onClose: () => void }) {
+export function AddCardSheet({
+  phone,
+  onClose,
+  onAdded,
+}: {
+  phone: string
+  onClose: () => void
+  /** The card just linked, e.g. to pick it at once. */
+  onAdded?: (card: Card) => void
+}) {
   const { t } = useI18n()
   const [number, setNumber] = useState('')
   const [expiry, setExpiry] = useState('')
@@ -21,7 +30,7 @@ export function AddCardSheet({ phone, onClose }: { phone: string; onClose: () =>
     if (number.length < 16 || expiry.length < 4) return
     setBusy(true)
     await delay(700)
-    addCard(phone, { brand: brandOf(number), last4: number.slice(-4), expiry })
+    onAdded?.(addCard(phone, { brand: brandOf(number), last4: number.slice(-4), expiry }))
     toast(t('cards.added'))
     onClose()
   }

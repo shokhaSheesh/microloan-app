@@ -12,8 +12,9 @@ import {
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { setDraft, useDraft } from '@/entities/apply/draft'
-import { addCard } from '@/entities/cards/cards'
-import { addLoan, loansOf, quote, rateFor, type Loan } from '@/entities/loans/loans'
+import { cardText, useCards } from '@/entities/cards/cards'
+import { AddCardSheet } from '@/features/cards/components/AddCardSheet'
+import { addLoan, quote, rateFor, type Loan } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
@@ -22,7 +23,6 @@ import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { formatPhone } from '@/shared/lib/phone'
 import { Button } from '@/shared/ui/Button'
-import { CardExpiryField, CardNumberField } from '@/shared/ui/CardFields'
 import { Checkbox } from '@/shared/ui/Checkbox'
 import { FormScreen } from '@/shared/ui/FormScreen'
 import { InfoList, InfoRow } from '@/shared/ui/InfoList'
@@ -41,8 +41,6 @@ const PAY_DAY = 5
 /** A unique number for the new loan, until the API issues one. */
 const stamp = () => Date.now()
 const CHECKS = ['myid', 'history', 'load'] as const
-const cardText = (card: Loan['card']) =>
-  `${card.brand === 'humo' ? 'Humo' : 'Uzcard'} •••• ${card.last4}`
 
 /**
  * Qarz olish after the calculator: the application (purpose, income, work, the card to receive
@@ -59,11 +57,10 @@ export function ApplicationPage() {
   const [purpose, setPurpose] = useState<Purpose | null>(null)
   const [income, setIncome] = useState<number | null>(null)
   const [work, setWork] = useState('')
-  // A card from an earlier loan, or a new one typed here
-  const saved = loansOf(borrower?.phone)[0]?.card
-  const [useSaved, setUseSaved] = useState(!!saved)
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
+  // Picked from the linked cards; "Karta qoʻshish" links a new one and picks it
+  const cards = useCards(borrower?.phone)
+  const [cardId, setCardId] = useState<string | undefined>(cards[0]?.id)
+  const [addingCard, setAddingCard] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [decision, setDecision] = useState<Decision | null>(null)
   const [read, setRead] = useState(false)
@@ -84,18 +81,17 @@ export function ApplicationPage() {
   const rate = rateFor(product, draft.term)
   const amount = decision && decision.kind !== 'declined' ? decision.amount : draft.amount
   const { monthly, total, interest } = quote(amount, rate, draft.term)
-  const card: Loan['card'] =
-    useSaved && saved
-      ? saved
-      : { brand: cardNumber.startsWith('9860') ? 'humo' : 'uzcard', last4: cardNumber.slice(-4) }
+  const picked = cards.find((item) => item.id === cardId)
+  const card: Loan['card'] = picked
+    ? { brand: picked.brand, last4: picked.last4 }
+    : { brand: 'uzcard', last4: '' }
   const firstDue = new Date(today.getFullYear(), today.getMonth() + 1, PAY_DAY)
 
   const errors = {
     purpose: !purpose,
     income: !income,
     work: !work.trim(),
-    card: !useSaved && cardNumber.length < 16,
-    expiry: !useSaved && cardExpiry.length < 4,
+    card: !picked,
     agreed: !agreed,
   }
   const submit = async () => {
@@ -109,8 +105,6 @@ export function ApplicationPage() {
   const pay = async () => {
     setStep('payout')
     await payOut()
-    // A card typed here is kept for later payments
-    if (!useSaved) addCard(borrower.phone, { ...card, expiry: cardExpiry })
     addLoan(borrower.phone, {
       id: `l${stamp()}`,
       number: `FB-${today.getFullYear()}-${String(stamp()).slice(-6)}`,
@@ -439,56 +433,54 @@ export function ApplicationPage() {
           <h2 className="font-bold">{t('details.card')}</h2>
           <p className="text-sm text-ink-muted">{t('details.card.hint')}</p>
         </div>
-        {saved && (
-          <div role="radiogroup" aria-label={t('details.card')} className="flex flex-col gap-2">
-            {(
-              [
-                [true, CreditCard, cardText(saved)],
-                [false, Plus, t('details.card.new')],
-              ] as const
-            ).map(([value, Icon, label]) => (
-              <button
-                key={String(value)}
-                type="button"
-                role="radio"
-                aria-checked={useSaved === value}
-                onClick={() => setUseSaved(value)}
+        <div role="radiogroup" aria-label={t('details.card')} className="flex flex-col gap-2">
+          {cards.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="radio"
+              aria-checked={item.id === cardId}
+              onClick={() => setCardId(item.id)}
+              className={cn(
+                'flex items-center gap-3 rounded-control border-[1.5px] bg-canvas p-3.5 text-left font-medium',
+                item.id === cardId ? 'border-primary' : 'border-line',
+              )}
+            >
+              <CreditCard size={20} className="text-brand" />
+              <span className="flex-1 tabular-nums">{cardText(item)}</span>
+              <span
                 className={cn(
-                  'flex items-center gap-3 rounded-control border-[1.5px] bg-canvas p-3.5 text-left font-medium',
-                  useSaved === value ? 'border-primary' : 'border-line',
+                  'grid size-5 place-items-center rounded-full border-2',
+                  item.id === cardId ? 'border-primary' : 'border-neutral-400',
                 )}
               >
-                <Icon size={20} className="text-brand" />
-                <span className="flex-1">{label}</span>
-                <span
-                  className={cn(
-                    'grid size-5 place-items-center rounded-full border-2',
-                    useSaved === value ? 'border-primary' : 'border-neutral-400',
-                  )}
-                >
-                  {useSaved === value && <span className="size-2.5 rounded-full bg-primary" />}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        {!useSaved && (
-          <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-3">
-            <CardNumberField
-              label={t('details.card.number')}
-              value={cardNumber}
-              onChange={setCardNumber}
-              error={submitted && errors.card ? t('error.required') : undefined}
-            />
-            <CardExpiryField
-              label={t('details.card.expiry')}
-              value={cardExpiry}
-              onChange={setCardExpiry}
-              error={submitted && errors.expiry ? t('error.required') : undefined}
-            />
-          </div>
-        )}
+                {item.id === cardId && <span className="size-2.5 rounded-full bg-primary" />}
+              </span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setAddingCard(true)}
+            className={cn(
+              'flex items-center gap-3 rounded-control border-[1.5px] border-dashed bg-canvas p-3.5 text-left font-semibold text-brand',
+              submitted && errors.card ? 'border-danger' : 'border-line',
+            )}
+          >
+            <Plus size={20} />
+            {t('cards.add')}
+          </button>
+          {submitted && errors.card && (
+            <p className="text-sm text-danger">{t('details.card.required')}</p>
+          )}
+        </div>
       </section>
+      {addingCard && (
+        <AddCardSheet
+          phone={borrower.phone}
+          onClose={() => setAddingCard(false)}
+          onAdded={(added) => setCardId(added.id)}
+        />
+      )}
     </FormScreen>
   )
 }

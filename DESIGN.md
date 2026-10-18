@@ -68,10 +68,10 @@ glass bar floats over the screen; the active tab is a red tint with red text.
    chips, the sum (field + slider, 1 mln to the product's max, step 500 000), the term as chips up
    to the product's longest. A dark card shows the monthly payment, yearly rate (the product's
    lower rate up to 12 months, its higher one beyond), interest and total, and opens the full
-   schedule in a sheet. "Ariza berish".
+   schedule in a sheet. "Ariza berish" stays pinned above the tab bar.
 2. **Ariza** (`/apply/new`, full screen): the chosen terms with "Oʻzgartirish", purpose, monthly
-   income, workplace, the card for the money (a saved one or a new one), consent to the credit
-   check.
+   income, workplace, the card for the money picked from the linked cards ("Karta qoʻshish" links
+   one in a sheet and picks it), consent to the credit check.
 3. **Review**: "Ariza koʻrib chiqilmoqda", three checks tick off (MyID, credit history, income
    and debt load).
 4. **Decision**: approved; or a counter-offer when the payment is over half the income (the
@@ -104,7 +104,17 @@ glass bar floats over the screen; the active tab is a red tint with red text.
   the day. "Toʻlash" on Asosiy and on a loan's page opens the same sheet (`/payments?pay=<id>`).
 - **Pay sheet**: the sum, which payment of how many, the due date, and the card to pay from (the
   loan's own card first). The payment is dated the day it is made.
-- **Kartalarim**: dark card tiles (brand, last four, expiry). A card a running loan uses shows
-  "Qarzga ulangan" and cannot be removed; others have a delete key. "Karta qoʻshish": number and
-  expiry. A card typed during an application is kept here.
 - **Toʻlovlar tarixi**: every payment on every loan, newest first, under month headings.
+
+## Profil
+
+- A card with initials, full name and phone (opens personal data).
+- **Hisob**: Shaxsiy maʼlumotlar (MyID data, read only), Kartalarim (dark tiles; a card a running
+  loan uses shows "Qarzga ulangan" and cannot be removed; "Karta qoʻshish").
+- **Sozlamalar**: Xavfsizlik (change PIN: current, new, again; Face ID or fingerprint, one at a
+  time, confirmed by the phone), Bildirishnomalar (push and SMS switches for payments, application
+  status, news; late-payment messages always go out), Til. No theme setting (user decision).
+- **Yordam**: Savol-javoblar (accordion, then a link to the chat), Yordam chati (operator, quick
+  topics, input; sample replies), Kontaktlar (the brand's phones, email, Telegram, Instagram, site,
+  head office and hours, and its branches by region — Fortuna's from fortunabiznes.uz).
+- **Hujjatlar**: offer and privacy policy (PDF). "Chiqish" asks first. The version below.

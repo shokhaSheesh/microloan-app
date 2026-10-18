@@ -1,24 +1,21 @@
-import { CalendarClock, Check, CircleAlert, CreditCard, Lock, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { CalendarClock, Check, CircleAlert } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { cardText, removeCard, useCards } from '@/entities/cards/cards'
+import { cardText, useCards } from '@/entities/cards/cards'
 import { productOf, progressOf, useLoans, type Loan } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
 import { calendarNames } from '@/shared/i18n/dictionaries'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
-import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/Button'
 import { Section } from '@/shared/ui/Section'
-import { AddCardSheet } from '../components/AddCardSheet'
 import { PaySheet } from '../components/PaySheet'
 
 type Paid = { key: string; at: Date; amount: number; label: string; card: string }
 
 /**
- * Toʻlovlar: what to pay next on each running loan with "Toʻlash", the linked cards, and every
- * payment made, by month. `?pay=<loan id>` opens that loan's payment straight away.
+ * Toʻlovlar: what to pay next on each running loan with "Toʻlash", and every payment made, by
+ * month. Cards live in Profil. `?pay=<loan id>` opens that loan's payment straight away.
  */
 export function PaymentsPage() {
   const { t, lang } = useI18n()
@@ -26,7 +23,6 @@ export function PaymentsPage() {
   const loans = useLoans(borrower?.phone)
   const cards = useCards(borrower?.phone)
   const [params, setParams] = useSearchParams()
-  const [adding, setAdding] = useState(false)
   const paying = loans.find((loan) => loan.id === params.get('pay') && !loan.closedAt)
   const active = loans.filter((loan) => !loan.closedAt)
 
@@ -68,8 +64,6 @@ export function PaymentsPage() {
       })
     return groups
   }, [])
-  // A card a running loan is paid from stays: the schedule would have nowhere to take money
-  const inUse = (last4: string) => active.some((loan) => loan.card.last4 === last4)
 
   if (!borrower) return null
   return (
@@ -94,64 +88,6 @@ export function PaymentsPage() {
           <CalendarClock size={16} className="shrink-0" />
           {t('pay.auto')}
         </p>
-      </Section>
-
-      <Section
-        title={t('cards.title')}
-        action={
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className="flex items-center gap-1 text-sm font-semibold text-brand"
-          >
-            <Plus size={16} />
-            {t('cards.add')}
-          </button>
-        }
-      >
-        {cards.length === 0 ? (
-          <p className="rounded-card border border-line bg-canvas p-4 text-sm text-ink-muted">
-            {t('cards.empty')}
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {cards.map((card) => (
-              <li
-                key={card.id}
-                className="flex items-center gap-3 rounded-card bg-tile p-4 text-on-tile"
-              >
-                <CreditCard size={22} className="shrink-0 opacity-80" />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="font-semibold tracking-wide tabular-nums">{cardText(card)}</span>
-                  <span className="text-xs opacity-60 tabular-nums">
-                    {card.expiry.slice(0, 2)}/{card.expiry.slice(2)}
-                  </span>
-                </div>
-                {inUse(card.last4) ? (
-                  <span
-                    title={t('cards.inUse')}
-                    className="flex items-center gap-1 text-xs opacity-70"
-                  >
-                    <Lock size={14} />
-                    {t('cards.inUse.short')}
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    aria-label={t('cards.remove')}
-                    onClick={() => {
-                      removeCard(borrower.phone, card.id)
-                      toast(t('cards.removed'))
-                    }}
-                    className="-mr-2 grid size-10 place-items-center rounded-full opacity-80 active:bg-white/15"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
       </Section>
 
       <Section title={t('pay.history')}>
@@ -199,7 +135,6 @@ export function PaymentsPage() {
           onClose={() => setParams({}, { replace: true })}
         />
       )}
-      {adding && <AddCardSheet phone={borrower.phone} onClose={() => setAdding(false)} />}
     </div>
   )
 }
