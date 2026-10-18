@@ -4,8 +4,8 @@ The user decided (2026-10-18) that every number the microloan apps use must be m
 Birzum admin panel, per brand (Fortuna Biznes, Vodiy Taraqqiyot). Today they are hard-coded
 samples. Build these admin pages once the apps are done.
 
-## Products (per brand)
-Today in `src/shared/config/brand.ts` (taken from fortunabiznes.uz).
+## Products (per brand) — built 2026-10-18 in the admin at /{brand}/products
+Today the app still reads `src/shared/config/brand.ts`; switch to the API when it exists.
 - Name, kind (UZ/RU), who it is for (UZ/RU), on/off, order
 - Smallest and largest sum, sum step (now 1 000 000 / product max / 500 000)
 - Terms offered (now 3, 6, 9, 12, 18, 24, 36 up to the product's longest)
