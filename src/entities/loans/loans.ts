@@ -106,15 +106,15 @@ export function payoffOf(loan: Loan, today: Date) {
 export const productOf = (loan: Pick<Loan, 'productId'>) =>
   BRAND.products.find((product) => product.id === loan.productId)
 
-// Sample loans by the borrower's passport, which stays when the phone number changes. The
-// registered sample borrower (90 123 45 67, AB1234567) has loans in each brand; anyone new has
-// none. Replace with the API.
+// Sample loans for the prototype, one running and three closed per brand. Every borrower who signs
+// in gets them, so each screen has something to show; they are kept by passport, which stays
+// when the phone number changes. Replace with the API.
 const today = new Date()
 const monthsAgo = (n: number, day: number) =>
   new Date(today.getFullYear(), today.getMonth() - n, day)
-const SAMPLES_BY_BRAND: Record<BrandId, Record<string, Loan[]>> = {
+const SAMPLES_BY_BRAND: Record<BrandId, { sample: Loan[] }> = {
   fortuna: {
-    AB1234567: [
+    sample: [
       {
         id: 'l1',
         number: 'FB-2026-004512',
@@ -171,7 +171,7 @@ const SAMPLES_BY_BRAND: Record<BrandId, Record<string, Loan[]>> = {
     ],
   },
   vodiy: {
-    AB1234567: [
+    sample: [
       {
         id: 'v1',
         number: 'VT-2026-010274',
@@ -226,7 +226,9 @@ const SAMPLES_BY_BRAND: Record<BrandId, Record<string, Loan[]>> = {
     ],
   },
 }
-const SAMPLES = SAMPLES_BY_BRAND[BRAND.id]
+const SAMPLES: Record<string, Loan[]> = {}
+// A borrower's list starts as the samples the first time it is asked for
+const ownLoans = (owner: string) => (SAMPLES[owner] ??= SAMPLES_BY_BRAND[BRAND.id].sample)
 
 const NONE: Loan[] = []
 const listeners = new Set<() => void>()
@@ -238,7 +240,7 @@ const subscribe = (listener: () => void) => {
 }
 
 /** The borrower's loans, newest first. The same list until one is added, so it is safe in render. */
-export const loansOf = (owner: string | undefined) => (owner ? SAMPLES[owner] : undefined) ?? NONE
+export const loansOf = (owner: string | undefined) => (owner ? ownLoans(owner) : NONE)
 
 /** The borrower's loans; re-renders when a new one is paid out. */
 export const useLoans = (owner: string | undefined) =>
@@ -246,15 +248,13 @@ export const useLoans = (owner: string | undefined) =>
 
 /** Changes one loan, e.g. after an early repayment. */
 export function updateLoan(owner: string, id: string, patch: Partial<Loan>) {
-  SAMPLES[owner] = (SAMPLES[owner] ?? []).map((loan) =>
-    loan.id === id ? { ...loan, ...patch } : loan,
-  )
+  SAMPLES[owner] = ownLoans(owner).map((loan) => (loan.id === id ? { ...loan, ...patch } : loan))
   listeners.forEach((listener) => listener())
 }
 
 /** A loan just paid out to the card goes to the top of the list. */
 export function addLoan(owner: string, loan: Loan) {
-  SAMPLES[owner] = [loan, ...(SAMPLES[owner] ?? [])]
+  SAMPLES[owner] = [loan, ...ownLoans(owner)]
   listeners.forEach((listener) => listener())
 }
 

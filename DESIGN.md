@@ -33,8 +33,8 @@ limits on the welcome card come from fortunabiznes.uz: Rivoj up to 50 mln, Tezko
   `/{brand}/`. Each brand keeps its own sign-in, PIN and settings.
 - **Empty states** have a picture per brand: Fortuna's logo bars lifting out of an empty tray;
   Vodiy's empty card in a green valley with a sprout and the logo's ring as the sun.
-- Sample borrower (90 123 45 67): a running Zar (30 mln, 12 months, 4 paid) and three closed
-  (Imkoniyat, Ishonch, Koʻmak).
+- Samples: every borrower who signs in gets a running Zar (30 mln, 12 months, 4 paid) and three
+  closed (Imkoniyat, Ishonch, Koʻmak); Fortuna's are a running Tezkor and three closed.
 ## Sign-in
 
 One entry, no separate sign-up: the phone number decides.
