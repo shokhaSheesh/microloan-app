@@ -5,7 +5,6 @@ import {
   CircleAlert,
   CreditCard,
   Headset,
-  Phone,
   Zap,
 } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
@@ -16,7 +15,6 @@ import { applyPath, loanPath, payPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
-import { formatPhone } from '@/shared/lib/phone'
 import { BrandMark } from '@/shared/ui/BrandMark'
 import { Button } from '@/shared/ui/Button'
 import { Section } from '@/shared/ui/Section'
@@ -26,8 +24,7 @@ const rateText = ([from, to]: [number, number]) => (from === to ? `${from}%` : `
 
 /**
  * Asosiy. With a running loan: what is left and the next payment first, with "Toʻlash", then
- * quick actions. Without one: the offer and "Qarz olish", the products, how it works. Support
- * is at the bottom either way.
+ * quick actions. Without one: the offer and "Qarz olish", the products, how it works.
  */
 export function HomePage() {
   const { t } = useI18n()
@@ -119,22 +116,6 @@ export function HomePage() {
           </ol>
         </Section>
       )}
-
-      <section className="flex items-center gap-3 rounded-card border border-line bg-canvas p-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-brand">
-          <Phone size={20} />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <p className="font-semibold">{t('home.support')}</p>
-          <p className="text-sm text-ink-muted tabular-nums">{formatPhone(BRAND.phone)}</p>
-        </div>
-        <Link
-          to={ROUTES.chat}
-          className="h-10 rounded-full border border-line px-4 text-sm leading-10 font-semibold text-brand active:bg-neutral-100"
-        >
-          {t('home.chat')}
-        </Link>
-      </section>
     </div>
   )
 }

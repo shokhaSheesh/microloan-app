@@ -15,6 +15,8 @@ export type Brand = {
   maxAmount: number
   /** Support line, nine digits after +998. */
   phone: string
+  /** Tax number (STIR) printed on fiscal cheques. */
+  tin: string
   /** The loan products, as the brand's site names them. */
   products: Product[]
   contacts: Contacts
@@ -52,6 +54,8 @@ const BRANDS: Record<BrandId, Brand> = {
     kind: { uz: 'Mikromoliya tashkiloti', ru: 'Микрофинансовая организация' },
     maxAmount: 50_000_000,
     phone: '732444000',
+    // Placeholder until Fortuna gives its STIR
+    tin: '305000000',
     // From fortunabiznes.uz, "Kontaktlar" and "Filiallar"
     contacts: {
       phones: ['732444000', '558084000'],
@@ -154,6 +158,7 @@ const BRANDS: Record<BrandId, Brand> = {
     kind: { uz: 'Mikromoliya tashkiloti', ru: 'Микрофинансовая организация' },
     maxAmount: 50_000_000,
     phone: '000000000',
+    tin: '000000000',
     products: [],
     contacts: {
       phones: [],

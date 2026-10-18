@@ -58,17 +58,17 @@ glass bar floats over the screen; the active tab is a red tint with red text.
 - **Without one:** a dark offer card with the largest sum and "Qarz olish", the products
   (name, kind, who it is for, and chips for the sum, yearly rate and longest term, from the
   brand's site), and "Qanday olinadi" in four numbered steps.
-- Support at the bottom: the brand's phone and "Yozish".
 - Sample data: 90 123 45 67 has a running Tezkor loan and a closed Ishonch; anyone new has none.
   Payments are equal monthly sums (annuity) worked out in `entities/loans`.
 
 ## Qarz olish
 
-1. **Calculator** (on the tab bar, `/apply`, `?product=` preselects): the three products as
+1. **Calculator** (the tab bar's middle button, `/apply`, `?product=` preselects; a pushed screen
+   with a back arrow and no tab bar): the three products as
    chips, the sum (field + slider, 1 mln to the product's max, step 500 000), the term as chips up
    to the product's longest. A dark card shows the monthly payment, yearly rate (the product's
    lower rate up to 12 months, its higher one beyond), interest and total, and opens the full
-   schedule in a sheet. "Ariza berish" stays pinned above the tab bar.
+   schedule in a sheet. "Ariza berish" stays fixed at the bottom while the rest scrolls.
 2. **Ariza** (`/apply/new`, full screen): the chosen terms with "Oʻzgartirish", purpose, monthly
    income, workplace, the card for the money picked from the linked cards ("Karta qoʻshish" links
    one in a sheet and picks it), consent to the credit check.
@@ -104,13 +104,20 @@ glass bar floats over the screen; the active tab is a red tint with red text.
   the day. "Toʻlash" on Asosiy and on a loan's page opens the same sheet (`/payments?pay=<id>`).
 - **Pay sheet**: the sum, which payment of how many, the due date, and the card to pay from (the
   loan's own card first). The payment is dated the day it is made.
-- **Toʻlovlar tarixi**: every payment on every loan, newest first, under month headings.
+- **Toʻlovlar tarixi**: every payment on every loan, newest first, under month headings. A
+  payment opens a sheet: sum, status, date and time (payments not made in the app were taken at
+  09:00 on the due day), card, loan and contract number, and for a monthly one how much went to
+  principal and to interest. **Fiskal chekni koʻrish** shows the cheque in the same sheet: the
+  brand and its STIR, the line paid, cheque number, date, card, VAT, total, fiscal module and
+  sign, and a QR and link to ofd.soliq.uz.
 
 ## Profil
 
 - A card with initials, full name and phone (opens personal data).
 - **Hisob**: Shaxsiy maʼlumotlar (MyID data, read only), Kartalarim (dark tiles; a card a running
-  loan uses shows "Qarzga ulangan" and cannot be removed; "Karta qoʻshish").
+  loan uses shows "Qarzga ulangan" and cannot be removed; "Karta qoʻshish": number and expiry,
+  then the SMS code sent to the phone the card is tied to; the card is saved once the code fits,
+  `000000` is the wrong code in the mock).
 - **Sozlamalar**: Xavfsizlik (change PIN: current, new, again; Face ID or fingerprint, one at a
   time, confirmed by the phone), Bildirishnomalar (push and SMS switches for payments, application
   status, news; late-payment messages always go out), Til. No theme setting (user decision).

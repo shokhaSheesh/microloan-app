@@ -29,6 +29,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.auth, element: <AuthPage /> },
       { path: ROUTES.pinSetup, element: <PinSetupPage /> },
       { path: ROUTES.onboarding, element: <OnboardingPage /> },
+      { path: ROUTES.apply, element: <ApplyPage /> },
       { path: ROUTES.application, element: <ApplicationPage /> },
       { path: ROUTES.loan, element: <LoanPage /> },
       { path: ROUTES.personal, element: <PersonalPage /> },
@@ -44,7 +45,6 @@ export const router = createBrowserRouter([
         children: [
           { path: ROUTES.home, element: <HomePage /> },
           { path: ROUTES.loans, element: <LoansPage /> },
-          { path: ROUTES.apply, element: <ApplyPage /> },
           { path: ROUTES.payments, element: <PaymentsPage /> },
           { path: ROUTES.profile, element: <ProfilePage /> },
         ],

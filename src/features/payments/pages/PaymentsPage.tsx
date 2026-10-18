@@ -1,4 +1,5 @@
 import { CalendarClock, Check, CircleAlert } from 'lucide-react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { cardText, useCards } from '@/entities/cards/cards'
 import { productOf, progressOf, useLoans, type Loan } from '@/entities/loans/loans'
@@ -9,14 +10,16 @@ import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/Button'
 import { Section } from '@/shared/ui/Section'
+import { PaymentDetailSheet, type PaidItem } from '../components/PaymentDetailSheet'
 import { PaySheet } from '../components/PaySheet'
-
-type Paid = { key: string; at: Date; amount: number; label: string; card: string }
 
 /**
  * Toʻlovlar: what to pay next on each running loan with "Toʻlash", and every payment made, by
- * month. Cards live in Profil. `?pay=<loan id>` opens that loan's payment straight away.
+ * month; a payment opens its details and fiscal cheque. Cards live in Profil. `?pay=<loan id>` opens that loan's payment straight away.
  */
+// A payment not made in the app was taken from the card on its due day, in the morning
+const autoDebit = (due: Date) => new Date(due.getFullYear(), due.getMonth(), due.getDate(), 9, 0)
+
 export function PaymentsPage() {
   const { t, lang } = useI18n()
   const borrower = useBorrower()
@@ -25,45 +28,52 @@ export function PaymentsPage() {
   const [params, setParams] = useSearchParams()
   const paying = loans.find((loan) => loan.id === params.get('pay') && !loan.closedAt)
   const active = loans.filter((loan) => !loan.closedAt)
+  const [open, setOpen] = useState<PaidItem | null>(null)
 
   // Every payment made on every loan, newest first
-  const paid: Paid[] = loans
+  const paid: PaidItem[] = loans
     .flatMap((loan) => {
       const { schedule } = progressOf(loan)
       const name = productOf(loan)?.name ?? ''
       const card = cardText(loan.card)
+      const base = { card, product: name, contract: loan.number }
       return [
         ...schedule
           .filter((item) => item.n <= loan.paidCount)
           .map((item) => ({
             key: `${loan.id}-m${item.n}`,
-            at: loan.paidOn?.[item.n] ?? item.due,
+            at: loan.paidOn?.[item.n] ?? autoDebit(item.due),
             amount: item.amount,
             label: `${name} · ${t('history.monthly', { n: String(item.n) })}`,
-            card,
+            principal: item.principal,
+            interest: item.interest,
+            ...base,
           })),
         ...(loan.prepayments ?? []).map((extra, i) => ({
           key: `${loan.id}-e${i}`,
           at: extra.at,
           amount: extra.amount,
           label: `${name} · ${t(extra.kind === 'full' ? 'history.full' : 'history.partial')}`,
-          card,
+          ...base,
         })),
       ]
     })
     .sort((a, b) => b.at.getTime() - a.at.getTime())
-  const months = paid.reduce<{ key: string; label: string; items: Paid[] }[]>((groups, item) => {
-    const key = `${item.at.getFullYear()}-${item.at.getMonth()}`
-    const last = groups.at(-1)
-    if (last?.key === key) last.items.push(item)
-    else
-      groups.push({
-        key,
-        label: `${calendarNames[lang].months[item.at.getMonth()]} ${item.at.getFullYear()}`,
-        items: [item],
-      })
-    return groups
-  }, [])
+  const months = paid.reduce<{ key: string; label: string; items: PaidItem[] }[]>(
+    (groups, item) => {
+      const key = `${item.at.getFullYear()}-${item.at.getMonth()}`
+      const last = groups.at(-1)
+      if (last?.key === key) last.items.push(item)
+      else
+        groups.push({
+          key,
+          label: `${calendarNames[lang].months[item.at.getMonth()]} ${item.at.getFullYear()}`,
+          items: [item],
+        })
+      return groups
+    },
+    [],
+  )
 
   if (!borrower) return null
   return (
@@ -104,20 +114,23 @@ export function PaymentsPage() {
                 </p>
                 <ul className="flex flex-col rounded-card border border-line bg-canvas px-4">
                   {month.items.map((item) => (
-                    <li
-                      key={item.key}
-                      className="flex items-center gap-3 border-b border-line py-3 last:border-b-0"
-                    >
-                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success-soft text-success">
-                        <Check size={18} strokeWidth={2.5} />
-                      </span>
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate font-medium">{item.label}</span>
-                        <span className="text-xs text-ink-muted tabular-nums">
-                          {formatDate(item.at)} · {item.card}
+                    <li key={item.key} className="border-b border-line last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpen(item)}
+                        className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-3 px-4 py-3 text-left active:bg-neutral-100"
+                      >
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-success-soft text-success">
+                          <Check size={18} strokeWidth={2.5} />
                         </span>
-                      </div>
-                      <span className="font-semibold tabular-nums">{formatSum(item.amount)}</span>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <span className="truncate font-medium">{item.label}</span>
+                          <span className="text-xs text-ink-muted tabular-nums">
+                            {formatDate(item.at)} · {item.card}
+                          </span>
+                        </div>
+                        <span className="font-semibold tabular-nums">{formatSum(item.amount)}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -127,6 +140,7 @@ export function PaymentsPage() {
         )}
       </Section>
 
+      {open && <PaymentDetailSheet item={open} onClose={() => setOpen(null)} />}
       {paying && (
         <PaySheet
           loan={paying}
