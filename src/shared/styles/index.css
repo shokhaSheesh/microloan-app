@@ -1,0 +1,233 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Design tokens for the signed-off direction: Light surfaces, Source Sans 3,
+ * upright titles. Change values here only, never hardcode them in components.
+ */
+/*
+ * Design tokens. Each app is one brand of the same code: Fortuna Biznes is the default below,
+ * Vodiy Taraqqiyot will override it under [data-brand='vodiy']. Components use only these
+ * role names (primary, brand, accent, neutral...), never a brand's hex values.
+ */
+@theme {
+  --font-sans: 'Rubik', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Neutral scale: the brand's dark ink and its tints */
+  --color-neutral-950: #18191d;
+  --color-neutral-900: #26282d;
+  --color-neutral-700: #4b4f57;
+  --color-neutral-400: #a4a8b0;
+  --color-neutral-200: #dde0e5;
+  --color-neutral-100: #eef0f3;
+  /* Accent scale: Fortuna's blue, for highlights, progress and soft tints */
+  --color-accent-600: #0090ce;
+  --color-accent-500: #00a3e8;
+  --color-accent-300: #a6dcf5;
+  --color-accent-200: #d9f0fb;
+  --color-accent-100: #eef8fd;
+
+  /* Roles */
+  /* Actions are Fortuna red, as on fortunabiznes.uz */
+  --color-primary: #ed1b24;
+  --color-primary-pressed: #c8121a;
+  --color-on-primary: #ffffff;
+  /* Links and icons: a deeper Fortuna blue, readable on white */
+  --color-brand: #0081bd;
+  --color-tile: #18191d;
+  --color-on-tile: #ffffff;
+
+  /* Surfaces and text: grey screen, white bordered cards */
+  --color-canvas: #ffffff;
+  --color-page: #f2f3f7;
+  --color-surface: #f2f3f7;
+  --color-raised: #ffffff;
+  --color-line: #e2e4e9;
+  --color-ink: #18191d;
+  --color-ink-muted: #62666e;
+  --color-ink-subtle: #8e9299;
+
+  /* Status */
+  --color-success: #1e8e4a;
+  --color-success-soft: #e2f5e9;
+  --color-warning: #b26a00;
+  --color-warning-soft: #fdf0d8;
+  --color-danger: #d42a2a;
+  --color-danger-soft: #fbe6e6;
+
+  --radius-control: 14px;
+  --radius-card: 20px;
+}
+
+/* Dark: black and neutral grey, like iOS; red stays the action colour, a step brighter */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-page: #000000;
+  --color-canvas: #1c1c1e;
+  --color-surface: #2c2c2e;
+  --color-raised: #3a3a3c;
+  --color-line: #303033;
+  --color-ink: #f5f5f7;
+  --color-ink-muted: #a1a1a6;
+  --color-ink-subtle: #737378;
+
+  --color-primary: #ff3b43;
+  --color-primary-pressed: #e0252d;
+  --color-brand: #4cc3f5;
+  --color-tile: #2c2c2e;
+
+  --color-neutral-950: #000000;
+  --color-neutral-700: #c7c7cc;
+  --color-neutral-400: #636366;
+  --color-neutral-200: #3a3a3c;
+  --color-neutral-100: #2c2c2e;
+  --color-accent-600: #33b5ec;
+  --color-accent-500: #4cc3f5;
+  --color-accent-300: #155a7a;
+  --color-accent-200: #0e4560;
+  --color-accent-100: #0a3247;
+
+  --color-success: #32d74b;
+  --color-success-soft: #0e2a14;
+  --color-warning: #ffb340;
+  --color-warning-soft: #33240a;
+  --color-danger: #ff6961;
+  --color-danger-soft: #3a1614;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-neutral-950);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bottom space that lets a tab screen's content scroll clear of the floating tab bar */
+@utility pb-tabbar {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+}
+
+/* Liquid glass: a translucent, blurred surface with a bright rim. Used by the tab bar only. */
+.glass {
+  background: color-mix(in srgb, var(--color-canvas) 58%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  box-shadow:
+    0 14px 34px -12px rgb(24 25 29 / 0.25),
+    0 2px 6px rgb(24 25 29 / 0.06),
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    inset 0 -1px 0 rgb(255 255 255 / 0.25);
+}
+
+:root[data-theme='dark'] .glass {
+  border-color: rgb(255 255 255 / 0.14);
+  box-shadow:
+    0 14px 34px -12px rgb(0 0 0 / 0.7),
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+.toast {
+  animation: toast-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes pin-shake {
+  20%,
+  60% {
+    transform: translateX(-8px);
+  }
+  40%,
+  80% {
+    transform: translateX(8px);
+  }
+}
+.pin-shake {
+  animation: pin-shake 360ms ease-in-out;
+}
+@keyframes scoring-needle {
+  0%,
+  100% {
+    transform: rotate(-55deg);
+  }
+  50% {
+    transform: rotate(50deg);
+  }
+}
+.scoring-needle {
+  animation: scoring-needle 1.6s ease-in-out infinite;
+}
+@keyframes scoring-lens {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-70px, -40px);
+  }
+}
+.scoring-lens {
+  animation: scoring-lens 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scoring-needle,
+  .scoring-lens {
+    animation: none;
+  }
+}
+.sheet-panel {
+  animation: sheet-up 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sheet-backdrop {
+  animation: fade-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel,
+  .sheet-backdrop {
+    animation: none;
+  }
+}
+
+/* Welcome: the brand mark's bars slide in once */
+@keyframes mark-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+.welcome-mark {
+  animation: mark-in 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-mark {
+    animation: none;
+  }
+}
