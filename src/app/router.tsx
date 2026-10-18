@@ -4,6 +4,7 @@ import { ApplyPage } from '@/features/apply/pages/ApplyPage'
 import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { PinSetupPage } from '@/features/auth/pages/PinSetupPage'
 import { HomePage } from '@/features/home/pages/HomePage'
+import { LoanPage } from '@/features/loans/pages/LoanPage'
 import { LoansPage } from '@/features/loans/pages/LoansPage'
 import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
 import { PaymentsPage } from '@/features/payments/pages/PaymentsPage'
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.pinSetup, element: <PinSetupPage /> },
       { path: ROUTES.onboarding, element: <OnboardingPage /> },
       { path: ROUTES.application, element: <ApplicationPage /> },
+      { path: ROUTES.loan, element: <LoanPage /> },
       {
         element: <TabLayout tabs={tabs} />,
         children: [

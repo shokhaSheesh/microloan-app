@@ -5,12 +5,16 @@ export const ROUTES = {
   onboarding: '/welcome',
   home: '/home',
   loans: '/loans',
+  loan: '/loans/:id',
   apply: '/apply',
   /** The application after the calculator, full screen without the tab bar. */
   application: '/apply/new',
   payments: '/payments',
   profile: '/profile',
 } as const
+
+/** One loan's page. */
+export const loanPath = (id: string) => `/loans/${id}`
 
 /** "Qarz olish", started from a product's card. */
 export const applyPath = (productId?: string) =>

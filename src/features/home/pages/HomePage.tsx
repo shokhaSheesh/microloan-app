@@ -12,7 +12,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND, type Product } from '@/shared/config/brand'
-import { applyPath, ROUTES } from '@/shared/config/routes'
+import { applyPath, loanPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
@@ -69,8 +69,8 @@ export function HomePage() {
         <div className="grid grid-cols-4 gap-2">
           {(
             [
-              [CalendarDays, 'home.action.schedule', ROUTES.loans],
-              [Zap, 'home.action.early', ROUTES.loans],
+              [CalendarDays, 'home.action.schedule', loanPath(active.id)],
+              [Zap, 'home.action.early', loanPath(active.id)],
               [CreditCard, 'home.action.cards', ROUTES.payments],
               [Headset, 'home.action.support', ROUTES.profile],
             ] as const
@@ -162,7 +162,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
             <span className="text-xs opacity-60 tabular-nums">№ {loan.number}</span>
           </div>
           <Link
-            to={ROUTES.loans}
+            to={loanPath(loan.id)}
             className="flex items-center gap-0.5 text-sm font-semibold opacity-80"
           >
             {t('home.loan.details')}

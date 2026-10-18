@@ -80,3 +80,19 @@ glass bar floats over the screen; the active tab is a red tint with red text.
    the schedule; tick "tanishdim", then **SMS-kod bilan imzolash**.
 6. **Payout**: "Pul oʻtkazilmoqda" → "Kartangizga oʻtkazildi" with the sum, the card and the first
    payment. The new loan appears on Asosiy.
+
+## Qarzlarim
+
+- **List** (tab): "Faol · n" / "Yopilgan · n". A card per loan: product, number and sum issued,
+  then what is left, a progress bar, and the next payment — or "dd.mm.yyyy da yopilgan" in green.
+  No running loan: an empty state with "Qarz olish".
+- **Loan page** (`/loans/:id`): the dark summary (left to pay, total with interest, progress, next
+  payment with "Toʻlash"), "Muddatidan oldin toʻlash", then three tabs:
+  - **Jadval**: every month with a round marker — tick when paid (sum struck through), red number
+    for the next one, red text when overdue, grey "Muddatidan oldin yopilgan" for months a full
+    early repayment cancelled.
+  - **Tarix**: payments made, newest first, with the card.
+  - **Shartnoma**: the terms and "Shartnomani yuklab olish (PDF)".
+- **Early repayment** sheet: "Toʻliq yopish" (principal left plus this month's interest so far)
+  or "Qisman" (from 100 000; shows how the monthly payment drops; the end date stays). Taken from
+  the loan's card. Full closes the loan.

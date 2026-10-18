@@ -20,7 +20,18 @@ export type Loan = {
   /** Set when a payment is late. */
   overdueSince?: Date
   closedAt?: Date
+  /** Money paid ahead of the schedule. A partial one lowers the payments after it. */
+  prepayments?: Prepayment[]
 }
+
+/** An early repayment: `afterPaid` is how many monthly payments had been made when it came. */
+export type Prepayment = { at: Date; amount: number; kind: 'partial' | 'full'; afterPaid: number }
+
+/**
+ * `paid`: done. `next`: the one to pay now. `overdue`: its day has passed unpaid. `settled`:
+ * never due, because the loan was paid off early before it.
+ */
+export type InstallmentState = 'paid' | 'next' | 'overdue' | 'upcoming' | 'settled'
 
 export type Installment = {
   n: number
@@ -30,32 +41,64 @@ export type Installment = {
   interest: number
 }
 
-/** Equal monthly payments (annuity): the same sum each month, interest on what is left. */
-export function scheduleOf(loan: Pick<Loan, 'amount' | 'rate' | 'term' | 'issuedAt' | 'payDay'>) {
+const annuity = (principal: number, r: number, n: number) => (principal * r) / (1 - (1 + r) ** -n)
+
+/**
+ * Equal monthly payments (annuity): the same sum each month, interest on what is left. A partial
+ * early repayment takes its sum off what is left and spreads the rest over the months that
+ * remain, so the monthly payment drops and the end date stays.
+ */
+export function scheduleOf(
+  loan: Pick<Loan, 'amount' | 'rate' | 'term' | 'issuedAt' | 'payDay' | 'prepayments'>,
+) {
   const r = loan.rate / 100 / 12
-  const payment = (loan.amount * r) / (1 - (1 + r) ** -loan.term)
   let left = loan.amount
-  return Array.from({ length: loan.term }, (_, i): Installment => {
+  let payment = annuity(left, r, loan.term)
+  const out: Installment[] = []
+  for (let i = 0; i < loan.term && left > 0.5; i++) {
+    for (const extra of loan.prepayments ?? []) {
+      if (extra.kind !== 'partial' || extra.afterPaid !== i) continue
+      left -= extra.amount
+      payment = annuity(left, r, loan.term - i)
+    }
     const interest = left * r
     const principal = i === loan.term - 1 ? left : payment - interest
     left -= principal
     const due = new Date(loan.issuedAt.getFullYear(), loan.issuedAt.getMonth() + i + 1, loan.payDay)
-    return { n: i + 1, due, amount: Math.round(principal + interest), principal, interest }
-  })
+    out.push({ n: i + 1, due, amount: Math.round(principal + interest), principal, interest })
+  }
+  return out
 }
 
 /** Where a loan stands: what is left to pay, the next payment, and how far along it is. */
 export function progressOf(loan: Loan) {
   const schedule = scheduleOf(loan)
-  const left = schedule.slice(loan.paidCount)
+  const left = loan.closedAt ? [] : schedule.slice(loan.paidCount)
   return {
     schedule,
     next: left[0],
     remaining: Math.round(left.reduce((sum, item) => sum + item.amount, 0)),
     principalLeft: Math.round(left.reduce((sum, item) => sum + item.principal, 0)),
-    paid: loan.paidCount,
-    total: loan.term,
+    paid: loan.closedAt ? schedule.length : loan.paidCount,
+    total: schedule.length,
   }
+}
+
+/** Each month's state, for the schedule list. */
+export function stateOf(loan: Loan, item: Installment, today: Date): InstallmentState {
+  const payoff = loan.prepayments?.find((extra) => extra.kind === 'full')
+  if (payoff && item.n > payoff.afterPaid) return 'settled'
+  if (loan.closedAt || item.n <= loan.paidCount) return 'paid'
+  if (item.due < today) return 'overdue'
+  return item.n === loan.paidCount + 1 ? 'next' : 'upcoming'
+}
+
+/** What closing the loan today costs: the principal left and this month's interest so far. */
+export function payoffOf(loan: Loan, today: Date) {
+  const { schedule, principalLeft } = progressOf(loan)
+  const last = loan.paidCount > 0 ? schedule[loan.paidCount - 1].due : loan.issuedAt
+  const days = Math.max(0, Math.round((today.getTime() - last.getTime()) / 86_400_000))
+  return Math.round(principalLeft + ((principalLeft * loan.rate) / 100 / 365) * days)
 }
 
 export const productOf = (loan: Pick<Loan, 'productId'>) =>
@@ -111,6 +154,14 @@ export const loansOf = (phone: string | undefined) => (phone ? SAMPLES[phone] : 
 /** The borrower's loans; re-renders when a new one is paid out. */
 export const useLoans = (phone: string | undefined) =>
   useSyncExternalStore(subscribe, () => loansOf(phone))
+
+/** Changes one loan, e.g. after an early repayment. */
+export function updateLoan(phone: string, id: string, patch: Partial<Loan>) {
+  SAMPLES[phone] = (SAMPLES[phone] ?? []).map((loan) =>
+    loan.id === id ? { ...loan, ...patch } : loan,
+  )
+  listeners.forEach((listener) => listener())
+}
 
 /** A loan just paid out to the card goes to the top of the list. */
 export function addLoan(phone: string, loan: Loan) {
