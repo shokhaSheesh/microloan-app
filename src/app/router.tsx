@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { ApplicationPage } from '@/features/apply/pages/ApplicationPage'
 import { ApplyPage } from '@/features/apply/pages/ApplyPage'
 import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { PinSetupPage } from '@/features/auth/pages/PinSetupPage'
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: ROUTES.auth, element: <AuthPage /> },
       { path: ROUTES.pinSetup, element: <PinSetupPage /> },
       { path: ROUTES.onboarding, element: <OnboardingPage /> },
+      { path: ROUTES.application, element: <ApplicationPage /> },
       {
         element: <TabLayout tabs={tabs} />,
         children: [

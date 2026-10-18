@@ -1,4 +1,5 @@
-import { BRAND } from '@/shared/config/brand'
+import { useSyncExternalStore } from 'react'
+import { BRAND, type Product } from '@/shared/config/brand'
 
 /** A loan the borrower took. Its schedule is worked out from the sum, rate and term. */
 export type Loan = {
@@ -96,6 +97,39 @@ const SAMPLES: Record<string, Loan[]> = {
 }
 
 const NONE: Loan[] = []
+const listeners = new Set<() => void>()
+const subscribe = (listener: () => void) => {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
 
-/** The borrower's loans, newest first. The same list each time, so it is safe in render. */
+/** The borrower's loans, newest first. The same list until one is added, so it is safe in render. */
 export const loansOf = (phone: string | undefined) => (phone ? SAMPLES[phone] : undefined) ?? NONE
+
+/** The borrower's loans; re-renders when a new one is paid out. */
+export const useLoans = (phone: string | undefined) =>
+  useSyncExternalStore(subscribe, () => loansOf(phone))
+
+/** A loan just paid out to the card goes to the top of the list. */
+export function addLoan(phone: string, loan: Loan) {
+  SAMPLES[phone] = [loan, ...(SAMPLES[phone] ?? [])]
+  listeners.forEach((listener) => listener())
+}
+
+/** The yearly rate for a term: a product's lower rate up to 12 months, its higher one beyond. */
+export const rateFor = (product: Product, term: number) =>
+  term <= 12 ? product.rate[0] : product.rate[1]
+
+/** Monthly payment, total to pay and the interest in it, for a sum, yearly rate and term. */
+export function quote(amount: number, rate: number, term: number) {
+  const r = rate / 100 / 12
+  const monthly = Math.round((amount * r) / (1 - (1 + r) ** -term))
+  const total = monthly * term
+  return { monthly, total, interest: total - amount }
+}
+
+/** The terms a product offers, in months, up to its longest. */
+export const termsOf = (product: Product) =>
+  [3, 6, 9, 12, 18, 24, 36].filter((n) => n <= product.termMax)

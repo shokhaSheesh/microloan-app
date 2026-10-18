@@ -6,6 +6,8 @@ export const ROUTES = {
   home: '/home',
   loans: '/loans',
   apply: '/apply',
+  /** The application after the calculator, full screen without the tab bar. */
+  application: '/apply/new',
   payments: '/payments',
   profile: '/profile',
 } as const

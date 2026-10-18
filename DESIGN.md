@@ -43,7 +43,8 @@ decision, money to the card, repayments.
 
 ## Tab bar
 
-Asosiy · Qarzlarim · **Qarz olish** (the raised red middle button) · Toʻlovlar · Profil. The
+Asosiy (house) · Qarzlarim (document) · **Qarz olish** (a plus on the raised red middle button) ·
+Toʻlovlar (card) · Profil. The
 glass bar floats over the screen; the active tab is a red tint with red text.
 
 ## Asosiy
@@ -60,3 +61,22 @@ glass bar floats over the screen; the active tab is a red tint with red text.
 - Support at the bottom: the brand's phone and "Yozish".
 - Sample data: 90 123 45 67 has a running Tezkor loan and a closed Ishonch; anyone new has none.
   Payments are equal monthly sums (annuity) worked out in `entities/loans`.
+
+## Qarz olish
+
+1. **Calculator** (on the tab bar, `/apply`, `?product=` preselects): the three products as
+   chips, the sum (field + slider, 1 mln to the product's max, step 500 000), the term as chips up
+   to the product's longest. A dark card shows the monthly payment, yearly rate (the product's
+   lower rate up to 12 months, its higher one beyond), interest and total, and opens the full
+   schedule in a sheet. "Ariza berish".
+2. **Ariza** (`/apply/new`, full screen): the chosen terms with "Oʻzgartirish", purpose, monthly
+   income, workplace, the card for the money (a saved one or a new one), consent to the credit
+   check.
+3. **Review**: "Ariza koʻrib chiqilmoqda", three checks tick off (MyID, credit history, income
+   and debt load).
+4. **Decision**: approved; or a counter-offer when the payment is over half the income (the
+   largest sum that fits); or declined below 1 mln. "Taklif 3 kun amal qiladi".
+5. **Shartnoma**: all terms, borrower, pay day (the 5th), first payment, card, the offer (PDF) and
+   the schedule; tick "tanishdim", then **SMS-kod bilan imzolash**.
+6. **Payout**: "Pul oʻtkazilmoqda" → "Kartangizga oʻtkazildi" with the sum, the card and the first
+   payment. The new loan appears on Asosiy.

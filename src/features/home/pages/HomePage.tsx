@@ -9,7 +9,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { loansOf, productOf, progressOf, type Loan } from '@/entities/loans/loans'
+import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND, type Product } from '@/shared/config/brand'
 import { applyPath, ROUTES } from '@/shared/config/routes'
@@ -32,8 +32,8 @@ const rateText = ([from, to]: [number, number]) => (from === to ? `${from}%` : `
 export function HomePage() {
   const { t } = useI18n()
   const borrower = useBorrower()
+  const loans = useLoans(borrower?.phone)
   if (!borrower || !session.hasPin()) return <Navigate to={ROUTES.auth} replace />
-  const loans = loansOf(borrower.phone)
   const active = loans.find((loan) => !loan.closedAt)
   const initials = borrower.fullName
     .split(' ')
