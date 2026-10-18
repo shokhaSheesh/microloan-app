@@ -6,6 +6,7 @@ import { BRAND } from '@/shared/config/brand'
 
 // The brand picks its colours in index.css
 document.documentElement.dataset.brand = BRAND.id
+document.title = BRAND.name
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

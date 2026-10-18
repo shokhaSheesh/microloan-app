@@ -112,35 +112,39 @@ export const productOf = (loan: Pick<Loan, 'productId'>) =>
 const today = new Date()
 const monthsAgo = (n: number, day: number) =>
   new Date(today.getFullYear(), today.getMonth() - n, day)
-const SAMPLES: Record<string, Loan[]> = {
-  AB1234567: [
-    {
-      id: 'l1',
-      number: 'FB-2026-004512',
-      productId: 'tezkor',
-      amount: 24_000_000,
-      rate: 47,
-      term: 18,
-      issuedAt: monthsAgo(5, 3),
-      payDay: 5,
-      card: { brand: 'humo', last4: '1671' },
-      paidCount: 5,
-    },
-    {
-      id: 'l2',
-      number: 'FB-2025-001377',
-      productId: 'ishonch',
-      amount: 8_000_000,
-      rate: 54,
-      term: 12,
-      issuedAt: monthsAgo(19, 10),
-      payDay: 10,
-      card: { brand: 'humo', last4: '1671' },
-      paidCount: 12,
-      closedAt: monthsAgo(7, 8),
-    },
-  ],
-}
+// Fortuna's products only; the Vodiy sample borrower starts with no loans for now
+const SAMPLES: Record<string, Loan[]> =
+  BRAND.id !== 'fortuna'
+    ? {}
+    : {
+        AB1234567: [
+          {
+            id: 'l1',
+            number: 'FB-2026-004512',
+            productId: 'tezkor',
+            amount: 24_000_000,
+            rate: 47,
+            term: 18,
+            issuedAt: monthsAgo(5, 3),
+            payDay: 5,
+            card: { brand: 'humo', last4: '1671' },
+            paidCount: 5,
+          },
+          {
+            id: 'l2',
+            number: 'FB-2025-001377',
+            productId: 'ishonch',
+            amount: 8_000_000,
+            rate: 54,
+            term: 12,
+            issuedAt: monthsAgo(19, 10),
+            payDay: 10,
+            card: { brand: 'humo', last4: '1671' },
+            paidCount: 12,
+            closedAt: monthsAgo(7, 8),
+          },
+        ],
+      }
 
 const NONE: Loan[] = []
 const listeners = new Set<() => void>()
@@ -186,4 +190,4 @@ export function quote(amount: number, rate: number, term: number) {
 
 /** The terms a product offers, in months, up to its longest. */
 export const termsOf = (product: Product) =>
-  [3, 6, 9, 12, 18, 24, 36].filter((n) => n <= product.termMax)
+  [3, 6, 9, 12, 18, 24, 36, 48].filter((n) => n >= (product.termMin ?? 3) && n <= product.termMax)

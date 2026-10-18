@@ -97,6 +97,37 @@
   --color-danger-soft: #3a1614;
 }
 
+/*
+ * Vodiy Taraqqiyot, from its logo on vodiytaraqqiyot.uz: green actions (a step darker than the
+ * logo's #398d51 so white text reads), the handshake's navy for links and the dark tiles, green
+ * tints. Its red stays in the mark only.
+ */
+:root[data-brand='vodiy'] {
+  --color-accent-600: #2f8247;
+  --color-accent-500: #398d51;
+  --color-accent-300: #b5dcc0;
+  --color-accent-200: #dff1e4;
+  --color-accent-100: #f0f8f2;
+
+  --color-primary: #2f8247;
+  --color-primary-pressed: #256b3a;
+  --color-brand: #393089;
+  --color-tile: #221d5c;
+}
+
+:root[data-brand='vodiy'][data-theme='dark'] {
+  --color-accent-600: #4cc06a;
+  --color-accent-500: #5fd17c;
+  --color-accent-300: #1d5a32;
+  --color-accent-200: #143f24;
+  --color-accent-100: #0d2b18;
+
+  --color-primary: #34a058;
+  --color-primary-pressed: #2b8a4b;
+  --color-brand: #5fd17c;
+  --color-tile: #2c2c2e;
+}
+
 html,
 body,
 #root {

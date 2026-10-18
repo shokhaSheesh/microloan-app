@@ -1,4 +1,5 @@
-import { BRAND } from '@/shared/config/brand'
+import vodiyMark from '@/shared/assets/brands/vodiy-mark.png'
+import { BRAND, type BrandId } from '@/shared/config/brand'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 
@@ -23,12 +24,34 @@ function FortunaMark({ className }: { className?: string }) {
   )
 }
 
+/** Vodiy Taraqqiyot's mark: "VT" and a handshake in a red ring, cut from its site's logo. */
+function VodiyMark({ className }: { className?: string }) {
+  return <img src={vodiyMark} alt="" className={cn('rounded-full bg-white', className)} />
+}
+
+const MARKS: Record<BrandId, (props: { className?: string }) => React.JSX.Element> = {
+  fortuna: FortunaMark,
+  vodiy: VodiyMark,
+}
+
+/** The current brand's mark. */
+export function BrandMark({
+  className,
+  brand = BRAND.id,
+}: {
+  className?: string
+  brand?: BrandId
+}) {
+  const Mark = MARKS[brand]
+  return <Mark className={className} />
+}
+
 /** The brand's mark with its name and kind beside it, as on the brand's site. */
 export function BrandLogo({ size = 'md', className }: { size?: 'md' | 'lg'; className?: string }) {
   const { tl } = useI18n()
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      <FortunaMark className={size === 'lg' ? 'h-11 w-auto' : 'h-8 w-auto'} />
+      <BrandMark className={size === 'lg' ? 'h-11 w-auto' : 'h-8 w-auto'} />
       <div className="flex flex-col leading-tight">
         <span className={cn('font-bold', size === 'lg' ? 'text-xl' : 'text-base')}>
           {BRAND.name}
@@ -40,5 +63,3 @@ export function BrandLogo({ size = 'md', className }: { size?: 'md' | 'lg'; clas
     </div>
   )
 }
-
-export { FortunaMark as BrandMark }

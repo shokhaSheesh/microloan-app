@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   ChevronRight,
   CircleHelp,
   CreditCard,
@@ -13,19 +14,21 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCards } from '@/entities/cards/cards'
 import { session, useBorrower } from '@/entities/session/session'
-import { BRAND } from '@/shared/config/brand'
+import { ALL_BRANDS, BRAND, switchBrand } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { LANG_NAMES } from '@/shared/i18n/dictionaries'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { formatPhone } from '@/shared/lib/phone'
 import { toast } from '@/shared/lib/toast'
+import { ActionCard } from '@/shared/ui/ActionCard'
 import { ConfirmSheet } from '@/shared/ui/ConfirmSheet'
 import { MenuList, MenuRow } from '@/shared/ui/MenuList'
 import { Section } from '@/shared/ui/Section'
 
 /**
  * Profil: who is signed in (opens the personal data), then Hisob (cards), Sozlamalar (security,
- * language), Yordam (FAQ, chat, contacts), the documents, and "Chiqish".
+ * language), Yordam (FAQ, chat, contacts), the documents, the prototype's switch to the other
+ * brand's app, and "Chiqish".
  */
 export function ProfilePage() {
   const { t, lang } = useI18n()
@@ -105,6 +108,16 @@ export function ProfilePage() {
           ))}
         </ul>
       </Section>
+
+      {ALL_BRANDS.filter((brand) => brand.id !== BRAND.id).map((brand) => (
+        <ActionCard
+          key={brand.id}
+          icon={ArrowLeftRight}
+          title={t('brand.switch', { brand: brand.name })}
+          description={t('brand.switch.hint')}
+          onClick={() => switchBrand(brand.id)}
+        />
+      ))}
 
       <div className="flex flex-col items-center gap-3">
         <button

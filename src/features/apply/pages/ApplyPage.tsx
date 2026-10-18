@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { setDraft } from '@/entities/apply/draft'
 import { quote, rateFor, termsOf } from '@/entities/loans/loans'
-import { BRAND } from '@/shared/config/brand'
+import { BRAND, type Product } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
@@ -16,7 +16,9 @@ import { ScheduleSheet } from '../components/ScheduleSheet'
 
 const MIN = 1_000_000
 const STEP = 500_000
-const clamp = (n: number, max: number) => Math.min(max, Math.max(MIN, Math.round(n / STEP) * STEP))
+const minOf = (product: Product) => product.min ?? MIN
+const clamp = (n: number, product: Product) =>
+  Math.min(product.max, Math.max(minOf(product), Math.round(n / STEP) * STEP))
 
 /**
  * Qarz olish, step one: the calculator. Pick a product, the sum and the term; the dark card
@@ -32,24 +34,26 @@ export function ApplyPage() {
     BRAND.products.find((p) => p.id === params.get('product'))?.id ?? BRAND.products[0].id,
   )
   const product = BRAND.products.find((p) => p.id === productId)!
-  const [amount, setAmount] = useState(Math.min(10_000_000, product.max))
+  const [amount, setAmount] = useState(clamp(10_000_000, product))
   const [typed, setTyped] = useState<number | null>(amount)
-  const [term, setTerm] = useState(12)
+  const [term, setTerm] = useState(Math.min(12, product.termMax))
   const [schedule, setSchedule] = useState(false)
 
   const terms = termsOf(product)
   const rate = rateFor(product, term)
   const { monthly, total, interest } = quote(amount, rate, term)
   const tooBig = typed !== null && typed > product.max
-  const tooSmall = typed !== null && typed < MIN
+  const min = minOf(product)
+  const tooSmall = typed !== null && typed < min
 
   const pickProduct = (id: string) => {
     const next = BRAND.products.find((p) => p.id === id)!
     setProductId(id)
-    const sum = clamp(amount, next.max)
+    const sum = clamp(amount, next)
     setAmount(sum)
     setTyped(sum)
     if (term > next.termMax) setTerm(next.termMax)
+    if (term < (next.termMin ?? 3)) setTerm(next.termMin ?? 3)
   }
   const slide = (sum: number) => {
     setAmount(sum)
@@ -57,7 +61,7 @@ export function ApplyPage() {
   }
   const type = (sum: number | null) => {
     setTyped(sum)
-    if (sum !== null && sum >= MIN && sum <= product.max) setAmount(sum)
+    if (sum !== null && sum >= min && sum <= product.max) setAmount(sum)
   }
 
   return (
@@ -66,7 +70,16 @@ export function ApplyPage() {
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 pt-2 pb-6">
         <p className="-mt-1 text-ink-muted">{t('apply.subtitle')}</p>
 
-        <div role="radiogroup" aria-label={t('apply.product')} className="grid grid-cols-3 gap-2">
+        <div
+          role="radiogroup"
+          aria-label={t('apply.product')}
+          // Up to three fit side by side; more scroll sideways
+          className={cn(
+            BRAND.products.length > 3
+              ? '-mx-5 flex gap-2 overflow-x-auto px-5 [&>*]:w-[30%] [&>*]:shrink-0'
+              : 'grid grid-cols-3 gap-2',
+          )}
+        >
           {BRAND.products.map((item) => {
             const selected = item.id === productId
             return (
@@ -103,20 +116,20 @@ export function ApplyPage() {
               tooBig
                 ? t('apply.amount.max', { sum: formatSum(product.max) })
                 : tooSmall
-                  ? t('apply.amount.min', { sum: formatSum(MIN) })
+                  ? t('apply.amount.min', { sum: formatSum(min) })
                   : undefined
             }
           />
           <Slider
             label={t('apply.amount')}
-            min={MIN}
+            min={min}
             max={product.max}
             step={STEP}
             value={amount}
             onChange={slide}
           />
           <div className="-mt-2 flex justify-between text-xs text-ink-muted tabular-nums">
-            <span>{formatSum(MIN)}</span>
+            <span>{formatSum(min)}</span>
             <span>{formatSum(product.max)}</span>
           </div>
         </section>

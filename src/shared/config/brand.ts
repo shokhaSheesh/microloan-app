@@ -41,11 +41,19 @@ export type Product = {
   name: string
   kind: LocalizedText
   for: LocalizedText
+  /** The smallest sum, when not the app's 1 mln. */
+  min?: number
   max: number
   /** Yearly interest, %: one figure, or the lowest and highest. */
   rate: [number, number]
+  /** Shortest term in months, when not 3. */
+  termMin?: number
   termMax: number
 }
+
+/** Branches of one region, each an address and a phone. */
+const branches = (region: LocalizedText, list: [string, string][]) =>
+  list.map(([address, phone]) => ({ region, address, phone }))
 
 const BRANDS: Record<BrandId, Brand> = {
   fortuna: {
@@ -151,25 +159,158 @@ const BRANDS: Record<BrandId, Brand> = {
       },
     ],
   },
-  // Filled in when the Vodiy Taraqqiyot app is designed
   vodiy: {
     id: 'vodiy',
     name: 'Vodiy Taraqqiyot',
     kind: { uz: 'Mikromoliya tashkiloti', ru: 'Микрофинансовая организация' },
-    maxAmount: 50_000_000,
-    phone: '000000000',
-    tin: '000000000',
-    products: [],
+    // Microloans go to 100 mln; Mikrokredit's 300 mln is for business
+    maxAmount: 100_000_000,
+    phone: '735291434',
+    // Placeholder until Vodiy gives its STIR
+    tin: '306000000',
+    // From vodiytaraqqiyot.uz, "Aloqa" and "Filiallar"
     contacts: {
-      phones: [],
-      email: '',
-      address: { uz: '', ru: '' },
-      hours: { uz: '', ru: '' },
+      phones: ['735291434'],
+      email: 'vodiymko@mail.ru',
+      address: {
+        uz: 'Fargʻona viloyati, Buvayda tumani, Yangiqoʻrgʻon MFY, Yangiqoʻrgʻon koʻchasi, 2-uy',
+        ru: 'Ферганская область, Бувайдинский район, МСГ Янгикурган, ул. Янгикурган, 2',
+      },
+      hours: { uz: 'Dushanba–juma, 9:00–18:00', ru: 'Пн–пт, 9:00–18:00' },
       website: 'vodiytaraqqiyot.uz',
-      branches: [],
+      branches: [
+        ...branches({ uz: 'Fargʻona', ru: 'Фергана' }, [
+          ['Buvayda t., Yangiqoʻrgʻon koʻchasi, 2-uy', '735291434'],
+          ['Bagʻdod t., Orzu koʻchasi, 11-uy', '558081010'],
+        ]),
+        ...branches({ uz: 'Andijon', ru: 'Андижан' }, [
+          ['Andijon t., Oltin vodiy koʻchasi, 18-uy', '950061155'],
+          ['Paxtaobod t., A. Temur koʻchasi', '552023000'],
+        ]),
+        ...branches({ uz: 'Namangan', ru: 'Наманган' }, [
+          ['Chust t., Birlik MFY, Chustiy koʻchasi', '953024040'],
+          ['Toʻraqoʻrgʻon t., Namangan koʻchasi, 7-uy', '552551010'],
+          ['Norin t., Xaqqulobod sh., Oʻzbekiston koʻchasi, 87-uy', '552541010'],
+        ]),
+        ...branches({ uz: 'Toshkent viloyati', ru: 'Ташкентская область' }, [
+          ['Nurafshon sh., Toshkent yoʻli koʻchasi, 178-uy', '559002200'],
+          ['Chirchiq sh., A. Navoiy shoh koʻchasi, 225-uy', '559031000'],
+        ]),
+        ...branches({ uz: 'Qashqadaryo', ru: 'Кашкадарья' }, [
+          ['Qarshi sh., I. Karimov koʻchasi, 289-uy', '554011010'],
+          ['Shahrisabz sh., Ipak yoʻli koʻchasi, 309-uy', '554041010'],
+          ['Koson t., Mustaqillik shoh koʻchasi', '554031010'],
+          ['Chiroqchi t., Mustaqillik koʻchasi, 20-uy', '554011000'],
+          ['Gʻuzor t., Oʻzbekiston koʻchasi, 51-uy', '554020010'],
+          ['Koʻkdala t., Yangichorbogʻ koʻchasi, 2-A uy', '554052020'],
+        ]),
+        ...branches({ uz: 'Navoiy', ru: 'Навои' }, [
+          ['Navoiy sh., A. Navoiy koʻchasi, 22-uy', '553511100'],
+        ]),
+        ...branches({ uz: 'Surxondaryo', ru: 'Сурхандарья' }, [
+          ['Jarqoʻrgʻon t., Surxon sohili MFY, Oʻzbekiston koʻchasi', '951551000'],
+          ['Shoʻrchi t., Mustaqillik koʻchasi, 77a-uy', '554511000'],
+          ['Angor sh., At-Termiziy koʻchasi, 9-uy', '554521010'],
+          ['Uzun t., Oʻzbekiston koʻchasi, 104-uy', '554524040'],
+        ]),
+      ],
     },
+    // From vodiytaraqqiyot.uz, "Kreditlar"; leasing is for companies and stays out of the app
+    products: [
+      {
+        id: 'zar',
+        name: 'Zar',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Har qanday maqsadga, kafil va garovsiz',
+          ru: 'На любые цели, без поручителя и залога',
+        },
+        min: 2_000_000,
+        max: 100_000_000,
+        rate: [48, 60],
+        termMin: 3,
+        termMax: 12,
+      },
+      {
+        id: 'ishonch',
+        name: 'Ishonch',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Takroriy mijozlar uchun, 3-shaxs kafilligi asosida',
+          ru: 'Для повторных клиентов, под поручительство третьего лица',
+        },
+        min: 2_000_000,
+        max: 100_000_000,
+        rate: [48, 60],
+        termMin: 3,
+        termMax: 12,
+      },
+      {
+        id: 'komak',
+        name: 'Koʻmak',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Garov yoki sugʻurta polisi bilan, 3 oy imtiyozli davr',
+          ru: 'Под залог или страховой полис, 3 месяца льготного периода',
+        },
+        min: 2_000_000,
+        max: 100_000_000,
+        rate: [50, 60],
+        termMin: 3,
+        termMax: 12,
+      },
+      {
+        id: 'imkoniyat',
+        name: 'Imkoniyat',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Rasmiy daromadi borlar uchun, garovsiz yoki kafillik bilan',
+          ru: 'Для тех, у кого официальный доход, без залога или с поручителем',
+        },
+        max: 20_000_000,
+        // 0.15% a day on the site
+        rate: [55, 55],
+        termMax: 36,
+      },
+      {
+        id: 'mikrokredit',
+        name: 'Mikrokredit',
+        kind: { uz: 'Tadbirkorlar uchun', ru: 'Для предпринимателей' },
+        for: {
+          uz: 'Biznesni rivojlantirish uchun, 3 oy imtiyozli davr',
+          ru: 'На развитие бизнеса, 3 месяца льготного периода',
+        },
+        min: 10_000_000,
+        max: 300_000_000,
+        rate: [48, 60],
+        termMin: 6,
+        termMax: 48,
+      },
+    ],
   },
 }
 
-const requested = import.meta.env.VITE_BRAND as BrandId | undefined
+// The prototype can switch brands at run time from Profil; a real build is one brand
+const BRAND_KEY = 'microloan.brand'
+const stored = (() => {
+  try {
+    return localStorage.getItem(BRAND_KEY)
+  } catch {
+    return null
+  }
+})()
+const requested = (stored ?? import.meta.env.VITE_BRAND) as BrandId | undefined
 export const BRAND: Brand = BRANDS[requested && requested in BRANDS ? requested : 'fortuna']
+
+/** Every brand, for the switcher in Profil. */
+export const ALL_BRANDS = Object.values(BRANDS)
+
+/** Opens the other brand's app from the start. Each brand keeps its own sign-in. */
+export function switchBrand(id: BrandId) {
+  try {
+    localStorage.setItem(BRAND_KEY, id)
+  } catch {
+    // Private mode: the switch lasts until the page reloads
+  }
+  window.location.assign('/')
+}

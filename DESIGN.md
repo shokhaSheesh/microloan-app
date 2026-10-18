@@ -14,6 +14,23 @@ Fortuna's mark (three blue bars and a red "B") is drawn in `BrandMark.tsx`; its 
 limits on the welcome card come from fortunabiznes.uz: Rivoj up to 50 mln, Tezkor up to
 40 mln, Ishonch up to 20 mln.
 
+
+### Vodiy Taraqqiyot
+
+- From vodiytaraqqiyot.uz: green actions (#2f8247, the logo's #398d51 a step darker for white
+  text), the handshake's navy (#393089) for links and icons, dark tiles in deep navy (#221d5c),
+  green tints. The mark ("VT" and a handshake in a red ring) is cut from the site's logo.
+- Products: Zar, Ishonch, Koʻmak (microloans, 2–100 mln, 3–12 months, 48–60% / 50–60%),
+  Imkoniyat (20 mln, 36 months, 0.15% a day ≈ 55%), Mikrokredit (business, 10–300 mln, 6–48
+  months). Leasing is for companies and stays out. Products can now have their own minimum sum
+  and shortest term; more than three product chips in the calculator scroll sideways.
+- Contacts: +998 73 529 14 34, vodiymko@mail.ru, head office in Buvayda, Mon–Fri 9:00–18:00,
+  20 branches in seven regions. No Telegram or Instagram on the site.
+- Welcome says "100 000 000 soʻmgacha mikroqarz" (Mikrokredit's 300 mln is business).
+- **Switching (prototype only):** Profil ends with "{other brand} ilovasiga oʻtish"; it stores
+  the brand in `microloan.brand` and reloads at the start. Each brand keeps its own sign-in,
+  PIN and settings. A real build is still one brand by `VITE_BRAND`.
+- The sample borrower has no loans in Vodiy yet.
 ## Sign-in
 
 One entry, no separate sign-up: the phone number decides.

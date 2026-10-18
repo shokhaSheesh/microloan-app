@@ -1,5 +1,6 @@
 import { ImagePlus, SendHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { BRAND } from '@/shared/config/brand'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { BrandMark } from '@/shared/ui/BrandMark'
@@ -23,7 +24,7 @@ let nextId = 10
 export function ChatPage() {
   const { t } = useI18n()
   const [messages, setMessages] = useState<Message[]>(() => [
-    { id: 1, from: 'support', text: t('chat.hello'), at: time(now()) },
+    { id: 1, from: 'support', text: t('chat.hello', { brand: BRAND.name }), at: time(now()) },
   ])
   const [text, setText] = useState('')
   const [photos, setPhotos] = useState<string[]>([])

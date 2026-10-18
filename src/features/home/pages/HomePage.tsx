@@ -196,7 +196,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
 function Offer() {
   const { t } = useI18n()
   const navigate = useNavigate()
-  const max = Math.max(...BRAND.products.map((product) => product.max))
+  const max = BRAND.maxAmount
   return (
     <section className="relative flex flex-col gap-4 overflow-hidden rounded-[28px] bg-tile p-5 text-on-tile">
       <BrandMark className="absolute top-5 right-5 h-8 w-auto" />

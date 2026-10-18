@@ -363,7 +363,7 @@ const uz = {
   'notify.note': 'Kechikish haqidagi xabarlar sozlamadan qatʼi nazar yuboriladi.',
   'faq.ask': 'Javob topilmadimi? Chatda yozing',
   'chat.online': 'Onlayn',
-  'chat.hello': 'Assalomu alaykum! Fortuna Biznes yordam xizmati. Sizga qanday yordam bera olamiz?',
+  'chat.hello': 'Assalomu alaykum! {brand} yordam xizmati. Sizga qanday yordam bera olamiz?',
   'chat.reply': 'Rahmat, xabaringizni oldik. Operator bir necha daqiqada javob beradi.',
   'chat.placeholder': 'Xabar yozing',
   'chat.send': 'Yuborish',
@@ -437,6 +437,8 @@ const uz = {
   'notif.news.offer.body': 'Garovsiz mikrokredit, ariza ilovada 5 daqiqada.',
   'notif.news.app': 'Ilova yangilandi',
   'notif.news.app.body': 'Endi qarzni muddatidan oldin qisman ham toʻlash mumkin.',
+  'brand.switch': '{brand} ilovasiga oʻtish',
+  'brand.switch.hint': 'Prototip: ikkala brend bitta kodda',
 } as const
 
 export type TranslationKey = keyof typeof uz
@@ -795,7 +797,7 @@ const ru: Record<TranslationKey, string> = {
   'notify.note': 'Сообщения о просрочке приходят независимо от настроек.',
   'faq.ask': 'Не нашли ответа? Напишите в чат',
   'chat.online': 'Онлайн',
-  'chat.hello': 'Здравствуйте! Служба поддержки Fortuna Biznes. Чем можем помочь?',
+  'chat.hello': 'Здравствуйте! Служба поддержки {brand}. Чем можем помочь?',
   'chat.reply': 'Спасибо, мы получили сообщение. Оператор ответит через несколько минут.',
   'chat.placeholder': 'Напишите сообщение',
   'chat.send': 'Отправить',
@@ -869,6 +871,8 @@ const ru: Record<TranslationKey, string> = {
   'notif.news.offer.body': 'Микрокредит без залога, заявка в приложении за 5 минут.',
   'notif.news.app': 'Приложение обновлено',
   'notif.news.app.body': 'Теперь займ можно погасить досрочно и частично.',
+  'brand.switch': 'Перейти в приложение {brand}',
+  'brand.switch.hint': 'Прототип: оба бренда в одном коде',
 }
 
 export const dictionaries: Record<Lang, Record<TranslationKey, string>> = { uz, ru }
