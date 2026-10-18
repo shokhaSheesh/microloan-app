@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@/shared/i18n/dictionaries'
+import type { Lang, LocalizedText } from '@/shared/i18n/dictionaries'
 
 /** The look a slide falls back to when the admin has not uploaded an image. */
 export type SlideArt = 'calculator' | 'decision' | 'card' | 'repay'
@@ -9,7 +9,8 @@ export type SlideArt = 'calculator' | 'decision' | 'card' | 'repay'
  */
 export type Slide = {
   id: string
-  image?: string
+  /** Uploaded in the admin panel, one per language: a picture may carry text. */
+  image?: Partial<Record<Lang, string>>
   art: SlideArt
   title: LocalizedText
   text: LocalizedText

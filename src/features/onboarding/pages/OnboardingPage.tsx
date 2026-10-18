@@ -13,7 +13,7 @@ import { SlideArt } from '../components/SlideArt'
  * the admin's image (or the drawn one), a title and a line. "Oʻtkazib yuborish" skips it.
  */
 export function OnboardingPage() {
-  const { t, tl } = useI18n()
+  const { t, tl, lang } = useI18n()
   const navigate = useNavigate()
   const strip = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
@@ -55,9 +55,9 @@ export function OnboardingPage() {
             key={slide.id}
             className="flex w-full shrink-0 snap-center flex-col items-center justify-center gap-8 px-8 text-center"
           >
-            {slide.image ? (
+            {slide.image?.[lang] ? (
               <img
-                src={slide.image}
+                src={slide.image[lang]}
                 alt=""
                 className="aspect-[280/230] w-full max-w-80 rounded-card object-cover"
               />
