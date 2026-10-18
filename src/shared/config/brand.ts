@@ -15,8 +15,20 @@ export type Brand = {
   maxAmount: number
   /** Support line, nine digits after +998. */
   phone: string
-  /** The loan products, as the brand's site names them, with their largest sum. */
-  products: { name: string; max: number }[]
+  /** The loan products, as the brand's site names them. */
+  products: Product[]
+}
+
+/** One loan product: its name, kind, who it is for, the largest sum, yearly rate and longest term. */
+export type Product = {
+  id: string
+  name: string
+  kind: LocalizedText
+  for: LocalizedText
+  max: number
+  /** Yearly interest, %: one figure, or the lowest and highest. */
+  rate: [number, number]
+  termMax: number
 }
 
 const BRANDS: Record<BrandId, Brand> = {
@@ -28,9 +40,42 @@ const BRANDS: Record<BrandId, Brand> = {
     phone: '732444000',
     // From fortunabiznes.uz, "Moliyaviy xizmatlar"
     products: [
-      { name: 'Rivoj', max: 50_000_000 },
-      { name: 'Tezkor', max: 40_000_000 },
-      { name: 'Ishonch', max: 20_000_000 },
+      {
+        id: 'rivoj',
+        name: 'Rivoj',
+        kind: { uz: 'Mikrokredit, garovsiz', ru: 'Микрокредит без залога' },
+        for: {
+          uz: 'Tadbirkorlik bilan shugʻullanuvchilar uchun',
+          ru: 'Для тех, кто ведёт предпринимательство',
+        },
+        max: 50_000_000,
+        rate: [49, 54],
+        termMax: 24,
+      },
+      {
+        id: 'tezkor',
+        name: 'Tezkor',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Rasmiy daromadi borlar uchun, garovsiz',
+          ru: 'Для тех, у кого официальный доход, без залога',
+        },
+        max: 40_000_000,
+        rate: [45, 49],
+        termMax: 36,
+      },
+      {
+        id: 'ishonch',
+        name: 'Ishonch',
+        kind: { uz: 'Mikroqarz', ru: 'Микрозайм' },
+        for: {
+          uz: 'Takroriy mijozlar uchun, 3-shaxs kafilligi asosida',
+          ru: 'Для повторных клиентов, под поручительство третьего лица',
+        },
+        max: 20_000_000,
+        rate: [54, 54],
+        termMax: 24,
+      },
     ],
   },
   // Filled in when the Vodiy Taraqqiyot app is designed

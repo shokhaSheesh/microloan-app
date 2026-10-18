@@ -40,7 +40,7 @@ export function TabBar({ tabs }: { tabs: Tab[] }) {
               className={({ isActive }) =>
                 cn(
                   'flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-colors',
-                  isActive ? 'bg-primary/10 font-semibold text-brand' : 'text-ink-muted',
+                  isActive ? 'bg-primary/10 font-semibold text-primary' : 'text-ink-muted',
                 )
               }
             >

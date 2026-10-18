@@ -40,3 +40,23 @@ yuborish" and "Keyingisi" / "Boshladik". Each slide is data from the admin panel
 (`entities/onboarding/slides.ts`): an uploaded image, or the drawn art in the brand's colours
 (`SlideArt`), plus a title and a line in both languages. Four by default: calculator, online
 decision, money to the card, repayments.
+
+## Tab bar
+
+Asosiy · Qarzlarim · **Qarz olish** (the raised red middle button) · Toʻlovlar · Profil. The
+glass bar floats over the screen; the active tab is a red tint with red text.
+
+## Asosiy
+
+- Header: initials, "Salom, {name}", the brand name, and a bell with a red dot.
+- **With a running loan:** a dark card with the product and contract number, "Qolgan qarz"
+  (principal left, large) and the total with interest under it, a progress bar "5 / 18 toʻlov",
+  and the next payment with date and a red "Toʻlash". A red line above it when a payment is late.
+  Then four quick actions (Jadval, Muddatidan oldin, Kartalar, Yordam) and "Yana qarz kerakmi?"
+  with the products.
+- **Without one:** a dark offer card with the largest sum and "Qarz olish", the products
+  (name, kind, who it is for, and chips for the sum, yearly rate and longest term, from the
+  brand's site), and "Qanday olinadi" in four numbered steps.
+- Support at the bottom: the brand's phone and "Yozish".
+- Sample data: 90 123 45 67 has a running Tezkor loan and a closed Ishonch; anyone new has none.
+  Payments are equal monthly sums (annuity) worked out in `entities/loans`.
