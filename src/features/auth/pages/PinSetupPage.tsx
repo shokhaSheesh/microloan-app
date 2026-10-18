@@ -71,7 +71,12 @@ export function PinSetupPage() {
             <p className="text-ink-muted">{t('done.subtitle')}</p>
           </div>
         </div>
-        <Button block onClick={() => navigate(ROUTES.home, { replace: true })}>
+        <Button
+          block
+          onClick={() =>
+            navigate(session.onboarded() ? ROUTES.home : ROUTES.onboarding, { replace: true })
+          }
+        >
           {t('done.start')}
         </Button>
       </div>

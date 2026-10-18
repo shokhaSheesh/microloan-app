@@ -32,3 +32,11 @@ One entry, no separate sign-up: the phone number decides.
 - **Lock** on later opens: the mark, "Salom, {name}", the PIN pad with the Face ID or fingerprint
   key; the chosen one starts by itself. "PIN-kodni unutdim" and five wrong tries sign out and
   start again from the phone.
+
+## Intro slides
+
+After "Hisobingiz tayyor", once per phone: full-screen slides swiped sideways, with dots, "Oʻtkazib
+yuborish" and "Keyingisi" / "Boshladik". Each slide is data from the admin panel
+(`entities/onboarding/slides.ts`): an uploaded image, or the drawn art in the brand's colours
+(`SlideArt`), plus a title and a line in both languages. Four by default: calculator, online
+decision, money to the card, repayments.

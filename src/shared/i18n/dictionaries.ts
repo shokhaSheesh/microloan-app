@@ -159,6 +159,9 @@ const uz = {
   'password.show': 'Parolni koʻrsatish',
   'password.hide': 'Parolni yashirish',
   'welcome.upTo': '{amount} soʻmgacha',
+  'onboarding.skip': 'Oʻtkazib yuborish',
+  'onboarding.next': 'Keyingisi',
+  'onboarding.start': 'Boshladik',
 } as const
 
 export type TranslationKey = keyof typeof uz
@@ -313,6 +316,9 @@ const ru: Record<TranslationKey, string> = {
   'password.show': 'Показать пароль',
   'password.hide': 'Скрыть пароль',
   'welcome.upTo': 'до {amount} сум',
+  'onboarding.skip': 'Пропустить',
+  'onboarding.next': 'Далее',
+  'onboarding.start': 'Начать',
 }
 
 export const dictionaries: Record<Lang, Record<TranslationKey, string>> = { uz, ru }

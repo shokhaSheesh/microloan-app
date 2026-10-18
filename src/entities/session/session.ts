@@ -5,7 +5,12 @@ import { BRAND } from '@/shared/config/brand'
 // a refresh, as it would on a phone; the real app keeps the PIN in the device's secure storage.
 // Keys carry the brand, so Fortuna and Vodiy on one phone stay apart.
 const key = (name: string) => `${BRAND.id}.${name}`
-const KEYS = { pin: key('pin'), biometric: key('biometric'), user: key('user') }
+const KEYS = {
+  pin: key('pin'),
+  biometric: key('biometric'),
+  user: key('user'),
+  onboarded: key('onboarded'),
+}
 
 /** How the borrower unlocks the app besides the PIN. */
 export type Biometric = 'face' | 'finger'
@@ -64,6 +69,9 @@ export const session = {
     }
   },
   setBorrower: (borrower: Borrower) => write(KEYS.user, JSON.stringify(borrower)),
+  /** The intro slides were seen on this phone. */
+  onboarded: () => read(KEYS.onboarded) === '1',
+  setOnboarded: () => write(KEYS.onboarded, '1'),
   /** Forgets everything; the next start asks for the phone number. */
   signOut: () => {
     write(KEYS.pin, null)
