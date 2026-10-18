@@ -21,12 +21,11 @@ limits on the welcome card come from fortunabiznes.uz: Rivoj up to 50 mln, Tezko
   text), the handshake's navy (#393089) for links and icons, dark tiles in deep navy (#221d5c),
   green tints. The mark ("VT" and a handshake in a red ring) is cut from the site's logo.
 - Products: Zar, Ishonch, Koʻmak (microloans, 2–100 mln, 3–12 months, 48–60% / 50–60%),
-  Imkoniyat (20 mln, 36 months, 0.15% a day ≈ 55%), Mikrokredit (business, 10–300 mln, 6–48
-  months). Leasing is for companies and stays out. Products can now have their own minimum sum
+  Imkoniyat (20 mln, 36 months, 0.15% a day ≈ 55%). Mikrokredit and leasing stay out (user). Products can now have their own minimum sum
   and shortest term; more than three product chips in the calculator scroll sideways.
 - Contacts: +998 73 529 14 34, vodiymko@mail.ru, head office in Buvayda, Mon–Fri 9:00–18:00,
   20 branches in seven regions. No Telegram or Instagram on the site.
-- Welcome says "100 000 000 soʻmgacha mikroqarz" (Mikrokredit's 300 mln is business).
+- Welcome says "100 000 000 soʻmgacha mikroqarz".
 - **URLs:** each brand lives under its own path, `/fortuna/...` and `/vodiy/...`, so a screen
   only one brand has goes into that brand's routes. A bare `/` (or an old path without a brand)
   moves under the brand last used, else `VITE_BRAND`.
@@ -34,7 +33,8 @@ limits on the welcome card come from fortunabiznes.uz: Rivoj up to 50 mln, Tezko
   `/{brand}/`. Each brand keeps its own sign-in, PIN and settings.
 - **Empty states** have a picture per brand: Fortuna's logo bars lifting out of an empty tray;
   Vodiy's empty card in a green valley with a sprout and the logo's ring as the sun.
-- The sample borrower has no loans in Vodiy yet.
+- Sample borrower (90 123 45 67): a running Zar (30 mln, 12 months, 4 paid) and a closed
+  Imkoniyat, both on Uzcard 4417.
 ## Sign-in
 
 One entry, no separate sign-up: the phone number decides.
@@ -155,8 +155,8 @@ glass bar floats over the screen; the active tab is a red tint with red text.
   then the SMS code sent to the phone the card is tied to; the card is saved once the code fits,
   `000000` is the wrong code in the mock).
 - **Sozlamalar**: Xavfsizlik (change PIN: current, new, again; Face ID or fingerprint, one at a
-  time, confirmed by the phone), Til. No theme setting (user decision). The push and SMS settings
-  screen exists (`/profile/notifications`) but nothing links to it now.
+  time, confirmed by the phone), Til. No theme setting (user decision). There are no push or SMS
+  settings (user: removed).
 - **Yordam**: Savol-javoblar (accordion, then a link to the chat), Yordam chati (operator, quick
   topics, input, and photos: up to five at a time, shown as thumbnails before sending, opened full
   screen on tap; sample replies), Kontaktlar (the brand's phones, email, Telegram, Instagram, site,

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { BRAND, type Product } from '@/shared/config/brand'
+import { BRAND, type BrandId, type Product } from '@/shared/config/brand'
 
 /** A loan the borrower took. Its schedule is worked out from the sum, rate and term. */
 export type Loan = {
@@ -107,44 +107,72 @@ export const productOf = (loan: Pick<Loan, 'productId'>) =>
   BRAND.products.find((product) => product.id === loan.productId)
 
 // Sample loans by the borrower's passport, which stays when the phone number changes. The
-// registered sample borrower (90 123 45 67, AB1234567) has one running and one closed; anyone
-// new has none. Replace with the API.
+// registered sample borrower (90 123 45 67, AB1234567) has loans in each brand; anyone new has
+// none. Replace with the API.
 const today = new Date()
 const monthsAgo = (n: number, day: number) =>
   new Date(today.getFullYear(), today.getMonth() - n, day)
-// Fortuna's products only; the Vodiy sample borrower starts with no loans for now
-const SAMPLES: Record<string, Loan[]> =
-  BRAND.id !== 'fortuna'
-    ? {}
-    : {
-        AB1234567: [
-          {
-            id: 'l1',
-            number: 'FB-2026-004512',
-            productId: 'tezkor',
-            amount: 24_000_000,
-            rate: 47,
-            term: 18,
-            issuedAt: monthsAgo(5, 3),
-            payDay: 5,
-            card: { brand: 'humo', last4: '1671' },
-            paidCount: 5,
-          },
-          {
-            id: 'l2',
-            number: 'FB-2025-001377',
-            productId: 'ishonch',
-            amount: 8_000_000,
-            rate: 54,
-            term: 12,
-            issuedAt: monthsAgo(19, 10),
-            payDay: 10,
-            card: { brand: 'humo', last4: '1671' },
-            paidCount: 12,
-            closedAt: monthsAgo(7, 8),
-          },
-        ],
-      }
+const SAMPLES_BY_BRAND: Record<BrandId, Record<string, Loan[]>> = {
+  fortuna: {
+    AB1234567: [
+      {
+        id: 'l1',
+        number: 'FB-2026-004512',
+        productId: 'tezkor',
+        amount: 24_000_000,
+        rate: 47,
+        term: 18,
+        issuedAt: monthsAgo(5, 3),
+        payDay: 5,
+        card: { brand: 'humo', last4: '1671' },
+        paidCount: 5,
+      },
+      {
+        id: 'l2',
+        number: 'FB-2025-001377',
+        productId: 'ishonch',
+        amount: 8_000_000,
+        rate: 54,
+        term: 12,
+        issuedAt: monthsAgo(19, 10),
+        payDay: 10,
+        card: { brand: 'humo', last4: '1671' },
+        paidCount: 12,
+        closedAt: monthsAgo(7, 8),
+      },
+    ],
+  },
+  vodiy: {
+    AB1234567: [
+      {
+        id: 'v1',
+        number: 'VT-2026-010274',
+        productId: 'zar',
+        amount: 30_000_000,
+        rate: 48,
+        term: 12,
+        issuedAt: monthsAgo(4, 12),
+        payDay: 15,
+        card: { brand: 'uzcard', last4: '4417' },
+        paidCount: 4,
+      },
+      {
+        id: 'v2',
+        number: 'VT-2025-006118',
+        productId: 'imkoniyat',
+        amount: 12_000_000,
+        rate: 55,
+        term: 9,
+        issuedAt: monthsAgo(14, 2),
+        payDay: 5,
+        card: { brand: 'uzcard', last4: '4417' },
+        paidCount: 9,
+        closedAt: monthsAgo(5, 4),
+      },
+    ],
+  },
+}
+const SAMPLES = SAMPLES_BY_BRAND[BRAND.id]
 
 const NONE: Loan[] = []
 const listeners = new Set<() => void>()

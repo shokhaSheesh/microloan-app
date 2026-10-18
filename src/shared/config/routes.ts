@@ -16,7 +16,6 @@ export const ROUTES = {
   notifications: '/notifications',
   cards: '/profile/cards',
   security: '/profile/security',
-  notifySettings: '/profile/notifications',
   language: '/profile/language',
   faq: '/profile/faq',
   chat: '/profile/chat',

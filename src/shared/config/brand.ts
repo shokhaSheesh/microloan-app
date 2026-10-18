@@ -163,7 +163,6 @@ const BRANDS: Record<BrandId, Brand> = {
     id: 'vodiy',
     name: 'Vodiy Taraqqiyot',
     kind: { uz: 'Mikromoliya tashkiloti', ru: 'Микрофинансовая организация' },
-    // Microloans go to 100 mln; Mikrokredit's 300 mln is for business
     maxAmount: 100_000_000,
     phone: '735291434',
     // Placeholder until Vodiy gives its STIR
@@ -215,7 +214,7 @@ const BRANDS: Record<BrandId, Brand> = {
         ]),
       ],
     },
-    // From vodiytaraqqiyot.uz, "Kreditlar"; leasing is for companies and stays out of the app
+    // From vodiytaraqqiyot.uz, "Kreditlar": the microloans only (user: no Mikrokredit or leasing)
     products: [
       {
         id: 'zar',
@@ -271,20 +270,6 @@ const BRANDS: Record<BrandId, Brand> = {
         // 0.15% a day on the site
         rate: [55, 55],
         termMax: 36,
-      },
-      {
-        id: 'mikrokredit',
-        name: 'Mikrokredit',
-        kind: { uz: 'Tadbirkorlar uchun', ru: 'Для предпринимателей' },
-        for: {
-          uz: 'Biznesni rivojlantirish uchun, 3 oy imtiyozli davr',
-          ru: 'На развитие бизнеса, 3 месяца льготного периода',
-        },
-        min: 10_000_000,
-        max: 300_000_000,
-        rate: [48, 60],
-        termMin: 6,
-        termMax: 48,
       },
     ],
   },

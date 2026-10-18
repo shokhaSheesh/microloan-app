@@ -10,7 +10,6 @@ const KEYS = {
   biometric: key('biometric'),
   user: key('user'),
   onboarded: key('onboarded'),
-  notify: key('notify'),
 }
 
 /** How the borrower unlocks the app besides the PIN. */
@@ -51,18 +50,6 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-/** The kinds of message, each on or off for push and SMS. */
-export const NOTIFY_KEYS = ['payments', 'application', 'news'] as const
-export type Notify = Record<`${(typeof NOTIFY_KEYS)[number]}.${'push' | 'sms'}`, boolean>
-const DEFAULT_NOTIFY: Notify = {
-  'payments.push': true,
-  'payments.sms': true,
-  'application.push': true,
-  'application.sms': false,
-  'news.push': true,
-  'news.sms': false,
-}
-
 export const PIN_LENGTH = 4
 /** Wrong PINs in a row before the app asks to sign in by phone again. */
 export const PIN_ATTEMPTS = 5
@@ -82,15 +69,6 @@ export const session = {
     }
   },
   setBorrower: (borrower: Borrower) => write(KEYS.user, JSON.stringify(borrower)),
-  /** Which messages the borrower gets; all on until turned off. */
-  notify: (): Notify => {
-    try {
-      return { ...DEFAULT_NOTIFY, ...JSON.parse(read(KEYS.notify) ?? '{}') }
-    } catch {
-      return DEFAULT_NOTIFY
-    }
-  },
-  setNotify: (next: Notify) => write(KEYS.notify, JSON.stringify(next)),
   /** The intro slides were seen on this phone. */
   onboarded: () => read(KEYS.onboarded) === '1',
   setOnboarded: () => write(KEYS.onboarded, '1'),

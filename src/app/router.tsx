@@ -15,7 +15,6 @@ import { ChatPage } from '@/features/profile/pages/ChatPage'
 import { ContactsPage } from '@/features/profile/pages/ContactsPage'
 import { FaqPage } from '@/features/profile/pages/FaqPage'
 import { LanguagePage } from '@/features/profile/pages/LanguagePage'
-import { NotifySettingsPage } from '@/features/profile/pages/NotifySettingsPage'
 import { PersonalPage } from '@/features/profile/pages/PersonalPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { SecurityPage } from '@/features/profile/pages/SecurityPage'
@@ -46,7 +45,6 @@ export const router = createBrowserRouter(
             { path: ROUTES.notifications, element: <NotificationsPage /> },
             { path: ROUTES.cards, element: <CardsPage /> },
             { path: ROUTES.security, element: <SecurityPage /> },
-            { path: ROUTES.notifySettings, element: <NotifySettingsPage /> },
             { path: ROUTES.language, element: <LanguagePage /> },
             { path: ROUTES.faq, element: <FaqPage /> },
             { path: ROUTES.chat, element: <ChatPage /> },

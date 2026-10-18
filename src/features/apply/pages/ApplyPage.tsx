@@ -76,7 +76,7 @@ export function ApplyPage() {
           // Up to three fit side by side; more scroll sideways
           className={cn(
             BRAND.products.length > 3
-              ? '-mx-5 flex gap-2 overflow-x-auto px-5 [&>*]:w-[30%] [&>*]:shrink-0'
+              ? '-mx-5 flex shrink-0 gap-2 overflow-x-auto px-5 [&>*]:w-[30%] [&>*]:shrink-0'
               : 'grid grid-cols-3 gap-2',
           )}
         >
