@@ -22,11 +22,11 @@ Today in `src/features/apply/api/mockApply.ts` — assumptions, not from the bra
 
 ## Contract and payments (per brand) — built 2026-10-18 in the admin at /{brand}/contract
 - Payment day of the month (now the 5th) and how the first one is chosen
-- Late-payment penalty (peni) for microloans, if the client wants it
+- Late-payment penalty (peni): not built — user removed the section from Shartnoma va toʻlov (2026-10-18)
 - Early repayment rules: allowed after N days, partial minimum, fee if any
 - Offer (oferta) PDF per language — like Hujjatlar
 - Cards accepted (Uzcard, Humo)
 
 ## Content
 - Intro slides — done in Tanishtiruv (Fortuna / Vodiy tabs)
-- Support phone, FAQ, chat replies, contacts per brand
+- Support phone, FAQ, chat replies, contacts per brand (Yordam chati and Tayyor javoblar built in the admin per brand, 2026-10-18)
