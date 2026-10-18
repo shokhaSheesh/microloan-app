@@ -9,8 +9,9 @@ Today the app still reads `src/shared/config/brand.ts`; switch to the API when i
 - Name, kind (UZ/RU), who it is for (UZ/RU), on/off, order
 - Smallest and largest sum, sum step (now 1 000 000 / product max / 500 000)
 - Terms offered (now 3, 6, 9, 12, 18, 24, 36 up to the product's longest)
-- Yearly rate per term band (now: lower rate up to 12 months, higher beyond — an assumption;
-  the site gives only ranges like 49–54%)
+- Yearly rate: built in the admin as a table — one rate, by term, by sum bands, or both — with
+  the exact rate per case. The app's `rateFor` (lower up to 12 months, higher beyond) should be
+  replaced by that table's `rateOf(product, amount, term)` once the API serves it.
 
 ## Decision rules (per brand)
 Today in `src/features/apply/api/mockApply.ts` — assumptions, not from the brand.
