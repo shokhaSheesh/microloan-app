@@ -13,6 +13,9 @@ export const ROUTES = {
   profile: '/profile',
 } as const
 
+/** Toʻlovlar with one loan's payment sheet open. */
+export const payPath = (loanId: string) => `/payments?pay=${loanId}`
+
 /** One loan's page. */
 export const loanPath = (id: string) => `/loans/${id}`
 

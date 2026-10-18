@@ -9,7 +9,7 @@ import {
   type InstallmentState,
 } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
-import { ROUTES } from '@/shared/config/routes'
+import { payPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
@@ -54,7 +54,7 @@ export function LoanPage() {
       .filter((item) => item.n <= loan.paidCount)
       .map((item) => ({
         key: `m${item.n}`,
-        at: item.due,
+        at: loan.paidOn?.[item.n] ?? item.due,
         amount: item.amount,
         label: t('history.monthly', { n: String(item.n) }),
       })),
@@ -111,7 +111,7 @@ export function LoanPage() {
                     </span>
                     <span className="text-lg font-bold tabular-nums">{formatSum(next.amount)}</span>
                   </div>
-                  <Button size="sm" className="px-5!" onClick={() => navigate(ROUTES.payments)}>
+                  <Button size="sm" className="px-5!" onClick={() => navigate(payPath(loan.id))}>
                     {t('home.loan.pay')}
                   </Button>
                 </div>

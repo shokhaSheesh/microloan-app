@@ -20,6 +20,8 @@ export type Loan = {
   /** Set when a payment is late. */
   overdueSince?: Date
   closedAt?: Date
+  /** When a monthly payment was made in the app, by its number; others count as paid on the day. */
+  paidOn?: Record<number, Date>
   /** Money paid ahead of the schedule. A partial one lowers the payments after it. */
   prepayments?: Prepayment[]
 }

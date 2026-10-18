@@ -96,3 +96,15 @@ glass bar floats over the screen; the active tab is a red tint with red text.
 - **Early repayment** sheet: "Toʻliq yopish" (principal left plus this month's interest so far)
   or "Qisman" (from 100 000; shows how the monthly payment drops; the end date stays). Taken from
   the loan's card. Full closes the loan.
+
+## Toʻlovlar
+
+- **Toʻlash kerak**: each running loan's next payment (product, "dd.mm gacha", sum) with
+  "Toʻlash"; red with an alert icon when overdue. A note says the sum is taken automatically on
+  the day. "Toʻlash" on Asosiy and on a loan's page opens the same sheet (`/payments?pay=<id>`).
+- **Pay sheet**: the sum, which payment of how many, the due date, and the card to pay from (the
+  loan's own card first). The payment is dated the day it is made.
+- **Kartalarim**: dark card tiles (brand, last four, expiry). A card a running loan uses shows
+  "Qarzga ulangan" and cannot be removed; others have a delete key. "Karta qoʻshish": number and
+  expiry. A card typed during an application is kept here.
+- **Toʻlovlar tarixi**: every payment on every loan, newest first, under month headings.

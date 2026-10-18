@@ -12,7 +12,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND, type Product } from '@/shared/config/brand'
-import { applyPath, loanPath, ROUTES } from '@/shared/config/routes'
+import { applyPath, loanPath, payPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
@@ -197,7 +197,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
               </span>
               <span className="text-lg font-bold tabular-nums">{formatSum(next.amount)}</span>
             </div>
-            <Button size="sm" className="px-5!" onClick={() => navigate(ROUTES.payments)}>
+            <Button size="sm" className="px-5!" onClick={() => navigate(payPath(loan.id))}>
               {t('home.loan.pay')}
             </Button>
           </div>

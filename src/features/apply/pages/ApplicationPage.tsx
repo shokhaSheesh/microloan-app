@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { setDraft, useDraft } from '@/entities/apply/draft'
+import { addCard } from '@/entities/cards/cards'
 import { addLoan, loansOf, quote, rateFor, type Loan } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
@@ -108,6 +109,8 @@ export function ApplicationPage() {
   const pay = async () => {
     setStep('payout')
     await payOut()
+    // A card typed here is kept for later payments
+    if (!useSaved) addCard(borrower.phone, { ...card, expiry: cardExpiry })
     addLoan(borrower.phone, {
       id: `l${stamp()}`,
       number: `FB-${today.getFullYear()}-${String(stamp()).slice(-6)}`,
