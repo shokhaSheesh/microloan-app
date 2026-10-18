@@ -13,14 +13,14 @@ Today the app still reads `src/shared/config/brand.ts`; switch to the API when i
   the exact rate per case. The app's `rateFor` (lower up to 12 months, higher beyond) should be
   replaced by that table's `rateOf(product, amount, term)` once the API serves it.
 
-## Decision rules (per brand)
+## Decision rules (per brand) — built 2026-10-18 in the admin at /{brand}/decision
 Today in `src/features/apply/api/mockApply.ts` — assumptions, not from the brand.
 - Largest monthly payment as a share of income (now 50%)
 - Counter-offer on/off, smallest sum worth offering (now 1 000 000)
 - How long an offer stays valid (now 3 days)
 - Scoring hand-off: same idea as Birzum's Tekshiruv rules (score lines, penalties)
 
-## Contract and payments (per brand)
+## Contract and payments (per brand) — built 2026-10-18 in the admin at /{brand}/contract
 - Payment day of the month (now the 5th) and how the first one is chosen
 - Late-payment penalty (peni) for microloans, if the client wants it
 - Early repayment rules: allowed after N days, partial minimum, fee if any
