@@ -18,7 +18,7 @@ Today in `src/features/apply/api/mockApply.ts` — assumptions, not from the bra
 - Largest monthly payment as a share of income (now 50%)
 - Counter-offer on/off, smallest sum worth offering (now 1 000 000)
 - How long an offer stays valid (now 3 days)
-- Scoring hand-off: same idea as Birzum's Tekshiruv rules (score lines, penalties)
+- The rules decide every ariza by themselves: no manual admin review (user, 2026-10-20)
 
 ## Contract and payments (per brand) — built 2026-10-18 in the admin at /{brand}/contract
 - Payment day of the month (now the 5th) and how the first one is chosen
