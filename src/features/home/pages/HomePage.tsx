@@ -3,34 +3,39 @@ import {
   CalendarDays,
   ChevronRight,
   CircleAlert,
+  Clock,
   CreditCard,
+  FileClock,
   Headset,
-  Zap,
+  Layers,
+  Wallet,
+  type LucideIcon,
 } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { isOffer, isPending, useArizalar, type Ariza } from '@/entities/applications/applications'
 import { useNotifications } from '@/entities/notifications/notifications'
 import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
-import { BRAND, type Product } from '@/shared/config/brand'
-import { applyPath, loanPath, payPath, ROUTES } from '@/shared/config/routes'
+import { BRAND } from '@/shared/config/brand'
+import { loanPath, loansPath, payPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
-import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { BrandMark } from '@/shared/ui/BrandMark'
 import { Button } from '@/shared/ui/Button'
 import { Section } from '@/shared/ui/Section'
-
-const millions = (sum: number) => `${sum / 1_000_000}`
-const rateText = ([from, to]: [number, number]) => (from === to ? `${from}%` : `${from}–${to}%`)
+import { BannerCarousel } from '../components/BannerCarousel'
 
 /**
- * Asosiy. With a running loan: what is left and the next payment first, with "Toʻlash", then
- * quick actions. Without one: the offer and "Qarz olish", the products, how it works.
+ * Asosiy, top to bottom: an ariza still in play (being checked, or an offer to sign); the
+ * running loan with "Toʻlash", or the offer with "Qarz olish"; four quick actions; the banners;
+ * and, before the first loan, how it works. The quick actions show in both cases, and both
+ * have Kreditlar, so the products are always one tap away now that banners took their place.
  */
 export function HomePage() {
   const { t } = useI18n()
   const borrower = useBorrower()
   const loans = useLoans(borrower?.passport)
+  const pending = useArizalar(borrower?.passport).find((item) => isPending(item.status))
   const unread = useNotifications(borrower?.passport).some((item) => !item.read)
   if (!borrower || !session.hasPin()) return <Navigate to={ROUTES.auth} replace />
   const active = loans.find((loan) => !loan.closedAt)
@@ -64,41 +69,29 @@ export function HomePage() {
         </Link>
       </header>
 
+      {pending && <PendingAriza ariza={pending} />}
+
       {active ? <ActiveLoan loan={active} /> : <Offer />}
 
-      {active && (
-        <div className="grid grid-cols-4 gap-2">
-          {(
-            [
-              [CalendarDays, 'home.action.schedule', loanPath(active.id)],
-              [Zap, 'home.action.early', loanPath(active.id)],
-              [CreditCard, 'home.action.cards', ROUTES.cards],
-              [Headset, 'home.action.support', ROUTES.chat],
-            ] as const
-          ).map(([Icon, label, to]) => (
-            <Link
-              key={label}
-              to={to}
-              className="flex flex-col items-center gap-2 text-center text-xs leading-tight font-medium"
-            >
-              <span className="grid size-14 place-items-center rounded-card border border-line bg-canvas text-brand">
-                <Icon size={24} />
-              </span>
-              {t(label)}
-            </Link>
-          ))}
-        </div>
-      )}
+      <QuickActions
+        actions={
+          active
+            ? [
+                [CalendarDays, 'home.action.schedule', loanPath(active.id)],
+                [Wallet, 'home.action.pay', payPath(active.id)],
+                [Layers, 'home.action.credits', ROUTES.credits],
+                [Headset, 'home.action.support', ROUTES.chat],
+              ]
+            : [
+                [Layers, 'home.action.credits', ROUTES.credits],
+                [FileClock, 'home.action.applications', loansPath('applications')],
+                [CreditCard, 'home.action.cards', ROUTES.cards],
+                [Headset, 'home.action.support', ROUTES.chat],
+              ]
+        }
+      />
 
-      <Section title={t(active ? 'home.more' : 'home.products')}>
-        <ul className="flex flex-col gap-3">
-          {BRAND.products.map((product) => (
-            <li key={product.id}>
-              <ProductCard product={product} />
-            </li>
-          ))}
-        </ul>
-      </Section>
+      <BannerCarousel />
 
       {!active && (
         <Section title={t('home.how')}>
@@ -127,7 +120,6 @@ export function HomePage() {
 /** The running loan on a dark card: what is left, how far along, and the next payment. */
 function ActiveLoan({ loan }: { loan: Loan }) {
   const { t } = useI18n()
-  const navigate = useNavigate()
   const { next, remaining, principalLeft, paid, total } = progressOf(loan)
   const product = productOf(loan)
   const late = !!loan.overdueSince
@@ -166,7 +158,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
         <div className="flex flex-col gap-1.5">
           <div className="h-2 overflow-hidden rounded-full bg-white/15">
             <div
-              className="h-full rounded-full bg-accent-500"
+              className="h-full rounded-full bg-white"
               style={{ width: `${(paid / total) * 100}%` }}
             />
           </div>
@@ -182,9 +174,12 @@ function ActiveLoan({ loan }: { loan: Loan }) {
               </span>
               <span className="text-lg font-bold tabular-nums">{formatSum(next.amount)}</span>
             </div>
-            <Button size="sm" className="px-5!" onClick={() => navigate(payPath(loan.id))}>
+            <Link
+              to={payPath(loan.id)}
+              className="grid h-10 place-items-center rounded-control bg-white px-5 text-sm font-semibold text-primary-pressed active:bg-neutral-100"
+            >
               {t('home.loan.pay')}
-            </Button>
+            </Link>
           </div>
         )}
       </div>
@@ -215,40 +210,49 @@ function Offer() {
   )
 }
 
-/** One product: its name and kind, who it is for, and its three numbers. */
-function ProductCard({ product }: { product: Product }) {
-  const { t, tl } = useI18n()
-  const facts = [
-    t('home.product.max', { sum: millions(product.max) }),
-    t('home.product.rate', { rate: rateText(product.rate) }),
-    t('home.product.term', { months: String(product.termMax) }),
-  ]
+type Action = readonly [LucideIcon, Parameters<ReturnType<typeof useI18n>['t']>[0], string]
+
+/** Four round-cornered buttons under the card. */
+function QuickActions({ actions }: { actions: Action[] }) {
+  const { t } = useI18n()
+  return (
+    <nav aria-label={t('home.actions')} className="grid grid-cols-4 gap-2">
+      {actions.map(([Icon, label, to]) => (
+        <Link
+          key={label}
+          to={to}
+          className="flex flex-col items-center gap-2 text-center text-xs leading-tight font-medium"
+        >
+          <span className="grid size-14 place-items-center rounded-card border border-line bg-canvas text-brand">
+            <Icon size={24} />
+          </span>
+          {t(label)}
+        </Link>
+      ))}
+    </nav>
+  )
+}
+
+/** An ariza still in play: being checked, or an offer waiting for the signature. Opens Arizalar. */
+function PendingAriza({ ariza }: { ariza: Ariza }) {
+  const { t } = useI18n()
+  const product = BRAND.products.find((item) => item.id === ariza.productId)
+  const offer = isOffer(ariza.status)
   return (
     <Link
-      to={applyPath(product.id)}
-      className="flex flex-col gap-3 rounded-card border border-line bg-canvas p-4 active:bg-neutral-100"
+      to={loansPath('applications')}
+      className="flex items-center gap-3 rounded-card border border-line bg-canvas p-4 active:bg-neutral-100"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-lg font-bold">{product.name}</span>
-          <span className="text-sm font-medium text-brand">{tl(product.kind)}</span>
-        </div>
-        <ChevronRight size={20} className="mt-1 shrink-0 text-ink-subtle" />
-      </div>
-      <p className="text-sm text-ink-muted">{tl(product.for)}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {facts.map((fact, i) => (
-          <span
-            key={fact}
-            className={cn(
-              'rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums',
-              i === 0 ? 'bg-accent-200 text-brand' : 'bg-surface text-ink-muted',
-            )}
-          >
-            {fact}
-          </span>
-        ))}
-      </div>
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-200 text-brand">
+        <Clock size={20} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="font-semibold">{t(offer ? 'home.ariza.offer' : 'home.ariza.review')}</span>
+        <span className="truncate text-sm text-ink-muted tabular-nums">
+          {product?.name} · {formatSum(ariza.offered ?? ariza.amount)} · № {ariza.number}
+        </span>
+      </span>
+      <ChevronRight size={20} className="shrink-0 text-ink-subtle" />
     </Link>
   )
 }

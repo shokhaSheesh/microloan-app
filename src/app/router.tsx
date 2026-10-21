@@ -4,6 +4,7 @@ import { ApplyPage } from '@/features/apply/pages/ApplyPage'
 import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { PinSetupPage } from '@/features/auth/pages/PinSetupPage'
 import { HomePage } from '@/features/home/pages/HomePage'
+import { CreditsPage } from '@/features/home/pages/CreditsPage'
 import { LoanPage } from '@/features/loans/pages/LoanPage'
 import { LoansPage } from '@/features/loans/pages/LoansPage'
 import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
@@ -22,6 +23,7 @@ import { BRAND_BASE } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { DeviceLayout } from './layouts/DeviceLayout'
 import { SignedInLayout } from './layouts/SignedInLayout'
+import { MyContactsPage } from '@/features/contacts/pages/MyContactsPage'
 import { TabLayout } from './layouts/TabLayout'
 import { tabs } from './tabs'
 
@@ -39,6 +41,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.onboarding, element: <OnboardingPage /> },
             { path: ROUTES.apply, element: <ApplyPage /> },
             { path: ROUTES.application, element: <ApplicationPage /> },
+            { path: ROUTES.credits, element: <CreditsPage /> },
             { path: ROUTES.loan, element: <LoanPage /> },
             { path: ROUTES.personal, element: <PersonalPage /> },
             { path: ROUTES.changePhone, element: <ChangePhonePage /> },
@@ -49,6 +52,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.faq, element: <FaqPage /> },
             { path: ROUTES.chat, element: <ChatPage /> },
             { path: ROUTES.contacts, element: <ContactsPage /> },
+            { path: ROUTES.myContacts, element: <MyContactsPage /> },
             {
               element: <TabLayout tabs={tabs} />,
               children: [

@@ -35,7 +35,8 @@
   --color-on-primary: #ffffff;
   /* Links and icons: a deeper Fortuna blue, readable on white */
   --color-brand: #0081bd;
-  --color-tile: #18191d;
+  /* Dark cards (the loan, the offer): a deep Fortuna blue, chosen by the client over black */
+  --color-tile: #00699a;
   --color-on-tile: #ffffff;
 
   /* Surfaces and text: grey screen, white bordered cards */

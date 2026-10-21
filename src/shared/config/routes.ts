@@ -7,6 +7,8 @@ export const ROUTES = {
   loans: '/loans',
   loan: '/loans/:id',
   apply: '/apply',
+  /** Every loan product, from the Kreditlar quick action. */
+  credits: '/credits',
   /** The application after the calculator, full screen without the tab bar. */
   application: '/apply/new',
   payments: '/payments',
@@ -20,14 +22,23 @@ export const ROUTES = {
   faq: '/profile/faq',
   chat: '/profile/chat',
   contacts: '/profile/contacts',
+  /** The borrower's own contacts, picked on every ariza. */
+  myContacts: '/profile/my-contacts',
 } as const
 
 /** Toʻlovlar with one loan's payment sheet open. */
 export const payPath = (loanId: string) => `/payments?pay=${loanId}`
 
+/** Qarzlarim on a tab: its running loans, its arizalar or its closed loans. */
+export const loansPath = (tab?: 'applications' | 'closed') => (tab ? `/loans?tab=${tab}` : '/loans')
+
 /** One loan's page. */
 export const loanPath = (id: string) => `/loans/${id}`
 
 /** "Qarz olish", started from a product's card. */
+/** Kreditlar, optionally just some products (a banner's). */
+export const creditsPath = (ids?: string[]) =>
+  ids?.length ? `/credits?ids=${ids.join(',')}` : '/credits'
+
 export const applyPath = (productId?: string) =>
   productId ? `/apply?product=${productId}` : '/apply'

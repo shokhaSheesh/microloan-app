@@ -10,8 +10,18 @@ import {
   Plus,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { setDraft, useDraft } from '@/entities/apply/draft'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  addAriza,
+  arizaNumber,
+  arizalarOf,
+  isOffer,
+  OFFER_DAYS,
+  updateAriza,
+} from '@/entities/applications/applications'
+import { setDraft, useDraft, type Draft } from '@/entities/apply/draft'
+import { useContacts } from '@/entities/contacts/contacts'
+import { ContactSheet } from '@/features/contacts/components/ContactSheet'
 import { cardText, useCards } from '@/entities/cards/cards'
 import { AddCardSheet } from '@/features/cards/components/AddCardSheet'
 import { addLoan, quote, rateFor, type Loan } from '@/entities/loans/loans'
@@ -29,32 +39,47 @@ import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { NumberField } from '@/shared/ui/NumberField'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
-import { Select } from '@/shared/ui/Select'
 import { TextField } from '@/shared/ui/TextField'
 import { decide, payOut, sendSignCode, verifySignCode, type Decision } from '../api/mockApply'
+import { RefuseSheet } from '../components/RefuseSheet'
 import { ScheduleSheet } from '../components/ScheduleSheet'
 
 type Step = 'details' | 'review' | 'decision' | 'contract' | 'sign' | 'payout' | 'done'
-const PURPOSES = ['business', 'repair', 'education', 'health', 'family', 'other'] as const
-type Purpose = (typeof PURPOSES)[number]
+/** Contacts every ariza must name, so the brand can reach someone. */
+const MIN_CONTACTS = 2
 const PAY_DAY = 5
 /** A unique number for the new loan, until the API issues one. */
 const stamp = () => Date.now()
 const CHECKS = ['myid', 'history', 'load'] as const
 
 /**
- * Qarz olish after the calculator: the application (purpose, income, work, the card to receive
+ * Qarz olish after the calculator: the application (income, work, at least two contacts, the card to receive
  * the money, consent to the credit check), the review, the decision (approved, a smaller
  * counter-offer, or declined), the contract, signing by SMS code, and the payout to the card.
+ * Every step is kept on the ariza, which Qarzlarim → Arizalar lists. An offer left with
+ * "Keyinroq" is opened again from there (`?ariza=<id>`), straight at the decision.
  */
 export function ApplicationPage() {
   const { t, tl } = useI18n()
   const navigate = useNavigate()
-  const draft = useDraft()
   const borrower = useBorrower()
-  const [step, setStep] = useState<Step>('details')
+  const [params] = useSearchParams()
+  // An offer opened again from Arizalar: its own sum and term stand in for the draft
+  const [resumed] = useState(() => {
+    const found = arizalarOf(borrower?.passport).find((item) => item.id === params.get('ariza'))
+    return found && isOffer(found.status) && found.offered ? found : undefined
+  })
+  const saved = useDraft()
+  const draft: Draft | null = resumed
+    ? { productId: resumed.productId, amount: resumed.amount, term: resumed.term }
+    : saved
+  const [arizaId, setArizaId] = useState<string | undefined>(resumed?.id)
+  const [step, setStep] = useState<Step>(resumed ? 'decision' : 'details')
   const [submitted, setSubmitted] = useState(false)
-  const [purpose, setPurpose] = useState<Purpose | null>(null)
+  const contacts = useContacts(borrower?.passport)
+  const [contactIds, setContactIds] = useState<string[]>([])
+  const [addingContact, setAddingContact] = useState(false)
+  const [refusing, setRefusing] = useState(false)
   const [income, setIncome] = useState<number | null>(null)
   const [work, setWork] = useState('')
   // Picked from the linked cards; "Karta qoʻshish" links a new one and picks it
@@ -62,7 +87,9 @@ export function ApplicationPage() {
   const [cardId, setCardId] = useState<string | undefined>(cards[0]?.id)
   const [addingCard, setAddingCard] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const [decision, setDecision] = useState<Decision | null>(null)
+  const [decision, setDecision] = useState<Decision | null>(
+    resumed ? { kind: resumed.status as 'approved' | 'counter', amount: resumed.offered! } : null,
+  )
   const [read, setRead] = useState(false)
   const [schedule, setSchedule] = useState(false)
   const [checked, setChecked] = useState(0)
@@ -88,7 +115,7 @@ export function ApplicationPage() {
   const firstDue = new Date(today.getFullYear(), today.getMonth() + 1, PAY_DAY)
 
   const errors = {
-    purpose: !purpose,
+    contacts: contactIds.length < MIN_CONTACTS,
     income: !income,
     work: !work.trim(),
     card: !picked,
@@ -99,15 +126,54 @@ export function ApplicationPage() {
     if (Object.values(errors).some(Boolean) || !income) return
     setChecked(0)
     setStep('review')
-    setDecision(await decide(draft.amount, rate, draft.term, income))
+    const id = `a${stamp()}`
+    addAriza(borrower.passport, {
+      id,
+      number: arizaNumber(today),
+      productId: product.id,
+      amount: draft.amount,
+      term: draft.term,
+      contactIds,
+      status: 'review',
+      createdAt: today,
+    })
+    setArizaId(id)
+    const result = await decide(draft.amount, rate, draft.term, income)
+    updateAriza(
+      borrower.passport,
+      id,
+      result.kind === 'declined'
+        ? {
+            status: 'declined',
+            // The mock only declines when the payment is too big for the income
+            reason: 'load',
+            reapplyOn: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30),
+          }
+        : {
+            status: result.kind,
+            offered: result.amount,
+            expiresOn: new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate() + OFFER_DAYS,
+            ),
+          },
+    )
+    setDecision(result)
     setStep('decision')
   }
   const pay = async () => {
     setStep('payout')
+    if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'signed' })
     await payOut()
+    const loanId = `l${stamp()}`
+    const number =
+      arizalarOf(borrower.passport).find((item) => item.id === arizaId)?.number ??
+      arizaNumber(today)
+    if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'paidOut', loanId })
     addLoan(borrower.passport, {
-      id: `l${stamp()}`,
-      number: `FB-${today.getFullYear()}-${String(stamp()).slice(-6)}`,
+      id: loanId,
+      number,
       productId: product.id,
       amount,
       rate,
@@ -203,9 +269,19 @@ export function ApplicationPage() {
         onSubmit={() => setStep('contract')}
         footer={
           <div className="flex flex-col gap-1">
-            <Button variant="ghost" block onClick={exit}>
-              {t('decision.later')}
-            </Button>
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                variant="ghost"
+                block
+                className="text-danger!"
+                onClick={() => setRefusing(true)}
+              >
+                {t('refuse.open')}
+              </Button>
+              <Button variant="ghost" block onClick={exit}>
+                {t('decision.later')}
+              </Button>
+            </div>
             <Button type="submit" block>
               {t('decision.toContract')}
             </Button>
@@ -238,6 +314,14 @@ export function ApplicationPage() {
           </span>
         </div>
         <p className="text-center text-sm text-ink-muted">{t('decision.valid')}</p>
+        {refusing && arizaId && (
+          <RefuseSheet
+            owner={borrower.passport}
+            arizaId={arizaId}
+            onClose={() => setRefusing(false)}
+            onRefused={exit}
+          />
+        )}
       </FormScreen>
     )
 
@@ -404,13 +488,6 @@ export function ApplicationPage() {
       </button>
 
       <div className="flex flex-col gap-4">
-        <Select
-          label={t('details.purpose')}
-          options={PURPOSES.map((value) => ({ value, label: t(`details.purpose.${value}`) }))}
-          value={purpose}
-          onChange={setPurpose}
-          error={submitted && errors.purpose ? t('error.required') : undefined}
-        />
         <NumberField
           label={t('details.income')}
           value={income}
@@ -474,6 +551,77 @@ export function ApplicationPage() {
           )}
         </div>
       </section>
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-bold">{t('details.contacts')}</h2>
+          <p className="text-sm text-ink-muted">
+            {t('details.contacts.hint', { count: String(MIN_CONTACTS) })}
+          </p>
+        </div>
+        <div role="group" aria-label={t('details.contacts')} className="flex flex-col gap-2">
+          {contacts.map((contact) => {
+            const on = contactIds.includes(contact.id)
+            return (
+              <button
+                key={contact.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() =>
+                  setContactIds(
+                    on ? contactIds.filter((id) => id !== contact.id) : [...contactIds, contact.id],
+                  )
+                }
+                className={cn(
+                  'flex items-center gap-3 rounded-control border-[1.5px] bg-canvas p-3.5 text-left',
+                  on ? 'border-primary' : 'border-line',
+                )}
+              >
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-medium">
+                    {contact.name} · {t(`relation.${contact.relation}`)}
+                  </span>
+                  <span className="text-sm text-ink-muted tabular-nums">
+                    {formatPhone(contact.phone)}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    'grid size-5 shrink-0 place-items-center rounded-md border-2',
+                    on ? 'border-primary bg-primary text-on-primary' : 'border-neutral-400',
+                  )}
+                >
+                  {on && <Check size={14} strokeWidth={3} />}
+                </span>
+              </button>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => setAddingContact(true)}
+            className={cn(
+              'flex items-center gap-3 rounded-control border-[1.5px] border-dashed bg-canvas p-3.5 text-left font-semibold text-brand',
+              submitted && errors.contacts ? 'border-danger' : 'border-line',
+            )}
+          >
+            <Plus size={20} />
+            {t('myContacts.add')}
+          </button>
+          {submitted && errors.contacts && (
+            <p className="text-sm text-danger">
+              {t('details.contacts.required', { count: String(MIN_CONTACTS) })}
+            </p>
+          )}
+        </div>
+      </section>
+      {addingContact && (
+        <ContactSheet
+          owner={borrower.passport}
+          contact={null}
+          onClose={() => setAddingContact(false)}
+          onSaved={(added) => setContactIds([...contactIds, added.id])}
+        />
+      )}
       {addingCard && (
         <AddCardSheet
           owner={borrower.passport}

@@ -1,4 +1,4 @@
-import { Check, CircleAlert, Download, Zap } from 'lucide-react'
+import { Check, ChevronDown, CircleAlert, Download, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -19,6 +19,7 @@ import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { EarlyRepaySheet } from '../components/EarlyRepaySheet'
+import { InstallmentBreakdown } from '../components/InstallmentBreakdown'
 
 type Tab = 'schedule' | 'history' | 'contract'
 
@@ -42,6 +43,8 @@ export function LoanPage() {
   const loans = useLoans(borrower?.passport)
   const loan = loans.find((item) => item.id === id)
   const [tab, setTab] = useState<Tab>('schedule')
+  // The month opened in the schedule to show what its payment is made of
+  const [openMonth, setOpenMonth] = useState<number | null>(null)
   const [early, setEarly] = useState(false)
   const [today] = useState(() => new Date())
   if (!loan || !borrower) return <Navigate to={ROUTES.loans} replace />
@@ -149,43 +152,60 @@ export function LoanPage() {
           <ol className="flex flex-col rounded-card border border-line bg-canvas px-4">
             {schedule.map((item) => {
               const state = stateOf(loan, item, today)
+              const shown = openMonth === item.n
               return (
-                <li
-                  key={item.n}
-                  className={cn(
-                    'flex items-center gap-3 border-b border-line py-3 last:border-b-0',
-                    (state === 'paid' || state === 'settled') && 'opacity-70',
-                  )}
-                >
-                  <span
+                <li key={item.n} className="border-b border-line last:border-b-0">
+                  <button
+                    type="button"
+                    aria-expanded={shown}
+                    onClick={() => setOpenMonth(shown ? null : item.n)}
                     className={cn(
-                      'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold tabular-nums',
-                      stateLook[state],
+                      'flex w-full items-center gap-3 py-3 text-left',
+                      (state === 'paid' || state === 'settled') && 'opacity-70',
                     )}
                   >
-                    {state === 'paid' ? <Check size={16} strokeWidth={3} /> : item.n}
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="font-medium tabular-nums">{formatDate(item.due)}</span>
                     <span
                       className={cn(
-                        'text-xs',
-                        state === 'overdue' ? 'text-danger' : 'text-ink-muted',
+                        'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold tabular-nums',
+                        stateLook[state],
                       )}
                     >
-                      {t(`loan.state.${state}`)}
+                      {state === 'paid' ? <Check size={16} strokeWidth={3} /> : item.n}
                     </span>
-                  </div>
-                  <span
-                    className={cn(
-                      'tabular-nums',
-                      state === 'next' ? 'font-bold' : 'font-semibold',
-                      state === 'paid' && 'line-through',
-                      state === 'settled' && 'text-ink-subtle',
-                    )}
-                  >
-                    {formatSum(item.amount)}
-                  </span>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="font-medium tabular-nums">{formatDate(item.due)}</span>
+                      <span
+                        className={cn(
+                          'text-xs',
+                          state === 'overdue' ? 'text-danger' : 'text-ink-muted',
+                        )}
+                      >
+                        {t(`loan.state.${state}`)}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        'tabular-nums',
+                        state === 'next' ? 'font-bold' : 'font-semibold',
+                        state === 'paid' && 'line-through',
+                        state === 'settled' && 'text-ink-subtle',
+                      )}
+                    >
+                      {formatSum(item.amount)}
+                    </span>
+                    <ChevronDown
+                      size={18}
+                      className={cn(
+                        'shrink-0 text-ink-subtle transition-transform',
+                        shown && 'rotate-180',
+                      )}
+                    />
+                  </button>
+                  {shown && (
+                    <div className="pb-3">
+                      <InstallmentBreakdown item={item} />
+                    </div>
+                  )}
                 </li>
               )
             })}

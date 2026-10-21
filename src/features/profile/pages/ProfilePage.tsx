@@ -9,9 +9,11 @@ import {
   MessageCircle,
   Phone,
   ShieldCheck,
+  Users,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useContacts } from '@/entities/contacts/contacts'
 import { useCards } from '@/entities/cards/cards'
 import { session, useBorrower } from '@/entities/session/session'
 import { ALL_BRANDS, BRAND, switchBrand } from '@/shared/config/brand'
@@ -35,6 +37,7 @@ export function ProfilePage() {
   const navigate = useNavigate()
   const borrower = useBorrower()
   const cards = useCards(borrower?.passport)
+  const contacts = useContacts(borrower?.passport)
   const [leaving, setLeaving] = useState(false)
   if (!borrower) return null
   const initials = borrower.fullName
@@ -68,6 +71,12 @@ export function ProfilePage() {
             label={t('cards.title')}
             to={ROUTES.cards}
             value={String(cards.length)}
+          />
+          <MenuRow
+            icon={Users}
+            label={t('myContacts.title')}
+            to={ROUTES.myContacts}
+            value={String(contacts.length)}
           />
         </MenuList>
       </Section>
