@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { BRAND, type BrandId, type Product } from '@/shared/config/brand'
+import { BRAND, type BrandId, type PayType, type Product } from '@/shared/config/brand'
 
 /** A loan the borrower took. Its schedule is worked out from the sum, rate and term. */
 export type Loan = {
@@ -12,8 +12,10 @@ export type Loan = {
   rate: number
   term: number
   issuedAt: Date
-  /** Day of the month payments are due. */
+  /** Day of the month payments are due, 1–10, picked on the calculator. */
   payDay: number
+  /** Absent on older loans, which are all annuity. */
+  payType?: PayType
   card: { brand: 'uzcard' | 'humo'; last4: string }
   /** Monthly payments made so far. */
   paidCount: number
@@ -45,26 +47,34 @@ export type Installment = {
 
 const annuity = (principal: number, r: number, n: number) => (principal * r) / (1 - (1 + r) ** -n)
 
+/** The days of the month a borrower can pick for payments. */
+export const PAY_DAYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+export const DEFAULT_PAY_DAY = 5
+
 /**
- * Equal monthly payments (annuity): the same sum each month, interest on what is left. A partial
- * early repayment takes its sum off what is left and spreads the rest over the months that
- * remain, so the monthly payment drops and the end date stays.
+ * The monthly payments, interest on what is left. Annuity: the same sum each month.
+ * Differentiated: the same share of the principal each month plus its interest, so payments fall.
+ * A partial early repayment takes its sum off what is left and spreads the rest over the months
+ * that remain, so the monthly payment drops and the end date stays.
  */
 export function scheduleOf(
-  loan: Pick<Loan, 'amount' | 'rate' | 'term' | 'issuedAt' | 'payDay' | 'prepayments'>,
+  loan: Pick<Loan, 'amount' | 'rate' | 'term' | 'issuedAt' | 'payDay' | 'payType' | 'prepayments'>,
 ) {
   const r = loan.rate / 100 / 12
+  const falling = loan.payType === 'differentiated'
   let left = loan.amount
   let payment = annuity(left, r, loan.term)
+  let share = left / loan.term
   const out: Installment[] = []
   for (let i = 0; i < loan.term && left > 0.5; i++) {
     for (const extra of loan.prepayments ?? []) {
       if (extra.kind !== 'partial' || extra.afterPaid !== i) continue
       left -= extra.amount
       payment = annuity(left, r, loan.term - i)
+      share = left / (loan.term - i)
     }
     const interest = left * r
-    const principal = i === loan.term - 1 ? left : payment - interest
+    const principal = i === loan.term - 1 ? left : falling ? share : payment - interest
     left -= principal
     const due = new Date(loan.issuedAt.getFullYear(), loan.issuedAt.getMonth() + i + 1, loan.payDay)
     out.push({ n: i + 1, due, amount: Math.round(principal + interest), principal, interest })
@@ -262,12 +272,25 @@ export function addLoan(owner: string, loan: Loan) {
 export const rateFor = (product: Product, term: number) =>
   term <= 12 ? product.rate[0] : product.rate[1]
 
-/** Monthly payment, total to pay and the interest in it, for a sum, yearly rate and term. */
-export function quote(amount: number, rate: number, term: number) {
+/**
+ * The first and last monthly payment, the total to pay and the interest in it, for a sum, yearly
+ * rate, term and payment type. Annuity payments are all the same, so first and last match.
+ */
+export function quote(amount: number, rate: number, term: number, payType: PayType = 'annuity') {
   const r = rate / 100 / 12
+  if (payType === 'differentiated') {
+    const share = amount / term
+    const interest = Math.round(amount * r * ((term + 1) / 2))
+    return {
+      monthly: Math.round(share + amount * r),
+      last: Math.round(share * (1 + r)),
+      total: amount + interest,
+      interest,
+    }
+  }
   const monthly = Math.round((amount * r) / (1 - (1 + r) ** -term))
   const total = monthly * term
-  return { monthly, total, interest: total - amount }
+  return { monthly, last: monthly, total, interest: total - amount }
 }
 
 /** The terms a product offers, in months, up to its longest. */

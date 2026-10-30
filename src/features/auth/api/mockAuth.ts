@@ -1,7 +1,10 @@
 // Stand-in for the auth API. One entry for sign-in and sign-up: the phone number decides.
 // - Any 6-digit code works except "000000".
-// - 90 123 45 67 is already registered: after the code it goes straight to a new PIN.
-// - MyID always finds the same invented person after a short wait.
+// - Registered numbers sign in with code + password. Any password works except "wrong1234".
+//   90 123 45 67 is on a known device: straight in.
+//   93 555 44 33 is on a new device: MyID face, then the cards are unlinked.
+//   99 111 22 33 is on a new device and MyID does not confirm the face.
+// - A new number signs up: passport, MyID (always finds the same invented person), password.
 
 import type { Borrower } from '@/entities/session/session'
 
@@ -16,7 +19,29 @@ const REGISTERED: Record<string, Borrower> = {
     birthDate: '12.05.1995',
     address: 'Toshkent sh., Chilonzor tumani, 9-kvartal, 12-uy',
   },
+  '935554433': {
+    fullName: 'Rahimov Sardor Akmal oʻgʻli',
+    firstName: 'Sardor',
+    phone: '935554433',
+    passport: 'AC7654321',
+    birthDate: '03.09.1990',
+    address: 'Toshkent sh., Mirobod tumani, Nukus koʻchasi, 7-uy',
+  },
+  '991112233': {
+    fullName: 'Yoʻldosheva Malika Anvar qizi',
+    firstName: 'Malika',
+    phone: '991112233',
+    passport: 'AD1122334',
+    birthDate: '21.01.1998',
+    address: 'Samarqand sh., Registon koʻchasi, 15-uy',
+  },
 }
+
+/** Phones this account has signed in on before. Mock: only the first sample. */
+const KNOWN_DEVICE = new Set(['901234567'])
+const FACE_FAILS = new Set(['991112233'])
+
+export const WRONG_PASSWORD = 'wrong1234'
 
 export async function sendCode(_phone: string) {
   await delay(700)
@@ -45,6 +70,35 @@ export async function verifyFace(phone: string, passport: string, birthDate: str
     birthDate,
     address: 'Toshkent sh., Yunusobod tumani, 11-mavze, 23-uy',
   } satisfies Borrower
+}
+
+/** Saves the password chosen at sign-up. */
+export async function setPassword(_phone: string, _password: string) {
+  await delay(700)
+}
+
+/** Rejects on a wrong password. Resolves with whether this phone is one the account knows. */
+export async function checkPassword(phone: string, password: string) {
+  await delay(700)
+  if (password === WRONG_PASSWORD) throw new Error('invalid_password')
+  return { knownDevice: KNOWN_DEVICE.has(phone) }
+}
+
+/**
+ * «Parolni unutdingizmi?»: after the SMS code, the new password replaces the old one. Resolves
+ * with whether this phone is one the account knows, as a sign-in does.
+ */
+export async function resetPassword(phone: string, _password: string) {
+  await delay(700)
+  return { knownDevice: KNOWN_DEVICE.has(phone) }
+}
+
+/** A new device: MyID compares the face with the account's. Rejects when it does not match. */
+export async function verifyDeviceFace(phone: string) {
+  await delay(2200)
+  if (FACE_FAILS.has(phone)) throw new Error('face_mismatch')
+  // From now on this phone is known; the owner gets an SMS about the new device
+  KNOWN_DEVICE.add(phone)
 }
 
 /** Another account already signs in with this number. */

@@ -5,6 +5,7 @@ import { AuthPage } from '@/features/auth/pages/AuthPage'
 import { PinSetupPage } from '@/features/auth/pages/PinSetupPage'
 import { HomePage } from '@/features/home/pages/HomePage'
 import { CreditsPage } from '@/features/home/pages/CreditsPage'
+import { ProductTermsPage } from '@/features/home/pages/ProductTermsPage'
 import { LoanPage } from '@/features/loans/pages/LoanPage'
 import { LoansPage } from '@/features/loans/pages/LoansPage'
 import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
@@ -42,6 +43,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.apply, element: <ApplyPage /> },
             { path: ROUTES.application, element: <ApplicationPage /> },
             { path: ROUTES.credits, element: <CreditsPage /> },
+            { path: ROUTES.productTerms, element: <ProductTermsPage /> },
             { path: ROUTES.loan, element: <LoanPage /> },
             { path: ROUTES.personal, element: <PersonalPage /> },
             { path: ROUTES.changePhone, element: <ChangePhonePage /> },

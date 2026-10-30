@@ -1,24 +1,41 @@
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { scheduleOf } from '@/entities/loans/loans'
+import type { PayType } from '@/shared/config/brand'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
 import { InstallmentBreakdown } from '@/features/loans/components/InstallmentBreakdown'
 import { Sheet } from '@/shared/ui/Sheet'
 
-type Props = { open: boolean; onClose: () => void; amount: number; rate: number; term: number }
+type Props = {
+  open: boolean
+  onClose: () => void
+  amount: number
+  rate: number
+  term: number
+  payDay: number
+  payType: PayType
+}
 
 /**
- * Every monthly payment with its date, if the loan were paid out today, due on the 5th. A month
- * opens to show its principal, interest and total.
+ * Every monthly payment with its date, if the loan were paid out today, due on the picked day. A
+ * month opens to show its principal, interest and total.
  */
-export function ScheduleSheet({ open: visible, onClose, amount, rate, term }: Props) {
+export function ScheduleSheet({
+  open: visible,
+  onClose,
+  amount,
+  rate,
+  term,
+  payDay,
+  payType,
+}: Props) {
   const { t } = useI18n()
   const [today] = useState(() => new Date())
   // The month opened to show what its payment is made of
   const [open, setOpen] = useState<number | null>(null)
-  const schedule = scheduleOf({ amount, rate, term, issuedAt: today, payDay: 5 })
+  const schedule = scheduleOf({ amount, rate, term, issuedAt: today, payDay, payType })
   return (
     <Sheet open={visible} onClose={onClose} title={t('apply.schedule')}>
       <ol className="flex flex-col pb-2">

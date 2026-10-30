@@ -24,7 +24,7 @@ import { useContacts } from '@/entities/contacts/contacts'
 import { ContactSheet } from '@/features/contacts/components/ContactSheet'
 import { cardText, useCards } from '@/entities/cards/cards'
 import { AddCardSheet } from '@/features/cards/components/AddCardSheet'
-import { addLoan, quote, rateFor, type Loan } from '@/entities/loans/loans'
+import { addLoan, DEFAULT_PAY_DAY, quote, rateFor, type Loan } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
@@ -47,7 +47,6 @@ import { ScheduleSheet } from '../components/ScheduleSheet'
 type Step = 'details' | 'review' | 'decision' | 'contract' | 'sign' | 'payout' | 'done'
 /** Contacts every ariza must name, so the brand can reach someone. */
 const MIN_CONTACTS = 2
-const PAY_DAY = 5
 /** A unique number for the new loan, until the API issues one. */
 const stamp = () => Date.now()
 const CHECKS = ['myid', 'history', 'load'] as const
@@ -71,7 +70,13 @@ export function ApplicationPage() {
   })
   const saved = useDraft()
   const draft: Draft | null = resumed
-    ? { productId: resumed.productId, amount: resumed.amount, term: resumed.term }
+    ? {
+        productId: resumed.productId,
+        amount: resumed.amount,
+        term: resumed.term,
+        payDay: resumed.payDay ?? DEFAULT_PAY_DAY,
+        payType: resumed.payType ?? 'annuity',
+      }
     : saved
   const [arizaId, setArizaId] = useState<string | undefined>(resumed?.id)
   const [step, setStep] = useState<Step>(resumed ? 'decision' : 'details')
@@ -107,12 +112,12 @@ export function ApplicationPage() {
   const product = BRAND.products.find((item) => item.id === draft.productId)!
   const rate = rateFor(product, draft.term)
   const amount = decision && decision.kind !== 'declined' ? decision.amount : draft.amount
-  const { monthly, total, interest } = quote(amount, rate, draft.term)
+  const { monthly, total, interest } = quote(amount, rate, draft.term, draft.payType)
   const picked = cards.find((item) => item.id === cardId)
   const card: Loan['card'] = picked
     ? { brand: picked.brand, last4: picked.last4 }
     : { brand: 'uzcard', last4: '' }
-  const firstDue = new Date(today.getFullYear(), today.getMonth() + 1, PAY_DAY)
+  const firstDue = new Date(today.getFullYear(), today.getMonth() + 1, draft.payDay)
 
   const errors = {
     contacts: contactIds.length < MIN_CONTACTS,
@@ -133,6 +138,8 @@ export function ApplicationPage() {
       productId: product.id,
       amount: draft.amount,
       term: draft.term,
+      payDay: draft.payDay,
+      payType: draft.payType,
       contactIds,
       status: 'review',
       createdAt: today,
@@ -179,7 +186,8 @@ export function ApplicationPage() {
       rate,
       term: draft.term,
       issuedAt: today,
-      payDay: PAY_DAY,
+      payDay: draft.payDay,
+      payType: draft.payType,
       card,
       paidCount: 0,
     })
@@ -198,7 +206,11 @@ export function ApplicationPage() {
       <InfoRow label={t('apply.amount')} value={formatSum(amount)} />
       <InfoRow label={t('apply.term')} value={t('apply.months', { n: String(draft.term) })} />
       <InfoRow label={t('apply.rate')} value={t('apply.rate.value', { rate: String(rate) })} />
-      <InfoRow label={t('apply.monthly')} value={formatSum(monthly)} />
+      <InfoRow label={t('apply.payType')} value={t(`payType.${draft.payType}`)} />
+      <InfoRow
+        label={t(draft.payType === 'differentiated' ? 'apply.monthly.first' : 'apply.monthly')}
+        value={formatSum(monthly)}
+      />
       <InfoRow label={t('apply.interest')} value={formatSum(interest)} />
       <InfoRow label={t('apply.total')} value={formatSum(total)} />
     </InfoList>
@@ -307,10 +319,13 @@ export function ApplicationPage() {
             {formatSum(amount)}
           </span>
           <span className="text-sm opacity-70">
-            {t('decision.perMonth', {
-              months: String(draft.term),
-              sum: formatSum(monthly),
-            })}
+            {t(
+              draft.payType === 'differentiated' ? 'decision.perMonth.first' : 'decision.perMonth',
+              {
+                months: String(draft.term),
+                sum: formatSum(monthly),
+              },
+            )}
           </span>
         </div>
         <p className="text-center text-sm text-ink-muted">{t('decision.valid')}</p>
@@ -356,7 +371,7 @@ export function ApplicationPage() {
           <InfoRow label={t('contract.borrower')} value={borrower.fullName} />
           <InfoRow
             label={t('contract.payDay')}
-            value={t('contract.payDay.value', { day: String(PAY_DAY) })}
+            value={t('contract.payDay.value', { day: String(draft.payDay) })}
           />
           <InfoRow label={t('contract.first')} value={formatDate(firstDue)} />
           <InfoRow label={t('contract.card')} value={cardText(card)} />
@@ -386,6 +401,8 @@ export function ApplicationPage() {
           amount={amount}
           rate={rate}
           term={draft.term}
+          payDay={draft.payDay}
+          payType={draft.payType}
         />
       </FormScreen>
     )
@@ -478,10 +495,13 @@ export function ApplicationPage() {
             {product.name} · {formatSum(draft.amount)}
           </span>
           <span className="text-sm text-ink-muted tabular-nums">
-            {t('decision.perMonth', {
-              months: String(draft.term),
-              sum: formatSum(quote(draft.amount, rate, draft.term).monthly),
-            })}
+            {t(
+              draft.payType === 'differentiated' ? 'decision.perMonth.first' : 'decision.perMonth',
+              {
+                months: String(draft.term),
+                sum: formatSum(quote(draft.amount, rate, draft.term, draft.payType).monthly),
+              },
+            )}
           </span>
         </div>
         <span className="text-sm font-semibold text-brand">{t('details.change')}</span>

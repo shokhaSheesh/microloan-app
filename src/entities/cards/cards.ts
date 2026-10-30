@@ -49,6 +49,12 @@ export function addCard(owner: string, card: Omit<Card, 'id'>) {
   return created
 }
 
+/** A sign-in from a new phone: every card is unlinked there and has to be linked again. */
+export function unlinkAll(owner: string) {
+  byOwner[owner] = []
+  emit()
+}
+
 export function removeCard(owner: string, id: string) {
   byOwner[owner] = seeded(owner).filter((card) => card.id !== id)
   emit()

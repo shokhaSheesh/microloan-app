@@ -4,13 +4,17 @@ import {
   CreditCard,
   Glasses,
   IdCard,
+  KeyRound,
   LoaderCircle,
+  ShieldAlert,
   Smartphone,
   Sun,
   Zap,
+  type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { unlinkAll } from '@/entities/cards/cards'
 import { session, type Borrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
@@ -25,25 +29,55 @@ import { Checkbox } from '@/shared/ui/Checkbox'
 import { DatePicker } from '@/shared/ui/DatePicker'
 import { FormScreen } from '@/shared/ui/FormScreen'
 import { IconBadge } from '@/shared/ui/IconBadge'
-import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { Interpolate } from '@/shared/ui/Interpolate'
 import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
 import { PassportField } from '@/shared/ui/PassportField'
+import { PasswordField } from '@/shared/ui/PasswordField'
 import { PhoneField } from '@/shared/ui/PhoneField'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
-import { checkDocument, sendCode, verifyCode, verifyFace } from '../api/mockAuth'
+import { toast } from '@/shared/lib/toast'
+import {
+  checkDocument,
+  checkPassword,
+  resetPassword,
+  sendCode,
+  setPassword as savePassword,
+  verifyCode,
+  verifyDeviceFace,
+  verifyFace,
+} from '../api/mockAuth'
+import { PasswordRules, passwordOk } from '../components/PasswordRules'
 import { PinLock } from '../components/PinLock'
 
 /**
- * welcome -> phone -> code -> id -> face -> checking -> found -> PIN   new borrower
- * welcome -> phone -> code -> PIN                                     already registered
- * lock -> home                                                        returning, PIN set here
+ * welcome -> phone -> code -> id -> face -> checking -> password -> PIN   new borrower
+ * phone -> code -> signIn -> home                                       registered, known phone
+ * phone -> code -> signIn -> deviceFace -> deviceChecking -> cardsGone -> PIN
+ *                                                                       registered, new phone
+ *                                          deviceChecking -> deviceFailed (MyID said no)
+ * signIn -> resetCode -> resetPassword -> home, or deviceFace on a new phone   forgot password
+ * lock -> home                                                          returning, PIN set here
  */
-type Step = 'lock' | 'welcome' | 'phone' | 'code' | 'id' | 'face' | 'checking' | 'found'
+type Step =
+  | 'lock'
+  | 'welcome'
+  | 'phone'
+  | 'code'
+  | 'id'
+  | 'face'
+  | 'checking'
+  | 'password'
+  | 'signIn'
+  | 'resetCode'
+  | 'resetPassword'
+  | 'deviceFace'
+  | 'deviceChecking'
+  | 'deviceFailed'
+  | 'cardsGone'
 
 const MIN_AGE = 18
-const STEPS = 4
+const STEPS = 5
 const ddmmyyyy = (date: Date) =>
   `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`
 
@@ -59,7 +93,9 @@ export function AuthPage() {
   const [passport, setPassport] = useState('')
   const [birthDate, setBirthDate] = useState<Date | null>(null)
   const [found, setFound] = useState<Borrower | null>(null)
-  const [notMe, setNotMe] = useState(false)
+  const [password, setPassword] = useState('')
+  const [repeat, setRepeat] = useState('')
+  const [wrongPassword, setWrongPassword] = useState(false)
   const [latestBirthDate] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear() - MIN_AGE, now.getMonth(), now.getDate())
@@ -73,6 +109,11 @@ export function AuthPage() {
   const toPin = (borrower: Borrower) => {
     session.setBorrower(borrower)
     navigate(ROUTES.pinSetup, { replace: true })
+  }
+  const toHome = (borrower: Borrower) => {
+    session.setBorrower(borrower)
+    // This phone already has a PIN unless it was signed out; then it sets one first
+    navigate(session.hasPin() ? ROUTES.home : ROUTES.pinSetup, { replace: true })
   }
 
   const submitPhone = async () => {
@@ -94,8 +135,61 @@ export function AuthPage() {
   const capture = async () => {
     goTo('checking')
     setFound(await verifyFace(phone, passport, birthDate ? ddmmyyyy(birthDate) : ''))
-    setNotMe(false)
-    goTo('found')
+    setPassword('')
+    setRepeat('')
+    goTo('password')
+  }
+
+  const submitNewPassword = async () => {
+    setSubmitted(true)
+    if (!found || !passwordOk(password) || password !== repeat) return
+    setLoading(true)
+    await savePassword(phone, password)
+    toPin(found)
+  }
+
+  const submitSignIn = async () => {
+    setSubmitted(true)
+    setWrongPassword(false)
+    if (!found || !password) return
+    setLoading(true)
+    try {
+      const { knownDevice } = await checkPassword(phone, password)
+      if (knownDevice) toHome(found)
+      else goTo('deviceFace')
+    } catch {
+      setWrongPassword(true)
+      setLoading(false)
+    }
+  }
+
+  const forgot = async () => {
+    setLoading(true)
+    await sendCode(phone)
+    goTo('resetCode')
+  }
+
+  // A new password goes on like a correct one: a new phone still passes MyID
+  const submitReset = async () => {
+    setSubmitted(true)
+    if (!found || !passwordOk(password) || password !== repeat) return
+    setLoading(true)
+    const { knownDevice } = await resetPassword(phone, password)
+    toast(t('password.reset.done'))
+    if (knownDevice) toHome(found)
+    else goTo('deviceFace')
+  }
+
+  const captureDevice = async () => {
+    if (!found) return
+    goTo('deviceChecking')
+    try {
+      await verifyDeviceFace(phone)
+      unlinkAll(found.passport)
+      goTo('cardsGone')
+    } catch {
+      goTo('deviceFailed')
+    }
   }
 
   if (step === 'lock')
@@ -115,8 +209,10 @@ export function AuthPage() {
         resend={() => sendCode(phone)}
         verify={async (code) => {
           const { borrower } = await verifyCode(phone, code)
-          if (borrower) toPin(borrower)
-          else goTo('id')
+          setPassword('')
+          setWrongPassword(false)
+          setFound(borrower)
+          goTo(borrower ? 'signIn' : 'id')
         }}
         onVerified={() => {}}
       />
@@ -191,59 +287,165 @@ export function AuthPage() {
       </FormScreen>
     )
 
-  if (step === 'checking')
+  if (step === 'checking' || step === 'deviceChecking') return <Checking />
+
+  if (step === 'password' || step === 'resetPassword') {
+    const reset = step === 'resetPassword'
     return (
-      <FormScreen onSubmit={() => {}}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-          <span className="relative grid size-24 place-items-center rounded-full bg-accent-200 text-brand">
-            <CircleUserRound size={44} strokeWidth={1.6} />
-            <LoaderCircle
-              size={96}
-              strokeWidth={1.2}
-              className="absolute inset-0 animate-spin text-accent-500"
-              aria-hidden
-            />
-          </span>
-          <div role="status" className="flex flex-col gap-1.5">
-            <h1 className="text-2xl font-bold">{t('myid.checking')}</h1>
-            <p className="text-ink-muted">{t('myid.checking.hint')}</p>
-          </div>
+      <FormScreen
+        onSubmit={() => void (reset ? submitReset() : submitNewPassword())}
+        onBack={() => goTo(reset ? 'signIn' : 'face')}
+        progress={reset ? undefined : { step: 5, total: STEPS }}
+        footer={
+          <Button type="submit" block loading={loading}>
+            {t(reset ? 'password.reset.submit' : 'common.continue')}
+          </Button>
+        }
+      >
+        <IconBadge icon={KeyRound} />
+        <ScreenIntro
+          title={t(reset ? 'password.reset.title' : 'password.new.title')}
+          subtitle={t(reset ? 'password.reset.subtitle' : 'password.new.subtitle', {
+            name: found?.firstName ?? '',
+          })}
+        />
+        <div className="flex flex-col gap-4">
+          <PasswordField
+            label={t('password.field')}
+            autoComplete="new-password"
+            autoFocus
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={submitted && !passwordOk(password) ? t('password.error.rules') : undefined}
+          />
+          <PasswordField
+            label={t('password.repeat')}
+            autoComplete="new-password"
+            value={repeat}
+            onChange={(e) => setRepeat(e.target.value)}
+            error={
+              submitted && repeat !== password
+                ? t(repeat === '' ? 'error.required' : 'password.error.mismatch')
+                : undefined
+            }
+          />
         </div>
+        <PasswordRules value={password} />
+      </FormScreen>
+    )
+  }
+
+  if (step === 'signIn')
+    return (
+      <FormScreen
+        onSubmit={() => void submitSignIn()}
+        onBack={() => goTo('phone')}
+        footer={
+          <Button type="submit" block loading={loading}>
+            {t('password.signIn.submit')}
+          </Button>
+        }
+      >
+        <IconBadge icon={KeyRound} />
+        <ScreenIntro
+          title={t('password.signIn.title', { name: found?.firstName ?? '' })}
+          subtitle={t('password.signIn.subtitle', { phone: formatPhone(phone) })}
+        />
+        <PasswordField
+          label={t('password.field')}
+          autoComplete="current-password"
+          autoFocus
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value)
+            setWrongPassword(false)
+          }}
+          error={
+            submitted && !password
+              ? t('error.required')
+              : wrongPassword
+                ? t('password.error.wrong')
+                : undefined
+          }
+        />
+        <button
+          type="button"
+          onClick={() => void forgot()}
+          disabled={loading}
+          className="-mx-1 self-start rounded-full px-1 py-0.5 text-sm font-semibold text-brand active:bg-neutral-100"
+        >
+          {t('password.forgot')}
+        </button>
       </FormScreen>
     )
 
-  if (step === 'found' && found)
+  if (step === 'resetCode')
+    return (
+      <OtpScreen
+        subtitle={t('password.reset.code', { phone: formatPhone(phone) })}
+        onBack={() => goTo('signIn')}
+        resend={() => sendCode(phone)}
+        verify={async (code) => {
+          await verifyCode(phone, code)
+          setPassword('')
+          setRepeat('')
+          goTo('resetPassword')
+        }}
+        onVerified={() => {}}
+      />
+    )
+
+  if (step === 'deviceFace')
     return (
       <FormScreen
-        onSubmit={() => toPin(found)}
-        onBack={() => goTo('face')}
+        onSubmit={() => void captureDevice()}
+        onBack={() => goTo('signIn')}
         footer={
-          <div className="flex flex-col gap-1">
-            <Button variant="ghost" block onClick={() => setNotMe(true)}>
-              {t('myid.found.no')}
-            </Button>
-            <Button type="submit" block>
-              {t('myid.found.yes')}
-            </Button>
-          </div>
+          <Button type="submit" block>
+            {t('myid.capture')}
+          </Button>
         }
       >
-        <ScreenIntro title={t('myid.found.title')} subtitle={t('myid.found.subtitle')} />
-        <InfoList>
-          <InfoRow label={t('myid.name')} value={found.fullName} />
-          <InfoRow label={t('myid.birth')} value={found.birthDate} />
-          <InfoRow
-            label={t('myid.document')}
-            value={`${found.passport.slice(0, 2)} ${found.passport.slice(2)}`}
-          />
-          <InfoRow label={t('myid.address')} value={found.address} />
-        </InfoList>
-        {notMe && (
-          <p role="alert" className="rounded-control bg-danger-soft px-4 py-3 text-sm text-danger">
-            {t('myid.wrong')}
-          </p>
-        )}
+        <ScreenIntro title={t('device.title')} subtitle={t('device.subtitle')} />
+        <CameraView guide="face" facing="user" unavailableText={t('myid.noCamera')} />
+        <ul className="flex flex-col gap-2 text-sm text-ink-muted">
+          {(
+            [
+              [Sun, 'myid.tip.light'],
+              [Glasses, 'myid.tip.glasses'],
+              [Smartphone, 'myid.tip.still'],
+            ] as const
+          ).map(([Icon, text]) => (
+            <li key={text} className="flex items-center gap-2.5">
+              <Icon size={18} className="shrink-0 text-brand" />
+              {t(text)}
+            </li>
+          ))}
+        </ul>
       </FormScreen>
+    )
+
+  if (step === 'deviceFailed')
+    return (
+      <Result
+        tone="danger"
+        icon={ShieldAlert}
+        title={t('device.failed.title')}
+        text={t('device.failed.text')}
+        primary={{ label: t('device.failed.retry'), onClick: () => goTo('deviceFace') }}
+        secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
+      />
+    )
+
+  if (step === 'cardsGone' && found)
+    return (
+      <Result
+        tone="warning"
+        icon={CreditCard}
+        title={t('device.cards.title')}
+        text={t('device.cards.text')}
+        primary={{ label: t('device.cards.next'), onClick: () => toPin(found) }}
+      />
     )
 
   if (step === 'phone')
@@ -296,6 +498,81 @@ export function AuthPage() {
     )
 
   return <Welcome onStart={() => goTo('phone')} />
+}
+
+/** MyID at work: a spinning ring round the face icon. */
+function Checking() {
+  const { t } = useI18n()
+  return (
+    <FormScreen onSubmit={() => {}}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+        <span className="relative grid size-24 place-items-center rounded-full bg-accent-200 text-brand">
+          <CircleUserRound size={44} strokeWidth={1.6} />
+          <LoaderCircle
+            size={96}
+            strokeWidth={1.2}
+            className="absolute inset-0 animate-spin text-accent-500"
+            aria-hidden
+          />
+        </span>
+        <div role="status" className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-bold">{t('myid.checking')}</h1>
+          <p className="text-ink-muted">{t('myid.checking.hint')}</p>
+        </div>
+      </div>
+    </FormScreen>
+  )
+}
+
+type Action = { label: string; onClick: () => void }
+
+/** A full-screen outcome: an icon, what happened, and what to do next. */
+function Result({
+  tone,
+  icon: Icon,
+  title,
+  text,
+  primary,
+  secondary,
+}: {
+  tone: 'danger' | 'warning'
+  icon: LucideIcon
+  title: string
+  text: string
+  primary: Action
+  secondary?: Action
+}) {
+  return (
+    <FormScreen
+      onSubmit={primary.onClick}
+      footer={
+        <div className="flex flex-col gap-1">
+          {secondary && (
+            <Button variant="ghost" block onClick={secondary.onClick}>
+              {secondary.label}
+            </Button>
+          )}
+          <Button type="submit" block>
+            {primary.label}
+          </Button>
+        </div>
+      }
+    >
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+        <span
+          className={`grid size-20 place-items-center rounded-full ${
+            tone === 'danger' ? 'bg-danger-soft text-danger' : 'bg-warning-soft text-warning'
+          }`}
+        >
+          <Icon size={36} />
+        </span>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold text-balance">{title}</h1>
+          <p className="text-ink-muted">{text}</p>
+        </div>
+      </div>
+    </FormScreen>
+  )
 }
 
 /**

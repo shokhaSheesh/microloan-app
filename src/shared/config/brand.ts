@@ -35,6 +35,13 @@ export type Contacts = {
   branches: { region: LocalizedText; address: string; phone?: string }[]
 }
 
+/**
+ * How the monthly payment is worked out. `annuity` («Standart»): the same sum every month.
+ * `differentiated` («Kamayib boruvchi»): an equal share of the sum plus interest on what is left,
+ * so the payments fall month by month and less interest is paid overall.
+ */
+export type PayType = 'annuity' | 'differentiated'
+
 /** One loan product: its name, kind, who it is for, the largest sum, yearly rate and longest term. */
 export type Product = {
   id: string
@@ -49,6 +56,8 @@ export type Product = {
   /** Shortest term in months, when not 3. */
   termMin?: number
   termMax: number
+  /** The payment types the brand allows for it, set in the admin; the first is the default. */
+  payTypes: PayType[]
 }
 
 /** Branches of one region, each an address and a phone. */
@@ -132,6 +141,7 @@ const BRANDS: Record<BrandId, Brand> = {
         max: 50_000_000,
         rate: [49, 54],
         termMax: 24,
+        payTypes: ['annuity', 'differentiated'],
       },
       {
         id: 'tezkor',
@@ -144,6 +154,7 @@ const BRANDS: Record<BrandId, Brand> = {
         max: 40_000_000,
         rate: [45, 49],
         termMax: 36,
+        payTypes: ['annuity'],
       },
       {
         id: 'ishonch',
@@ -156,6 +167,7 @@ const BRANDS: Record<BrandId, Brand> = {
         max: 20_000_000,
         rate: [54, 54],
         termMax: 24,
+        payTypes: ['annuity', 'differentiated'],
       },
     ],
   },
@@ -229,6 +241,7 @@ const BRANDS: Record<BrandId, Brand> = {
         rate: [48, 60],
         termMin: 3,
         termMax: 12,
+        payTypes: ['annuity', 'differentiated'],
       },
       {
         id: 'ishonch',
@@ -243,6 +256,7 @@ const BRANDS: Record<BrandId, Brand> = {
         rate: [48, 60],
         termMin: 3,
         termMax: 12,
+        payTypes: ['annuity'],
       },
       {
         id: 'komak',
@@ -257,6 +271,7 @@ const BRANDS: Record<BrandId, Brand> = {
         rate: [50, 60],
         termMin: 3,
         termMax: 12,
+        payTypes: ['annuity', 'differentiated'],
       },
       {
         id: 'imkoniyat',
@@ -270,6 +285,7 @@ const BRANDS: Record<BrandId, Brand> = {
         // 0.15% a day on the site
         rate: [55, 55],
         termMax: 36,
+        payTypes: ['annuity', 'differentiated'],
       },
     ],
   },

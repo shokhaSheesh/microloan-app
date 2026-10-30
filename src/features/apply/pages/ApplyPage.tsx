@@ -1,10 +1,10 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Info } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { setDraft } from '@/entities/apply/draft'
-import { quote, rateFor, termsOf } from '@/entities/loans/loans'
-import { BRAND, type Product } from '@/shared/config/brand'
-import { ROUTES } from '@/shared/config/routes'
+import { DEFAULT_PAY_DAY, PAY_DAYS, quote, rateFor, termsOf } from '@/entities/loans/loans'
+import { BRAND, type PayType, type Product } from '@/shared/config/brand'
+import { productTermsPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatSum } from '@/shared/lib/format'
@@ -21,9 +21,10 @@ const clamp = (n: number, product: Product) =>
   Math.min(product.max, Math.max(minOf(product), Math.round(n / STEP) * STEP))
 
 /**
- * Qarz olish, step one: the calculator. Pick a product, the sum and the term; the dark card
- * shows the monthly payment, yearly rate, interest and total, and the full schedule opens
- * from it. A pushed screen without the tab bar, so "Ariza berish" sits at the bottom and carries
+ * Qarz olish, step one: the calculator. Pick a product, the sum, the term, the payment day (1–10)
+ * and, when the product allows both, the payment type; the dark card shows the monthly payment
+ * (the first and last for falling payments), yearly rate, interest and total, and the full
+ * schedule opens from it. «Batafsil shartlar» under the products opens the product's terms. A pushed screen without the tab bar, so "Ariza berish" sits at the bottom and carries
  * the choice into the application.
  */
 export function ApplyPage() {
@@ -37,11 +38,14 @@ export function ApplyPage() {
   const [amount, setAmount] = useState(clamp(10_000_000, product))
   const [typed, setTyped] = useState<number | null>(amount)
   const [term, setTerm] = useState(Math.min(12, product.termMax))
+  const [payDay, setPayDay] = useState(DEFAULT_PAY_DAY)
+  const [payType, setPayType] = useState<PayType>(product.payTypes[0])
   const [schedule, setSchedule] = useState(false)
 
   const terms = termsOf(product)
   const rate = rateFor(product, term)
-  const { monthly, total, interest } = quote(amount, rate, term)
+  const { monthly, last, total, interest } = quote(amount, rate, term, payType)
+  const falling = payType === 'differentiated'
   const tooBig = typed !== null && typed > product.max
   const min = minOf(product)
   const tooSmall = typed !== null && typed < min
@@ -54,6 +58,7 @@ export function ApplyPage() {
     setTyped(sum)
     if (term > next.termMax) setTerm(next.termMax)
     if (term < (next.termMin ?? 3)) setTerm(next.termMin ?? 3)
+    if (!next.payTypes.includes(payType)) setPayType(next.payTypes[0])
   }
   const slide = (sum: number) => {
     setAmount(sum)
@@ -102,9 +107,19 @@ export function ApplyPage() {
             )
           })}
         </div>
-        <p className="-mt-3 text-sm text-ink-muted">
-          {tl(product.kind)} · {tl(product.for)}
-        </p>
+        <div className="-mt-3 flex flex-col items-start gap-1.5">
+          <p className="text-sm text-ink-muted">
+            {tl(product.kind)} · {tl(product.for)}
+          </p>
+          <Link
+            to={productTermsPath(product.id)}
+            state={{ fromCalculator: true }}
+            className="-mx-1 flex items-center gap-1.5 rounded-full px-1 py-0.5 text-sm font-semibold text-brand active:bg-neutral-100"
+          >
+            <Info size={16} />
+            {t('terms.open')}
+          </Link>
+        </div>
 
         <section className="flex flex-col gap-4 rounded-card border border-line bg-canvas p-4">
           <NumberField
@@ -157,9 +172,68 @@ export function ApplyPage() {
           </div>
         </section>
 
+        <section className="flex flex-col gap-3">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="font-bold">{t('apply.payDay')}</h2>
+            <p className="text-sm text-ink-muted">{t('apply.payDay.hint')}</p>
+          </div>
+          <div role="radiogroup" aria-label={t('apply.payDay')} className="grid grid-cols-5 gap-2">
+            {PAY_DAYS.map((day) => (
+              <button
+                key={day}
+                type="button"
+                role="radio"
+                aria-checked={day === payDay}
+                onClick={() => setPayDay(day)}
+                className={cn(
+                  'h-11 rounded-full border-[1.5px] font-semibold tabular-nums transition-colors',
+                  day === payDay
+                    ? 'border-primary bg-primary text-on-primary'
+                    : 'border-line bg-canvas active:bg-neutral-100',
+                )}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {product.payTypes.length > 1 && (
+          <section className="flex flex-col gap-3">
+            <h2 className="font-bold">{t('apply.payType')}</h2>
+            <div
+              role="radiogroup"
+              aria-label={t('apply.payType')}
+              className="grid grid-cols-2 gap-2"
+            >
+              {product.payTypes.map((item) => {
+                const selected = item === payType
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setPayType(item)}
+                    className={cn(
+                      'flex flex-col items-start gap-0.5 rounded-control border-[1.5px] bg-canvas px-3 py-2.5 text-left transition-colors',
+                      selected ? 'border-primary' : 'border-line active:bg-neutral-100',
+                    )}
+                  >
+                    <span className="font-bold">{t(`payType.${item}`)}</span>
+                    <span className="text-xs text-ink-muted">{t(`payType.${item}.hint`)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         <section className="flex flex-col gap-4 rounded-[28px] bg-tile p-5 text-on-tile">
           <div className="flex flex-col gap-1">
-            <span className="text-sm opacity-60">{t('apply.monthly')}</span>
+            <span className="text-sm opacity-60">
+              {t(falling ? 'apply.monthly.first' : 'apply.monthly')}
+            </span>
             <span className="text-[32px] leading-none font-bold tracking-tight tabular-nums">
               {formatSum(monthly)}
             </span>
@@ -168,6 +242,8 @@ export function ApplyPage() {
             {(
               [
                 ['apply.rate', t('apply.rate.value', { rate: String(rate) })],
+                ['apply.payType', t(`payType.${payType}`)],
+                ...(falling ? [['apply.monthly.last', formatSum(last)] as const] : []),
                 ['apply.interest', formatSum(interest)],
                 ['apply.total', formatSum(total)],
               ] as const
@@ -194,7 +270,7 @@ export function ApplyPage() {
           block
           disabled={tooBig || tooSmall || typed === null}
           onClick={() => {
-            setDraft({ productId, amount, term })
+            setDraft({ productId, amount, term, payDay, payType })
             navigate(ROUTES.application)
           }}
         >
@@ -209,6 +285,8 @@ export function ApplyPage() {
         amount={amount}
         rate={rate}
         term={term}
+        payDay={payDay}
+        payType={payType}
       />
     </div>
   )

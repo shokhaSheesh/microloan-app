@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { loansOf } from '@/entities/loans/loans'
-import { BRAND } from '@/shared/config/brand'
+import { BRAND, type PayType } from '@/shared/config/brand'
 
 /**
  * Where an ariza stands, as the brand's admin sees it. The rules decide at once, so `review`
@@ -34,6 +34,9 @@ export type Ariza = {
   /** What the decision gave: the same sum, or less for a counter-offer. */
   offered?: number
   term: number
+  /** Picked on the calculator; older arizalar have neither (day 5, annuity). */
+  payDay?: number
+  payType?: PayType
   /** The borrower's contacts picked on the form, at least two. */
   contactIds?: string[]
   status: ArizaStatus

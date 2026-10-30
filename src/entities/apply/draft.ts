@@ -1,7 +1,15 @@
 import { useSyncExternalStore } from 'react'
+import type { PayType } from '@/shared/config/brand'
 
 /** What the borrower picked on the calculator, carried into the application. */
-export type Draft = { productId: string; amount: number; term: number }
+export type Draft = {
+  productId: string
+  amount: number
+  term: number
+  /** Day of the month, 1–10. */
+  payDay: number
+  payType: PayType
+}
 
 let draft: Draft | null = null
 const listeners = new Set<() => void>()

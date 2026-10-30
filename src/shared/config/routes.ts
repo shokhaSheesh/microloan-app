@@ -9,6 +9,8 @@ export const ROUTES = {
   apply: '/apply',
   /** Every loan product, from the Kreditlar quick action. */
   credits: '/credits',
+  /** «Batafsil shartlar»: one product's full terms. */
+  productTerms: '/credits/:id',
   /** The application after the calculator, full screen without the tab bar. */
   application: '/apply/new',
   payments: '/payments',
@@ -39,6 +41,9 @@ export const loanPath = (id: string) => `/loans/${id}`
 /** Kreditlar, optionally just some products (a banner's). */
 export const creditsPath = (ids?: string[]) =>
   ids?.length ? `/credits?ids=${ids.join(',')}` : '/credits'
+
+/** One product's «Batafsil shartlar». */
+export const productTermsPath = (id: string) => `/credits/${id}`
 
 export const applyPath = (productId?: string) =>
   productId ? `/apply?product=${productId}` : '/apply'
