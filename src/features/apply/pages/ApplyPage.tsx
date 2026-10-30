@@ -1,4 +1,4 @@
-import { ChevronRight, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { setDraft } from '@/entities/apply/draft'
@@ -12,7 +12,6 @@ import { Button } from '@/shared/ui/Button'
 import { NumberField } from '@/shared/ui/NumberField'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { Slider } from '@/shared/ui/Slider'
-import { ScheduleSheet } from '../components/ScheduleSheet'
 
 const MIN = 1_000_000
 const STEP = 500_000
@@ -40,11 +39,12 @@ export function ApplyPage() {
   const [term, setTerm] = useState(Math.min(12, product.termMax))
   const [payDay, setPayDay] = useState(DEFAULT_PAY_DAY)
   const [payType, setPayType] = useState<PayType>(product.payTypes[0])
-  const [schedule, setSchedule] = useState(false)
 
   const terms = termsOf(product)
   const rate = rateFor(product, term)
-  const { monthly, last, total, interest } = quote(amount, rate, term, payType)
+  // Only the approximate payment and total: the rate comes from scoring, the real schedule after
+  // the decision
+  const { monthly, last, total } = quote(amount, rate, term, payType)
   const falling = payType === 'differentiated'
   const tooBig = typed !== null && typed > product.max
   const min = minOf(product)
@@ -232,7 +232,7 @@ export function ApplyPage() {
         <section className="flex flex-col gap-4 rounded-[28px] bg-tile p-5 text-on-tile">
           <div className="flex flex-col gap-1">
             <span className="text-sm opacity-60">
-              {t(falling ? 'apply.monthly.first' : 'apply.monthly')}
+              {t(falling ? 'apply.monthly.first' : 'apply.monthly.approx')}
             </span>
             <span className="text-[32px] leading-none font-bold tracking-tight tabular-nums">
               {formatSum(monthly)}
@@ -241,11 +241,9 @@ export function ApplyPage() {
           <dl className="flex flex-col gap-2 text-sm">
             {(
               [
-                ['apply.rate', t('apply.rate.value', { rate: String(rate) })],
                 ['apply.payType', t(`payType.${payType}`)],
                 ...(falling ? [['apply.monthly.last', formatSum(last)] as const] : []),
-                ['apply.interest', formatSum(interest)],
-                ['apply.total', formatSum(total)],
+                ['apply.total.approx', formatSum(total)],
               ] as const
             ).map(([label, value]) => (
               <div key={label} className="flex justify-between gap-3">
@@ -254,14 +252,6 @@ export function ApplyPage() {
               </div>
             ))}
           </dl>
-          <button
-            type="button"
-            onClick={() => setSchedule(true)}
-            className="flex items-center justify-between rounded-control bg-white/10 px-3 py-2.5 text-sm font-semibold"
-          >
-            {t('apply.schedule')}
-            <ChevronRight size={18} className="opacity-70" />
-          </button>
         </section>
       </div>
 
@@ -278,16 +268,6 @@ export function ApplyPage() {
         </Button>
         <p className="text-center text-xs text-ink-subtle">{t('apply.note')}</p>
       </div>
-
-      <ScheduleSheet
-        open={schedule}
-        onClose={() => setSchedule(false)}
-        amount={amount}
-        rate={rate}
-        term={term}
-        payDay={payDay}
-        payType={payType}
-      />
     </div>
   )
 }

@@ -52,8 +52,8 @@ export function StatePreviewPage() {
           icon={Ban}
           title={t('blocked.title')}
           text={t('blocked.text', { brand: BRAND.name })}
-          primary={{ label: t('blocked.call'), onClick: back }}
-          secondary={{ label: t('device.failed.other'), onClick: back }}
+          primary={{ label: t('blocked.pay'), onClick: back }}
+          secondary={{ label: t('blocked.call'), onClick: back }}
           onBack={back}
         />
       )

@@ -43,10 +43,7 @@ const FACE_FAILS = new Set(['991112233'])
 
 export const WRONG_PASSWORD = 'wrong1234'
 
-/**
- * Rejects with `client_blocked` when the brand blocked this client; then no SMS goes out. The
- * mock never does: that screen is shown in «Holatlar namunasi».
- */
+/** Sends the SMS code. A blocked client still signs in; what is closed to them is shown inside. */
 export async function sendCode(_phone: string) {
   await delay(700)
 }

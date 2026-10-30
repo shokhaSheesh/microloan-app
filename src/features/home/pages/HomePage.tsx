@@ -1,10 +1,8 @@
 import {
   Bell,
-  CalendarDays,
   ChevronRight,
   Clock,
   CreditCard,
-  FileClock,
   Headset,
   Layers,
   Wallet,
@@ -73,22 +71,14 @@ export function HomePage() {
 
       {active ? <ActiveLoan loan={active} /> : <Offer />}
 
+      {/* Kreditlar, Toʻlov, Kartalar, Yordam, as the brand's admin orders them */}
       <QuickActions
-        actions={
-          active
-            ? [
-                [CalendarDays, 'home.action.schedule', loanPath(active.id)],
-                [Wallet, 'home.action.pay', payPath(active.id)],
-                [Layers, 'home.action.credits', ROUTES.credits],
-                [Headset, 'home.action.support', ROUTES.chat],
-              ]
-            : [
-                [Layers, 'home.action.credits', ROUTES.credits],
-                [FileClock, 'home.action.applications', loansPath('applications')],
-                [CreditCard, 'home.action.cards', ROUTES.cards],
-                [Headset, 'home.action.support', ROUTES.chat],
-              ]
-        }
+        actions={[
+          [Layers, 'home.action.credits', ROUTES.credits],
+          [Wallet, 'home.action.pay', active ? payPath(active.id) : ROUTES.payments],
+          [CreditCard, 'home.action.cards', ROUTES.cards],
+          [Headset, 'home.action.support', ROUTES.chat],
+        ]}
       />
 
       <BannerCarousel />

@@ -18,7 +18,6 @@ import { Button } from '@/shared/ui/Button'
 import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
-import { EarlyRepaySheet } from '../components/EarlyRepaySheet'
 import { OverdueNotice } from '../components/OverdueNotice'
 import { InstallmentBreakdown } from '../components/InstallmentBreakdown'
 
@@ -46,7 +45,6 @@ export function LoanPage() {
   const [tab, setTab] = useState<Tab>('schedule')
   // The month opened in the schedule to show what its payment is made of
   const [openMonth, setOpenMonth] = useState<number | null>(null)
-  const [early, setEarly] = useState(false)
   const [today] = useState(() => new Date())
   if (!loan || !borrower) return <Navigate to={ROUTES.loans} replace />
 
@@ -127,7 +125,7 @@ export function LoanPage() {
         <OverdueNotice loan={loan} />
 
         {!loan.closedAt && (
-          <Button variant="secondary" block onClick={() => setEarly(true)}>
+          <Button variant="secondary" block onClick={() => navigate(payPath(loan.id))}>
             <Zap size={20} />
             {t('early.title')}
           </Button>
@@ -266,17 +264,6 @@ export function LoanPage() {
           </div>
         )}
       </div>
-
-      {/* Mounted only while open, so each time starts from "Toʻliq yopish" with no sum typed */}
-      {early && (
-        <EarlyRepaySheet
-          open
-          onClose={() => setEarly(false)}
-          loan={loan}
-          owner={borrower.passport}
-          card={card}
-        />
-      )}
     </div>
   )
 }

@@ -109,8 +109,9 @@ const uz = {
   'code.blocked.timer': 'Qayta urinish mumkin boʻladi',
   'blocked.title': 'Bu mijoz bloklangan',
   'blocked.text':
-    'Kod yuborilmadi: hisobingiz {brand} tomonidan bloklangan. Sababini bilish va blokdan chiqarish uchun bizga qoʻngʻiroq qiling.',
+    'Hisobingiz {brand} tomonidan bloklangan: kreditlar, yangi ariza va shaxsiy maʼlumotlar yopiq. Faol qarzingizni toʻlashingiz mumkin.',
   'blocked.call': 'Qoʻngʻiroq qilish',
+  'blocked.pay': 'Qarzni toʻlash',
   'owner.title': 'Raqam sizning nomingizda emas',
   'owner.text':
     '{phone} raqami boshqa shaxs nomiga rasmiylashtirilgan. Xavfsizlik uchun faqat oʻz nomingizdagi raqam bilan roʻyxatdan oʻtish mumkin.',
@@ -255,6 +256,8 @@ const uz = {
   'apply.rate.value': '{rate}%',
   'apply.interest': 'Foizlar',
   'apply.total': 'Jami qaytariladi',
+  'apply.total.approx': 'Taxminiy jami',
+  'apply.monthly.approx': 'Taxminiy oylik toʻlov',
   'apply.schedule': 'Toʻlov jadvali',
   'apply.monthly.first': 'Birinchi oy toʻlovi',
   'apply.monthly.last': 'Oxirgi oy toʻlovi',
@@ -303,8 +306,9 @@ const uz = {
   'details.contacts.hint':
     'Siz bilan bogʻlana olmasak, shularga qoʻngʻiroq qilamiz. Kamida {count} tasini tanlang.',
   'details.contacts.required': 'Kamida {count} ta kontakt tanlang',
-  'details.card': 'Pul qaysi kartaga',
-  'details.card.hint': 'Toʻlovlar ham shu kartadan yechiladi.',
+  'details.card': 'Eng yuqori aylanmaga ega kartangiz',
+  'details.card.hint':
+    'Kredit ajratish ehtimolini oshirish uchun eng yuqori aylanmaga ega kartangizni biriktiring. Pul shu kartaga tushadi, toʻlovlar ham undan yechiladi.',
   'details.card.new': 'Boshqa karta',
   'details.card.number': 'Karta raqami',
   'details.card.expiry': 'Amal qilish muddati',
@@ -487,6 +491,7 @@ const uz = {
   'pay.auto':
     'Toʻlov kuni summa kartadan avtomatik yechiladi. Oldinroq oʻzingiz ham toʻlashingiz mumkin.',
   'pay.title': 'Toʻlov',
+  'pay.kind.schedule': 'Grafik boʻyicha',
   'pay.month': '{n}-toʻlov, jami {total}',
   'pay.due': '{date} gacha',
   'pay.overdue': '{date} dan beri kechikmoqda',
@@ -722,8 +727,9 @@ const ru: Record<TranslationKey, string> = {
   'code.blocked.timer': 'Попробовать снова можно через',
   'blocked.title': 'Клиент заблокирован',
   'blocked.text':
-    'Код не отправлен: ваш аккаунт заблокирован {brand}. Чтобы узнать причину и снять блокировку, позвоните нам.',
+    'Аккаунт заблокирован {brand}: кредиты, новые заявки и личные данные закрыты. Действующий заём можно оплатить.',
   'blocked.call': 'Позвонить',
+  'blocked.pay': 'Оплатить заём',
   'owner.title': 'Номер оформлен не на вас',
   'owner.text':
     'Номер {phone} оформлен на другого человека. Ради безопасности зарегистрироваться можно только с номером на ваше имя.',
@@ -866,6 +872,8 @@ const ru: Record<TranslationKey, string> = {
   'apply.rate.value': '{rate}%',
   'apply.interest': 'Проценты',
   'apply.total': 'Всего к возврату',
+  'apply.total.approx': 'Примерно всего',
+  'apply.monthly.approx': 'Примерный платёж в месяц',
   'apply.schedule': 'График платежей',
   'apply.monthly.first': 'Платёж за первый месяц',
   'apply.monthly.last': 'Платёж за последний месяц',
@@ -914,8 +922,9 @@ const ru: Record<TranslationKey, string> = {
   'details.contacts.hint':
     'Позвоним им, если не сможем дозвониться до вас. Выберите хотя бы {count}.',
   'details.contacts.required': 'Выберите хотя бы {count} контакта',
-  'details.card': 'На какую карту',
-  'details.card.hint': 'С этой же карты будут списываться платежи.',
+  'details.card': 'Карта с самым большим оборотом',
+  'details.card.hint':
+    'Чтобы повысить шанс одобрения, привяжите карту с самым большим оборотом. Деньги придут на неё, с неё же будут списываться платежи.',
   'details.card.new': 'Другая карта',
   'details.card.number': 'Номер карты',
   'details.card.expiry': 'Срок действия',
@@ -1096,6 +1105,7 @@ const ru: Record<TranslationKey, string> = {
   'pay.auto':
     'В день платежа сумма спишется с карты автоматически. Можно оплатить и раньше самому.',
   'pay.title': 'Платёж',
+  'pay.kind.schedule': 'По графику',
   'pay.month': '{n}-й платёж из {total}',
   'pay.due': 'до {date}',
   'pay.overdue': 'просрочен с {date}',

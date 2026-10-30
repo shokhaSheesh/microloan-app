@@ -3,7 +3,6 @@ import {
   CircleUserRound,
   CreditCard,
   Glasses,
-  Ban,
   Phone,
   IdCard,
   KeyRound,
@@ -57,7 +56,6 @@ import { PinLock } from '../components/PinLock'
 /**
  * welcome -> phone -> code -> id -> face -> checking -> password -> PIN   new borrower
  *                                     checking -> notOwner (the number is someone else's)
- * phone -> blocked                                                      the brand blocked the client
  * phone -> code -> signIn -> home                                       registered, known phone
  * phone -> code -> signIn -> deviceFace -> deviceChecking -> cardsGone -> PIN
  *                                                                       registered, new phone
@@ -81,7 +79,6 @@ type Step =
   | 'deviceChecking'
   | 'deviceFailed'
   | 'cardsGone'
-  | 'blocked'
   | 'notOwner'
 
 const MIN_AGE = 18
@@ -129,14 +126,7 @@ export function AuthPage() {
     if (phone.length < PHONE_DIGITS || !agreed) return
     setLoading(true)
     // A number blocked for wrong codes gets no new one; the code screen counts the block down
-    if (!otpBlock.until(phone)) {
-      try {
-        await sendCode(phone)
-      } catch {
-        goTo('blocked')
-        return
-      }
-    }
+    if (!otpBlock.until(phone)) await sendCode(phone)
     goTo('code')
   }
 
@@ -459,21 +449,6 @@ export function AuthPage() {
         title={t('device.failed.title')}
         text={t('device.failed.text')}
         primary={{ label: t('device.failed.retry'), onClick: () => goTo('deviceFace') }}
-        secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
-      />
-    )
-
-  if (step === 'blocked')
-    return (
-      <ResultScreen
-        tone="danger"
-        icon={Ban}
-        title={t('blocked.title')}
-        text={t('blocked.text', { brand: BRAND.name })}
-        primary={{
-          label: t('blocked.call'),
-          onClick: () => window.location.assign(`tel:+998${BRAND.phone}`),
-        }}
         secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
       />
     )
