@@ -411,6 +411,7 @@ export function ApplicationPage() {
     return (
       <OtpScreen
         subtitle={t('contract.code', { phone: formatPhone(borrower.phone) })}
+        blockKey={borrower.phone}
         onBack={() => setStep('contract')}
         resend={sendSignCode}
         verify={verifySignCode}

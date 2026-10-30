@@ -74,6 +74,7 @@ export function AddCardSheet({
         <div className="flex flex-col gap-4 pb-2">
           <p className="text-sm text-ink-muted">{t('cards.code', { card: cardText(card) })}</p>
           <OtpField
+            numeric
             label={t('field.code')}
             length={CODE_LENGTH}
             value={code}

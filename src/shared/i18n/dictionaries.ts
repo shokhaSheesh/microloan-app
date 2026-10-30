@@ -102,6 +102,18 @@ const uz = {
   'code.resend': 'Kodni qayta yuborish',
   'code.resendIn': 'Qayta yuborish: {time}',
   'code.error': 'Kod notoʻgʻri. Qayta urinib koʻring.',
+  'code.error.left': 'Kod notoʻgʻri. Yana {n} ta urinish qoldi.',
+  'code.blocked.title': 'Kod 3 marta notoʻgʻri kiritildi',
+  'code.blocked.text':
+    'Xavfsizlik uchun bu raqamga kod yuborish {minutes} daqiqaga toʻxtatildi. Raqamingizga bu haqda SMS yubordik.',
+  'code.blocked.timer': 'Qayta urinish mumkin boʻladi',
+  'blocked.title': 'Bu mijoz bloklangan',
+  'blocked.text':
+    'Kod yuborilmadi: hisobingiz {brand} tomonidan bloklangan. Sababini bilish va blokdan chiqarish uchun bizga qoʻngʻiroq qiling.',
+  'blocked.call': 'Qoʻngʻiroq qilish',
+  'owner.title': 'Raqam sizning nomingizda emas',
+  'owner.text':
+    '{phone} raqami boshqa shaxs nomiga rasmiylashtirilgan. Xavfsizlik uchun faqat oʻz nomingizdagi raqam bilan roʻyxatdan oʻtish mumkin.',
   'app.tagline': 'Mikroqarz — telefoningizda',
   'welcome.title': '{amount} soʻmgacha mikroqarz',
   'welcome.subtitle': 'Ariza bering, qarorni onlayn oling va pulni kartangizga oling.',
@@ -643,6 +655,18 @@ const ru: Record<TranslationKey, string> = {
   'code.resend': 'Отправить код повторно',
   'code.resendIn': 'Повторная отправка: {time}',
   'code.error': 'Неверный код. Попробуйте ещё раз.',
+  'code.error.left': 'Неверный код. Осталось попыток: {n}.',
+  'code.blocked.title': 'Код введён неверно 3 раза',
+  'code.blocked.text':
+    'Ради безопасности отправка кодов на этот номер остановлена на {minutes} минут. Мы отправили вам SMS об этом.',
+  'code.blocked.timer': 'Попробовать снова можно через',
+  'blocked.title': 'Клиент заблокирован',
+  'blocked.text':
+    'Код не отправлен: ваш аккаунт заблокирован {brand}. Чтобы узнать причину и снять блокировку, позвоните нам.',
+  'blocked.call': 'Позвонить',
+  'owner.title': 'Номер оформлен не на вас',
+  'owner.text':
+    'Номер {phone} оформлен на другого человека. Ради безопасности зарегистрироваться можно только с номером на ваше имя.',
   'app.tagline': 'Микрозайм — в телефоне',
   'welcome.title': 'Микрозайм до {amount} сум',
   'welcome.subtitle': 'Подайте заявку, получите решение онлайн и деньги на карту.',

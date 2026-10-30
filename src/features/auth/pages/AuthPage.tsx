@@ -3,6 +3,8 @@ import {
   CircleUserRound,
   CreditCard,
   Glasses,
+  Ban,
+  Phone,
   IdCard,
   KeyRound,
   LoaderCircle,
@@ -36,10 +38,12 @@ import { PassportField } from '@/shared/ui/PassportField'
 import { PasswordField } from '@/shared/ui/PasswordField'
 import { PhoneField } from '@/shared/ui/PhoneField'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
+import { otpBlock } from '@/shared/lib/otpBlock'
 import { toast } from '@/shared/lib/toast'
 import {
   checkDocument,
   checkPassword,
+  checkPhoneOwner,
   resetPassword,
   sendCode,
   setPassword as savePassword,
@@ -52,6 +56,8 @@ import { PinLock } from '../components/PinLock'
 
 /**
  * welcome -> phone -> code -> id -> face -> checking -> password -> PIN   new borrower
+ *                                     checking -> notOwner (the number is someone else's)
+ * phone -> blocked                                                      the brand blocked the client
  * phone -> code -> signIn -> home                                       registered, known phone
  * phone -> code -> signIn -> deviceFace -> deviceChecking -> cardsGone -> PIN
  *                                                                       registered, new phone
@@ -75,6 +81,8 @@ type Step =
   | 'deviceChecking'
   | 'deviceFailed'
   | 'cardsGone'
+  | 'blocked'
+  | 'notOwner'
 
 const MIN_AGE = 18
 const STEPS = 5
@@ -120,7 +128,15 @@ export function AuthPage() {
     setSubmitted(true)
     if (phone.length < PHONE_DIGITS || !agreed) return
     setLoading(true)
-    await sendCode(phone)
+    // A number blocked for wrong codes gets no new one; the code screen counts the block down
+    if (!otpBlock.until(phone)) {
+      try {
+        await sendCode(phone)
+      } catch {
+        goTo('blocked')
+        return
+      }
+    }
     goTo('code')
   }
 
@@ -134,7 +150,15 @@ export function AuthPage() {
 
   const capture = async () => {
     goTo('checking')
-    setFound(await verifyFace(phone, passport, birthDate ? ddmmyyyy(birthDate) : ''))
+    const person = await verifyFace(phone, passport, birthDate ? ddmmyyyy(birthDate) : '')
+    // Only now is the PINFL known, so the number's owner is checked here
+    try {
+      await checkPhoneOwner(phone, person.passport)
+    } catch {
+      goTo('notOwner')
+      return
+    }
+    setFound(person)
     setPassword('')
     setRepeat('')
     goTo('password')
@@ -204,6 +228,7 @@ export function AuthPage() {
     return (
       <OtpScreen
         subtitle={t('code.subtitle', { phone: formatPhone(phone) })}
+        blockKey={phone}
         onBack={() => goTo('phone')}
         progress={{ step: 2, total: STEPS }}
         resend={() => sendCode(phone)}
@@ -383,6 +408,7 @@ export function AuthPage() {
     return (
       <OtpScreen
         subtitle={t('password.reset.code', { phone: formatPhone(phone) })}
+        blockKey={phone}
         onBack={() => goTo('signIn')}
         resend={() => sendCode(phone)}
         verify={async (code) => {
@@ -434,6 +460,32 @@ export function AuthPage() {
         text={t('device.failed.text')}
         primary={{ label: t('device.failed.retry'), onClick: () => goTo('deviceFace') }}
         secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
+      />
+    )
+
+  if (step === 'blocked')
+    return (
+      <Result
+        tone="danger"
+        icon={Ban}
+        title={t('blocked.title')}
+        text={t('blocked.text', { brand: BRAND.name })}
+        primary={{
+          label: t('blocked.call'),
+          onClick: () => window.location.assign(`tel:+998${BRAND.phone}`),
+        }}
+        secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
+      />
+    )
+
+  if (step === 'notOwner')
+    return (
+      <Result
+        tone="danger"
+        icon={Phone}
+        title={t('owner.title')}
+        text={t('owner.text', { phone: formatPhone(phone) })}
+        primary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
       />
     )
 

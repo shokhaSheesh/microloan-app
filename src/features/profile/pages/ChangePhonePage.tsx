@@ -50,6 +50,7 @@ export function ChangePhonePage() {
     return (
       <OtpScreen
         subtitle={t('code.subtitle', { phone: formatPhone(phone) })}
+        blockKey={phone}
         onBack={() => setStep('phone')}
         resend={() => sendCode(phone)}
         verify={async (code) => {

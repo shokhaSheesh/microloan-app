@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { Field } from './Field'
 
@@ -11,6 +11,8 @@ type Props = {
   hint?: string
   disabled?: boolean
   autoFocus?: boolean
+  /** Digits only, for bank card codes (Atmos). Our SMS codes are letters and digits. */
+  numeric?: boolean
 }
 
 /** One-time code. A single real input sits invisibly over the boxes, so paste and SMS autofill work. */
@@ -23,10 +25,16 @@ export function OtpField({
   hint,
   disabled,
   autoFocus,
+  numeric,
 }: Props) {
   const id = useId()
   const [focused, setFocused] = useState(false)
   const activeIndex = Math.min(value.length, length - 1)
+  const input = useRef<HTMLInputElement>(null)
+  // A disabled input drops focus while a code is checked; after a wrong one, typing goes on here
+  useEffect(() => {
+    if (autoFocus && !disabled) input.current?.focus()
+  }, [autoFocus, disabled])
 
   return (
     <Field label={label} htmlFor={id} error={error} hint={hint}>
@@ -50,8 +58,12 @@ export function OtpField({
           ))}
         </div>
         <input
+          ref={input}
           id={id}
-          inputMode="numeric"
+          inputMode={numeric ? 'numeric' : 'text'}
+          autoCapitalize={numeric ? undefined : 'characters'}
+          autoCorrect="off"
+          spellCheck={false}
           autoComplete="one-time-code"
           autoFocus={autoFocus}
           disabled={disabled}
@@ -59,7 +71,14 @@ export function OtpField({
           aria-invalid={!!error || undefined}
           className="absolute inset-0 size-full cursor-text opacity-0"
           value={value}
-          onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, length))}
+          onChange={(e) =>
+            onChange(
+              (numeric
+                ? e.target.value.replace(/\D/g, '')
+                : e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+              ).slice(0, length),
+            )
+          }
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />

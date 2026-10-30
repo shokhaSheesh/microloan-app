@@ -43,8 +43,21 @@ const FACE_FAILS = new Set(['991112233'])
 
 export const WRONG_PASSWORD = 'wrong1234'
 
-export async function sendCode(_phone: string) {
+/** Clients the brand blocked in the admin: no code is sent to them. */
+const BLOCKED = new Set(['977777777'])
+/** Numbers PlayMobile says belong to someone else than the person MyID confirmed. */
+const NOT_OWNER = new Set(['977009988'])
+
+/** Rejects with `client_blocked` when the brand blocked this client; then no SMS goes out. */
+export async function sendCode(phone: string) {
   await delay(700)
+  if (BLOCKED.has(phone)) throw new Error('client_blocked')
+}
+
+/** PlayMobile: is this number registered to the person with this PINFL? Rejects when not. */
+export async function checkPhoneOwner(phone: string, _pinfl: string) {
+  await delay(600)
+  if (NOT_OWNER.has(phone)) throw new Error('not_owner')
 }
 
 /** Rejects on a wrong code. Resolves with the borrower when this number already has an account. */
