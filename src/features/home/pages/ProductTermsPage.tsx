@@ -23,7 +23,7 @@ const REQUIREMENTS: TranslationKey[] = [
   'terms.req.income',
 ]
 const EARLY: TranslationKey[] = ['terms.early.any', 'terms.early.fee', 'terms.early.partial']
-const LATE: TranslationKey[] = ['terms.late.remind', 'terms.late.penalty', 'terms.late.history']
+const LATE: TranslationKey[] = ['terms.late.remind']
 
 /** The terms grouped by rate: e.g. 3–12 months at the lower rate, 18–24 at the higher one. */
 function rateRows(product: Product) {

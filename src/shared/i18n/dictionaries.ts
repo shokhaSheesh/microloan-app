@@ -286,8 +286,6 @@ const uz = {
   'terms.req.income': 'Daromad va ish joyi haqida maʼlumot, kamida 2 ta yaqiningiz raqami',
   'terms.late': 'Toʻlov kechiksa',
   'terms.late.remind': 'SMS va qoʻngʻiroq orqali eslatamiz',
-  'terms.late.penalty': 'Kechikkan har kun uchun penya qoʻshiladi, miqdori shartnomada',
-  'terms.late.history': 'Kechikish kredit tarixingizga yoziladi',
   'terms.calculate': 'Hisoblash',
   'schedule.principal': 'Asosiy qarz',
   'schedule.interest': 'Hisoblangan foiz',
@@ -313,6 +311,9 @@ const uz = {
   'details.consent': 'Kredit tarixim va daromadim tekshirilishiga roziman',
   'details.consent.required': 'Ariza uchun rozilik kerak',
   'details.send': 'Ariza yuborish',
+  'sent.title': 'Ariza yuborildi',
+  'sent.text':
+    'Arizangiz koʻrib chiqilmoqda. Natija tayyor boʻlganda SMS va bildirishnoma yuboramiz.',
   'review.title': 'Ariza koʻrib chiqilmoqda',
   'review.hint': 'Odatda bir daqiqadan kam.',
   'review.myid': 'MyID maʼlumotlari',
@@ -373,10 +374,7 @@ const uz = {
   'payoutFailed.toArizalar': 'Arizalarimga',
   'ariza.status.payoutRetry': 'Pul qayta yuborilmoqda',
   'overdue.title': 'Toʻlov {days} kun kechikdi',
-  'overdue.hint':
-    'Har bir kechikkan kun uchun penya qoʻshiladi. Kechikish kredit tarixingizga yoziladi.',
   'overdue.pay': 'Toʻlash',
-  'profile.fraud': 'Firibgarlikdan himoya',
   'profile.design': 'Dizayn',
   'states.title': 'Holatlar namunasi',
   'states.hint':
@@ -417,54 +415,6 @@ const uz = {
   'sessions.end.message':
     '{device} hisobdan chiqadi. Qayta kirish uchun parol va MyID kerak boʻladi.',
   'sessions.ended': 'Sessiya tugatildi',
-  'fraud.schemes': 'Firibgarlik sxemalari',
-  'fraud.schemes.hint':
-    'Firibgarlar {brand}, bank yoki politsiya nomidan qoʻngʻiroq qilib, qarzni ularga olib berishga undaydi. Qanday ishlashini bilib oling.',
-  'fraud.rules': 'Har doim yodda tuting',
-  'fraud.rule.code': 'SMS-kodni hech kimga aytmang, xodimlarimiz ham soʻramaydi',
-  'fraud.rule.self': 'Qarzni faqat oʻzingiz uchun va oʻzingiz rasmiylashtiring',
-  'fraud.rule.call':
-    'Shubhali qoʻngʻiroq boʻlsa, goʻshakni qoʻying va rasmiy raqamimizga oʻzingiz qoʻngʻiroq qiling',
-  'fraud.how': 'Qanday aldashadi',
-  'fraud.scheme.staff': 'Xodim yoki bank nomidan qoʻngʻiroq',
-  'fraud.scheme.staff.how':
-    '«Hisobingizda shubhali amal bor, xavfsiz hisobga oʻtkazamiz» deyishadi va ilovada nima bosishni aytib turishadi.',
-  'fraud.scheme.staff.do':
-    'Goʻshakni qoʻying. Biz hech qachon pul oʻtkazishni yoki qarz olishni soʻramaymiz.',
-  'fraud.scheme.code': 'SMS-kodni soʻrashadi',
-  'fraud.scheme.code.how':
-    '«Tasdiqlash uchun kelgan kodni ayting» deyishadi. Bu kod bilan sizning nomingizga qarz rasmiylashtiriladi.',
-  'fraud.scheme.code.do': 'Kodni hech kimga aytmang. Kodni faqat ilovaning oʻziga kiriting.',
-  'fraud.scheme.loan': '«Men uchun qarz olib bering»',
-  'fraud.scheme.loan.how':
-    'Tanish yoki notanish odam qarzni sizning nomingizga olib, pulni unga berishingizni soʻraydi va oʻzi toʻlashini vaʼda qiladi.',
-  'fraud.scheme.loan.do':
-    'Qarz sizning nomingizda qoladi va toʻlash sizning zimmangizda boʻladi. Rozi boʻlmang.',
-  'fraud.scheme.prize': 'Yutuq yoki kompensatsiya',
-  'fraud.scheme.prize.how':
-    '«Yutuq olish uchun» yoki «kompensatsiya uchun» avval toʻlov yoki karta maʼlumotlarini soʻrashadi.',
-  'fraud.scheme.prize.do': 'Karta raqami, muddati va kodni hech kimga bermang.',
-  'fraud.scheme.job': 'Masofaviy ish',
-  'fraud.scheme.job.how':
-    'Ish uchun «roʻyxatdan oʻtish» deb pasport, MyID orqali yuz tasvirini yoki kartangizni soʻrashadi.',
-  'fraud.scheme.job.do': 'MyID tekshiruvini faqat oʻzingiz va oʻz ishingiz uchun oʻting.',
-  'fraud.report': 'Firibgarlik haqida xabar berish',
-  'fraud.report.hint':
-    'Nima boʻlganini yozing. Xabar «Firibgarlik» belgisi bilan yordam chatiga tushadi.',
-  'fraud.call': 'Qoʻngʻiroq qilish',
-  'fraud.send': 'Yuborish',
-  'fraud.kind': 'Nima boʻldi',
-  'fraud.kind.call': 'Shubhali qoʻngʻiroq',
-  'fraud.kind.message': 'SMS yoki messenjer',
-  'fraud.kind.loan': 'Nomimga qarz olingan',
-  'fraud.kind.card': 'Kartam bilan muammo',
-  'fraud.phone': 'Firibgar raqami',
-  'fraud.phone.hint': 'Agar bilsangiz',
-  'fraud.text': 'Nima boʻlganini yozing',
-  'fraud.text.placeholder': 'Kim, qachon, nima soʻradi',
-  'chat.fraud.tag': 'Firibgarlik',
-  'chat.fraud.reply':
-    'Xabaringiz xavfsizlik boʻlimiga yuborildi. Hech kimga kod aytmang. Operator tez orada bogʻlanadi.',
   'ariza.status.review': 'Koʻrib chiqilmoqda',
   'ariza.status.approved': 'Tasdiqlandi',
   'ariza.status.counter': 'Qarshi taklif',
@@ -947,8 +897,6 @@ const ru: Record<TranslationKey, string> = {
   'terms.req.income': 'Сведения о доходе и работе, номера минимум 2 близких',
   'terms.late': 'Если платёж просрочен',
   'terms.late.remind': 'Напомним по SMS и звонком',
-  'terms.late.penalty': 'За каждый день просрочки начисляется пеня, размер — в договоре',
-  'terms.late.history': 'Просрочка попадает в вашу кредитную историю',
   'terms.calculate': 'Рассчитать',
   'schedule.principal': 'Основной долг',
   'schedule.interest': 'Начисленные проценты',
@@ -974,6 +922,8 @@ const ru: Record<TranslationKey, string> = {
   'details.consent': 'Согласен на проверку кредитной истории и дохода',
   'details.consent.required': 'Для заявки нужно согласие',
   'details.send': 'Отправить заявку',
+  'sent.title': 'Заявка отправлена',
+  'sent.text': 'Заявка на рассмотрении. Когда решение будет готово, пришлём SMS и уведомление.',
   'review.title': 'Заявка рассматривается',
   'review.hint': 'Обычно меньше минуты.',
   'review.myid': 'Данные MyID',
@@ -1034,10 +984,7 @@ const ru: Record<TranslationKey, string> = {
   'payoutFailed.toArizalar': 'К моим заявкам',
   'ariza.status.payoutRetry': 'Перевод отправляется повторно',
   'overdue.title': 'Платёж просрочен на {days} дн.',
-  'overdue.hint':
-    'За каждый день просрочки начисляется пеня. Просрочка попадает в кредитную историю.',
   'overdue.pay': 'Оплатить',
-  'profile.fraud': 'Защита от мошенников',
   'profile.design': 'Дизайн',
   'states.title': 'Примеры состояний',
   'states.hint':
@@ -1077,52 +1024,6 @@ const ru: Record<TranslationKey, string> = {
   'sessions.end.message':
     '{device} выйдет из аккаунта. Для повторного входа понадобятся пароль и MyID.',
   'sessions.ended': 'Сеанс завершён',
-  'fraud.schemes': 'Мошеннические схемы',
-  'fraud.schemes.hint':
-    'Мошенники звонят от имени {brand}, банка или полиции и уговаривают взять заём для них. Узнайте, как это работает.',
-  'fraud.rules': 'Всегда помните',
-  'fraud.rule.code': 'Никому не называйте SMS-код, наши сотрудники его не спрашивают',
-  'fraud.rule.self': 'Оформляйте заём только для себя и только сами',
-  'fraud.rule.call':
-    'Если звонок подозрительный, положите трубку и сами позвоните на наш официальный номер',
-  'fraud.how': 'Как обманывают',
-  'fraud.scheme.staff': 'Звонок от имени сотрудника или банка',
-  'fraud.scheme.staff.how':
-    'Говорят: «На вашем счёте подозрительная операция, переведём на безопасный счёт», и диктуют, что нажимать в приложении.',
-  'fraud.scheme.staff.do': 'Положите трубку. Мы никогда не просим перевести деньги или взять заём.',
-  'fraud.scheme.code': 'Просят SMS-код',
-  'fraud.scheme.code.how':
-    'Говорят: «Назовите код для подтверждения». С этим кодом на вас оформят заём.',
-  'fraud.scheme.code.do': 'Никому не называйте код. Вводите его только в самом приложении.',
-  'fraud.scheme.loan': '«Возьми заём для меня»',
-  'fraud.scheme.loan.how':
-    'Знакомый или незнакомый человек просит оформить заём на вас и отдать деньги ему, обещая платить сам.',
-  'fraud.scheme.loan.do': 'Заём останется на вас, и платить придётся вам. Не соглашайтесь.',
-  'fraud.scheme.prize': 'Выигрыш или компенсация',
-  'fraud.scheme.prize.how':
-    '«Чтобы получить выигрыш» или «компенсацию» сначала просят оплату или данные карты.',
-  'fraud.scheme.prize.do': 'Никому не сообщайте номер карты, срок и код.',
-  'fraud.scheme.job': 'Удалённая работа',
-  'fraud.scheme.job.how':
-    'Для «регистрации на работу» просят паспорт, снимок лица через MyID или вашу карту.',
-  'fraud.scheme.job.do': 'Проходите проверку MyID только сами и только для своих дел.',
-  'fraud.report': 'Сообщить о мошенничестве',
-  'fraud.report.hint':
-    'Опишите, что произошло. Сообщение попадёт в чат поддержки с отметкой «Мошенничество».',
-  'fraud.call': 'Позвонить',
-  'fraud.send': 'Отправить',
-  'fraud.kind': 'Что произошло',
-  'fraud.kind.call': 'Подозрительный звонок',
-  'fraud.kind.message': 'SMS или мессенджер',
-  'fraud.kind.loan': 'На меня оформили заём',
-  'fraud.kind.card': 'Проблема с картой',
-  'fraud.phone': 'Номер мошенника',
-  'fraud.phone.hint': 'Если знаете',
-  'fraud.text': 'Опишите, что произошло',
-  'fraud.text.placeholder': 'Кто, когда, что просил',
-  'chat.fraud.tag': 'Мошенничество',
-  'chat.fraud.reply':
-    'Сообщение передано в отдел безопасности. Никому не называйте коды. Оператор скоро свяжется.',
   'ariza.status.review': 'На рассмотрении',
   'ariza.status.approved': 'Одобрена',
   'ariza.status.counter': 'Встречное',

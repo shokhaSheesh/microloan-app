@@ -9,14 +9,13 @@ import {
   LoaderCircle,
   Plus,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   addAriza,
   arizaNumber,
   arizalarOf,
   isOffer,
-  OFFER_DAYS,
   updateAriza,
 } from '@/entities/applications/applications'
 import { setDraft, useDraft, type Draft } from '@/entities/apply/draft'
@@ -37,25 +36,26 @@ import { FormScreen } from '@/shared/ui/FormScreen'
 import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { NumberField } from '@/shared/ui/NumberField'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
+import { ResultScreen } from '@/shared/ui/ResultScreen'
 import { SelfCheckSheet, type SelfCheckAction } from '@/shared/ui/SelfCheck'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
 import { TextField } from '@/shared/ui/TextField'
-import { decide, payOut, sendSignCode, verifySignCode, type Decision } from '../api/mockApply'
+import { payOut, sendSignCode, verifySignCode, type Decision } from '../api/mockApply'
 import { PayoutFailed } from '../components/PayoutFailed'
 import { RefuseSheet } from '../components/RefuseSheet'
 import { ScheduleSheet } from '../components/ScheduleSheet'
 
 type Step =
-  'details' | 'review' | 'decision' | 'contract' | 'sign' | 'payout' | 'payoutFailed' | 'done'
+  'details' | 'sent' | 'decision' | 'contract' | 'sign' | 'payout' | 'payoutFailed' | 'done'
 /** Contacts every ariza must name, so the brand can reach someone. */
 const MIN_CONTACTS = 2
 /** A unique number for the new loan, until the API issues one. */
 const stamp = () => Date.now()
-const CHECKS = ['myid', 'history', 'load'] as const
 
 /**
  * Qarz olish after the calculator: the application (income, work, at least two contacts, the card to receive
- * the money, consent to the credit check), the review, the decision (approved, a smaller
+ * the money, consent to the credit check), then «Ariza yuborildi»: it waits in «Koʻrib
+ * chiqilmoqda» until FlexSoft decides. An offer opened from Arizalar shows the decision (approved, a smaller
  * counter-offer, or declined), the contract, signing by SMS code, and the payout to the card.
  * Every step is kept on the ariza, which Qarzlarim → Arizalar lists. An offer left with
  * "Keyinroq" is opened again from there (`?ariza=<id>`), straight at the decision.
@@ -95,21 +95,13 @@ export function ApplicationPage() {
   // «Oʻzim bajaryapman» before the credit check and before the signature
   const [selfCheck, setSelfCheck] = useState<SelfCheckAction | null>(null)
   const [agreed, setAgreed] = useState(false)
-  const [decision, setDecision] = useState<Decision | null>(
+  const [decision] = useState<Decision | null>(
     resumed ? { kind: resumed.status as 'approved' | 'counter', amount: resumed.offered! } : null,
   )
   const [read, setRead] = useState(false)
   const [schedule, setSchedule] = useState(false)
-  const [checked, setChecked] = useState(0)
   const [today] = useState(() => new Date())
   const [leaving, setLeaving] = useState(false)
-
-  // The review ticks its three checks off one by one while the decision is worked out
-  useEffect(() => {
-    if (step !== 'review') return
-    const timers = CHECKS.map((_, i) => setTimeout(() => setChecked(i + 1), 1100 * (i + 1)))
-    return () => timers.forEach(clearTimeout)
-  }, [step])
 
   if (!draft || !borrower) return leaving ? null : <Navigate to={ROUTES.apply} replace />
   const product = BRAND.products.find((item) => item.id === draft.productId)!
@@ -137,12 +129,12 @@ export function ApplicationPage() {
   const send = async () => {
     if (!income) return
     setSelfCheck(null)
-    setChecked(0)
-    setStep('review')
     const id = `a${stamp()}`
+    const number = arizaNumber(today)
+    // FlexSoft decides by the product's rules; the answer comes later as an SMS and a notification
     addAriza(borrower.passport, {
       id,
-      number: arizaNumber(today),
+      number,
       productId: product.id,
       amount: draft.amount,
       term: draft.term,
@@ -153,29 +145,7 @@ export function ApplicationPage() {
       createdAt: today,
     })
     setArizaId(id)
-    const result = await decide(draft.amount, rate, draft.term, income)
-    updateAriza(
-      borrower.passport,
-      id,
-      result.kind === 'declined'
-        ? {
-            status: 'declined',
-            // The mock only declines when the payment is too big for the income
-            reason: 'load',
-            reapplyOn: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30),
-          }
-        : {
-            status: result.kind,
-            offered: result.amount,
-            expiresOn: new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate() + OFFER_DAYS,
-            ),
-          },
-    )
-    setDecision(result)
-    setStep('decision')
+    setStep('sent')
   }
   const pay = async () => {
     setStep('payout')
@@ -231,46 +201,26 @@ export function ApplicationPage() {
     </InfoList>
   )
 
-  if (step === 'review')
+  if (step === 'sent')
     return (
-      <FormScreen onSubmit={() => {}}>
-        <div className="flex flex-1 flex-col justify-center gap-8">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <span className="relative grid size-24 place-items-center rounded-full bg-accent-200 text-brand">
-              <FileText size={40} strokeWidth={1.6} />
-              <LoaderCircle
-                size={96}
-                strokeWidth={1.2}
-                className="absolute inset-0 animate-spin text-accent-500"
-                aria-hidden
-              />
-            </span>
-            <div role="status" className="flex flex-col gap-1.5">
-              <h1 className="text-2xl font-bold">{t('review.title')}</h1>
-              <p className="text-ink-muted">{t('review.hint')}</p>
-            </div>
-          </div>
-          <ul className="flex flex-col rounded-card border border-line bg-canvas px-4">
-            {CHECKS.map((check, i) => (
-              <li
-                key={check}
-                className="flex items-center gap-3 border-b border-line py-3.5 last:border-b-0"
-              >
-                {i < checked ? (
-                  <span className="grid size-6 place-items-center rounded-full bg-success text-white">
-                    <Check size={16} strokeWidth={3} />
-                  </span>
-                ) : (
-                  <LoaderCircle size={24} className="animate-spin text-ink-subtle" />
-                )}
-                <span className={i < checked ? 'font-medium' : 'text-ink-muted'}>
-                  {t(`review.${check}`)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </FormScreen>
+      <ResultScreen
+        tone="success"
+        icon={CircleCheck}
+        title={t('sent.title')}
+        text={t('sent.text')}
+        note={`${product.name} · ${formatSum(draft.amount)} · № ${
+          arizalarOf(borrower.passport).find((item) => item.id === arizaId)?.number ?? ''
+        }`}
+        primary={{
+          label: t('payoutFailed.toArizalar'),
+          onClick: () => {
+            setLeaving(true)
+            navigate(loansPath('applications'), { replace: true })
+            setDraft(null)
+          },
+        }}
+        secondary={{ label: t('decision.home'), onClick: exit }}
+      />
     )
 
   if (step === 'decision' && decision)

@@ -20,9 +20,7 @@ export const ROUTES = {
   notifications: '/notifications',
   cards: '/profile/cards',
   security: '/profile/security',
-  sessions: '/profile/security/sessions',
-  fraudSchemes: '/profile/fraud',
-  fraudReport: '/profile/fraud/report',
+  sessions: '/profile/sessions',
   /** «Holatlar namunasi»: the states sample data never shows. */
   states: '/profile/states',
   state: '/profile/states/:id',

@@ -27,7 +27,6 @@ export function OverdueNotice({ loan }: { loan: Loan }) {
           <span className="text-2xl font-bold tabular-nums">{formatSum(overdue.sum)}</span>
         </div>
       </div>
-      <p className="text-sm text-ink-muted">{t('overdue.hint')}</p>
       <Button block onClick={() => navigate(payPath(loan.id))}>
         {t('overdue.pay')}
       </Button>

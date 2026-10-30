@@ -1,23 +1,13 @@
-import { ImagePlus, SendHorizontal, Siren, X } from 'lucide-react'
+import { ImagePlus, SendHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { BRAND } from '@/shared/config/brand'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
-import { formatPhone } from '@/shared/lib/phone'
 import { BrandMark } from '@/shared/ui/BrandMark'
 import { PageHeader } from '@/shared/ui/PageHeader'
-import type { FraudReport } from './FraudReportPage'
 
-/** `photos` are local object URLs; the real app uploads them first. `fraud`: a fraud report. */
-type Message = {
-  id: number
-  from: 'me' | 'support'
-  text: string
-  at: string
-  photos?: string[]
-  fraud?: boolean
-}
+/** `photos` are local object URLs; the real app uploads them first. */
+type Message = { id: number; from: 'me' | 'support'; text: string; at: string; photos?: string[] }
 
 const MAX_PHOTOS = 5
 
@@ -29,32 +19,12 @@ let nextId = 10
 /**
  * Yordam chati with an operator: a greeting, quick topics to start with, and the conversation.
  * Photos (up to five at a time, e.g. a receipt or a card) go with the message or on their own.
- * The prototype's operator answers every message with the same line after a moment. A fraud
- * report from Profil arrives as the first message, marked «Firibgarlik», with its own answer.
+ * The prototype's operator answers every message with the same line after a moment.
  */
 export function ChatPage() {
   const { t } = useI18n()
-  const report = (useLocation().state as { fraud?: FraudReport } | null)?.fraud
   const [messages, setMessages] = useState<Message[]>(() => [
     { id: 1, from: 'support', text: t('chat.hello', { brand: BRAND.name }), at: time(now()) },
-    ...(report
-      ? [
-          {
-            id: 2,
-            from: 'me' as const,
-            fraud: true,
-            text: [
-              t(`fraud.kind.${report.kind}`),
-              report.phone && formatPhone(report.phone),
-              report.text,
-            ]
-              .filter(Boolean)
-              .join('\n'),
-            at: time(now()),
-          },
-          { id: 3, from: 'support' as const, text: t('chat.fraud.reply'), at: time(now()) },
-        ]
-      : []),
   ])
   const [text, setText] = useState('')
   const [photos, setPhotos] = useState<string[]>([])
@@ -139,12 +109,6 @@ export function ChatPage() {
                     </button>
                   ))}
                 </div>
-              )}
-              {message.fraud && (
-                <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
-                  <Siren size={12} />
-                  {t('chat.fraud.tag')}
-                </span>
               )}
               {message.text && <p className="whitespace-pre-line">{message.text}</p>}
               <p

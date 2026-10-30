@@ -11,8 +11,7 @@ import {
   ShieldCheck,
   Users,
   LayoutGrid,
-  ShieldAlert,
-  Siren,
+  MonitorSmartphone,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -87,6 +86,7 @@ export function ProfilePage() {
       <Section title={t('profile.settings')}>
         <MenuList>
           <MenuRow icon={ShieldCheck} label={t('profile.security')} to={ROUTES.security} />
+          <MenuRow icon={MonitorSmartphone} label={t('sessions.title')} to={ROUTES.sessions} />
           <MenuRow
             icon={Globe}
             label={t('lang.title')}
@@ -101,13 +101,6 @@ export function ProfilePage() {
           <MenuRow icon={CircleHelp} label={t('profile.faq')} to={ROUTES.faq} />
           <MenuRow icon={MessageCircle} label={t('profile.chat')} to={ROUTES.chat} />
           <MenuRow icon={Phone} label={t('profile.contacts')} to={ROUTES.contacts} />
-        </MenuList>
-      </Section>
-
-      <Section title={t('profile.fraud')}>
-        <MenuList>
-          <MenuRow icon={ShieldAlert} label={t('fraud.schemes')} to={ROUTES.fraudSchemes} />
-          <MenuRow icon={Siren} label={t('fraud.report')} to={ROUTES.fraudReport} />
         </MenuList>
       </Section>
 

@@ -10,7 +10,7 @@ import { PageHeader } from '@/shared/ui/PageHeader'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 /**
- * Profil → Xavfsizlik → Aktiv sessiyalar: every phone signed in to this account, this one first
+ * Profil → Aktiv sessiyalar: every phone signed in to this account, this one first
  * and marked. Any other can be ended; it is signed out at once and needs the password and MyID
  * again.
  */
