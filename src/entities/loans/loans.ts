@@ -96,6 +96,18 @@ export function progressOf(loan: Loan) {
   }
 }
 
+/** The monthly payments whose day has passed unpaid: their sum and how many days late the first is. */
+export function overdueOf(loan: Loan, today: Date) {
+  if (!loan.overdueSince || loan.closedAt) return null
+  const late = progressOf(loan)
+    .schedule.slice(loan.paidCount)
+    .filter((item) => item.due < today)
+  return {
+    sum: late.reduce((total, item) => total + item.amount, 0),
+    days: Math.max(1, Math.floor((today.getTime() - loan.overdueSince.getTime()) / 86_400_000)),
+  }
+}
+
 /** Each month's state, for the schedule list. */
 export function stateOf(loan: Loan, item: Installment, today: Date): InstallmentState {
   const payoff = loan.prepayments?.find((extra) => extra.kind === 'full')
@@ -237,8 +249,23 @@ const SAMPLES_BY_BRAND: Record<BrandId, { sample: Loan[] }> = {
   },
 }
 const SAMPLES: Record<string, Loan[]> = {}
+// Bobur (94 555 66 77) is behind on the running loan, so the overdue screens have something to show
+const LATE_OWNERS = new Set(['AE5556677'])
+const behind = (list: Loan[]) =>
+  list.map((loan) =>
+    loan.closedAt
+      ? loan
+      : {
+          ...loan,
+          paidCount: loan.paidCount - 1,
+          overdueSince: scheduleOf(loan)[loan.paidCount - 1].due,
+        },
+  )
 // A borrower's list starts as the samples the first time it is asked for
-const ownLoans = (owner: string) => (SAMPLES[owner] ??= SAMPLES_BY_BRAND[BRAND.id].sample)
+const ownLoans = (owner: string) =>
+  (SAMPLES[owner] ??= LATE_OWNERS.has(owner)
+    ? behind(SAMPLES_BY_BRAND[BRAND.id].sample)
+    : SAMPLES_BY_BRAND[BRAND.id].sample)
 
 const NONE: Loan[] = []
 const listeners = new Set<() => void>()

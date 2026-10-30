@@ -2,7 +2,7 @@ import { CreditCard, Lock, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { cardText, removeCard, useCards } from '@/entities/cards/cards'
 import { useLoans } from '@/entities/loans/loans'
-import { useBorrower } from '@/entities/session/session'
+import { useBorrower, holderOf } from '@/entities/session/session'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/Button'
@@ -37,7 +37,7 @@ export function CardsPage() {
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="font-semibold tracking-wide tabular-nums">{cardText(card)}</span>
               <span className="text-xs opacity-60 tabular-nums">
-                {card.expiry.slice(0, 2)}/{card.expiry.slice(2)}
+                {holderOf(borrower.fullName)} · {card.expiry.slice(0, 2)}/{card.expiry.slice(2)}
               </span>
             </div>
             {inUse(card.last4) ? (

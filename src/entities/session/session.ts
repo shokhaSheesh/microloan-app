@@ -80,6 +80,12 @@ export const session = {
   },
 }
 
+/** «Ism F.» as banks print it on cards: "Karimova Dilnoza Rustam qizi" -> "Dilnoza K.". */
+export function holderOf(fullName: string) {
+  const [surname = '', name = ''] = fullName.split(' ')
+  return name ? `${name} ${surname.charAt(0)}.` : surname
+}
+
 let cached: { raw: string | null; value: Borrower | null } = { raw: null, value: null }
 /** The signed-in borrower; re-renders on sign-in and sign-out. */
 export const useBorrower = () =>

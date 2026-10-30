@@ -27,6 +27,7 @@ const TONES: Record<ArizaStatus, StatusTone> = {
   approved: 'warning',
   counter: 'warning',
   signed: 'info',
+  payoutRetry: 'warning',
   paidOut: 'success',
   declined: 'danger',
   expired: 'neutral',

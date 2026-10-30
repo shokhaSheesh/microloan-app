@@ -1,4 +1,4 @@
-import { Check, ChevronDown, CircleAlert, Download, Zap } from 'lucide-react'
+import { Check, ChevronDown, Download, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -19,6 +19,7 @@ import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { EarlyRepaySheet } from '../components/EarlyRepaySheet'
+import { OverdueNotice } from '../components/OverdueNotice'
 import { InstallmentBreakdown } from '../components/InstallmentBreakdown'
 
 type Tab = 'schedule' | 'history' | 'contract'
@@ -123,12 +124,7 @@ export function LoanPage() {
           )}
         </section>
 
-        {loan.overdueSince && !loan.closedAt && (
-          <p className="flex items-center gap-2.5 rounded-control bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
-            <CircleAlert size={20} className="shrink-0" />
-            {t('home.loan.late')}
-          </p>
-        )}
+        <OverdueNotice loan={loan} />
 
         {!loan.closedAt && (
           <Button variant="secondary" block onClick={() => setEarly(true)}>

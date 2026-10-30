@@ -2,7 +2,6 @@ import {
   Bell,
   CalendarDays,
   ChevronRight,
-  CircleAlert,
   Clock,
   CreditCard,
   FileClock,
@@ -14,6 +13,7 @@ import {
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { isOffer, isPending, useArizalar, type Ariza } from '@/entities/applications/applications'
 import { useNotifications } from '@/entities/notifications/notifications'
+import { OverdueNotice } from '@/features/loans/components/OverdueNotice'
 import { productOf, progressOf, type Loan, useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
@@ -126,12 +126,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
 
   return (
     <section className="flex flex-col gap-3">
-      {late && (
-        <p className="flex items-center gap-2.5 rounded-control bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
-          <CircleAlert size={20} className="shrink-0" />
-          {t('home.loan.late')}
-        </p>
-      )}
+      {late && <OverdueNotice loan={loan} />}
       <div className="relative flex flex-col gap-5 overflow-hidden rounded-[28px] bg-tile p-5 text-on-tile">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col">

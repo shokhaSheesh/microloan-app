@@ -4,13 +4,14 @@ import {
   ChevronRight,
   CircleCheck,
   CircleX,
+  Clock,
   CreditCard,
   FileText,
   LoaderCircle,
   Plus,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   addAriza,
   arizaNumber,
@@ -23,11 +24,10 @@ import { setDraft, useDraft, type Draft } from '@/entities/apply/draft'
 import { useContacts } from '@/entities/contacts/contacts'
 import { ContactSheet } from '@/features/contacts/components/ContactSheet'
 import { cardText, useCards } from '@/entities/cards/cards'
-import { AddCardSheet } from '@/features/cards/components/AddCardSheet'
 import { addLoan, DEFAULT_PAY_DAY, quote, rateFor, type Loan } from '@/entities/loans/loans'
-import { useBorrower } from '@/entities/session/session'
+import { holderOf, useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
-import { ROUTES } from '@/shared/config/routes'
+import { loansPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 import { formatDate, formatSum } from '@/shared/lib/format'
@@ -38,13 +38,15 @@ import { FormScreen } from '@/shared/ui/FormScreen'
 import { InfoList, InfoRow } from '@/shared/ui/InfoList'
 import { NumberField } from '@/shared/ui/NumberField'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
+import { SelfCheckSheet, type SelfCheckAction } from '@/shared/ui/SelfCheck'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
 import { TextField } from '@/shared/ui/TextField'
 import { decide, payOut, sendSignCode, verifySignCode, type Decision } from '../api/mockApply'
 import { RefuseSheet } from '../components/RefuseSheet'
 import { ScheduleSheet } from '../components/ScheduleSheet'
 
-type Step = 'details' | 'review' | 'decision' | 'contract' | 'sign' | 'payout' | 'done'
+type Step =
+  'details' | 'review' | 'decision' | 'contract' | 'sign' | 'payout' | 'payoutFailed' | 'done'
 /** Contacts every ariza must name, so the brand can reach someone. */
 const MIN_CONTACTS = 2
 /** A unique number for the new loan, until the API issues one. */
@@ -87,10 +89,11 @@ export function ApplicationPage() {
   const [refusing, setRefusing] = useState(false)
   const [income, setIncome] = useState<number | null>(null)
   const [work, setWork] = useState('')
-  // Picked from the linked cards; "Karta qoʻshish" links a new one and picks it
+  // Picked from the cards linked in Profil → Kartalar; none here means linking one there first
   const cards = useCards(borrower?.passport)
   const [cardId, setCardId] = useState<string | undefined>(cards[0]?.id)
-  const [addingCard, setAddingCard] = useState(false)
+  // «Oʻzim bajaryapman» before the credit check and before the signature
+  const [selfCheck, setSelfCheck] = useState<SelfCheckAction | null>(null)
   const [agreed, setAgreed] = useState(false)
   const [decision, setDecision] = useState<Decision | null>(
     resumed ? { kind: resumed.status as 'approved' | 'counter', amount: resumed.offered! } : null,
@@ -126,9 +129,14 @@ export function ApplicationPage() {
     card: !picked,
     agreed: !agreed,
   }
-  const submit = async () => {
+  const submit = () => {
     setSubmitted(true)
     if (Object.values(errors).some(Boolean) || !income) return
+    setSelfCheck('apply')
+  }
+  const send = async () => {
+    if (!income) return
+    setSelfCheck(null)
     setChecked(0)
     setStep('review')
     const id = `a${stamp()}`
@@ -172,7 +180,14 @@ export function ApplicationPage() {
   const pay = async () => {
     setStep('payout')
     if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'signed' })
-    await payOut()
+    try {
+      await payOut(card.last4)
+    } catch {
+      // Atmos is asked again in the background; the ariza says so until the money arrives
+      if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'payoutRetry' })
+      setStep('payoutFailed')
+      return
+    }
     const loanId = `l${stamp()}`
     const number =
       arizalarOf(borrower.passport).find((item) => item.id === arizaId)?.number ??
@@ -345,10 +360,7 @@ export function ApplicationPage() {
       <FormScreen
         onSubmit={() => {
           setSubmitted(true)
-          if (!read) return
-          void sendSignCode()
-          setSubmitted(false)
-          setStep('sign')
+          if (read) setSelfCheck('sign')
         }}
         onBack={() => setStep('decision')}
         footer={
@@ -395,6 +407,17 @@ export function ApplicationPage() {
             </button>
           ))}
         </div>
+        <SelfCheckSheet
+          open={selfCheck === 'sign'}
+          action="sign"
+          onCancel={() => setSelfCheck(null)}
+          onConfirm={() => {
+            setSelfCheck(null)
+            setSubmitted(false)
+            void sendSignCode()
+            setStep('sign')
+          }}
+        />
         <ScheduleSheet
           open={schedule}
           onClose={() => setSchedule(false)}
@@ -440,6 +463,37 @@ export function ApplicationPage() {
       </FormScreen>
     )
 
+  if (step === 'payoutFailed')
+    return (
+      <FormScreen
+        onSubmit={() => {
+          setLeaving(true)
+          navigate(loansPath('applications'), { replace: true })
+          setDraft(null)
+        }}
+        footer={
+          <Button type="submit" block>
+            {t('payoutFailed.toArizalar')}
+          </Button>
+        }
+      >
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+          <span className="grid size-20 place-items-center rounded-full bg-warning-soft text-warning">
+            <Clock size={36} />
+          </span>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold text-balance">{t('payoutFailed.title')}</h1>
+            <p className="text-ink-muted">
+              {t('payoutFailed.text', { sum: formatSum(amount), card: cardText(card) })}
+            </p>
+          </div>
+          <p className="rounded-control border border-line bg-canvas px-4 py-3 text-sm">
+            {t('payoutFailed.schedule')}
+          </p>
+        </div>
+      </FormScreen>
+    )
+
   if (step === 'done')
     return (
       <FormScreen
@@ -469,7 +523,7 @@ export function ApplicationPage() {
   // details
   return (
     <FormScreen
-      onSubmit={() => void submit()}
+      onSubmit={submit}
       onBack={() => navigate(ROUTES.apply)}
       footer={
         <div className="flex flex-col gap-4">
@@ -545,7 +599,12 @@ export function ApplicationPage() {
               )}
             >
               <CreditCard size={20} className="text-brand" />
-              <span className="flex-1 tabular-nums">{cardText(item)}</span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="tabular-nums">{cardText(item)}</span>
+                <span className="text-sm font-normal text-ink-muted">
+                  {holderOf(borrower.fullName)}
+                </span>
+              </span>
               <span
                 className={cn(
                   'grid size-5 place-items-center rounded-full border-2',
@@ -556,17 +615,22 @@ export function ApplicationPage() {
               </span>
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => setAddingCard(true)}
-            className={cn(
-              'flex items-center gap-3 rounded-control border-[1.5px] border-dashed bg-canvas p-3.5 text-left font-semibold text-brand',
-              submitted && errors.card ? 'border-danger' : 'border-line',
-            )}
-          >
-            <Plus size={20} />
-            {t('cards.add')}
-          </button>
+          {cards.length === 0 && (
+            <Link
+              to={ROUTES.cards}
+              className={cn(
+                'flex items-center gap-3 rounded-control border-[1.5px] border-dashed bg-canvas p-3.5 text-left',
+                submitted && errors.card ? 'border-danger' : 'border-line',
+              )}
+            >
+              <CreditCard size={20} className="shrink-0 text-ink-subtle" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="font-semibold">{t('details.card.none')}</span>
+                <span className="text-sm text-ink-muted">{t('details.card.none.hint')}</span>
+              </span>
+              <ChevronRight size={18} className="text-ink-subtle" />
+            </Link>
+          )}
           {submitted && errors.card && (
             <p className="text-sm text-danger">{t('details.card.required')}</p>
           )}
@@ -643,13 +707,12 @@ export function ApplicationPage() {
           onSaved={(added) => setContactIds([...contactIds, added.id])}
         />
       )}
-      {addingCard && (
-        <AddCardSheet
-          owner={borrower.passport}
-          onClose={() => setAddingCard(false)}
-          onAdded={(added) => setCardId(added.id)}
-        />
-      )}
+      <SelfCheckSheet
+        open={selfCheck === 'apply'}
+        action="apply"
+        onCancel={() => setSelfCheck(null)}
+        onConfirm={() => void send()}
+      />
     </FormScreen>
   )
 }

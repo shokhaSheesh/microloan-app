@@ -5,7 +5,8 @@ import { BRAND, type PayType } from '@/shared/config/brand'
 /**
  * Where an ariza stands, as the brand's admin sees it. The rules decide at once, so `review`
  * lasts only while the checks run; an offer (`approved`, `counter`) waits for the borrower to
- * sign, `signed` waits for the payout, and `paidOut` has become a loan. `refused`: the borrower
+ * sign, `signed` waits for the payout, `payoutRetry` is a payout the bank did not take and is
+ * being sent again, and `paidOut` has become a loan. `refused`: the borrower
  * turned the offer down, with a reason.
  */
 export const ARIZA_STATUSES = [
@@ -13,6 +14,7 @@ export const ARIZA_STATUSES = [
   'approved',
   'counter',
   'signed',
+  'payoutRetry',
   'paidOut',
   'declined',
   'expired',

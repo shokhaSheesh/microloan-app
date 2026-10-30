@@ -11,6 +11,15 @@ import type { Borrower } from '@/entities/session/session'
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const REGISTERED: Record<string, Borrower> = {
+  // Late on the running loan (see loans.ts), on a known phone
+  '945556677': {
+    fullName: 'Qodirov Bobur Ilhom oʻgʻli',
+    firstName: 'Bobur',
+    phone: '945556677',
+    passport: 'AE5556677',
+    birthDate: '14.11.1992',
+    address: 'Fargʻona sh., Mustaqillik koʻchasi, 41-uy',
+  },
   '901234567': {
     fullName: 'Karimova Dilnoza Rustam qizi',
     firstName: 'Dilnoza',
@@ -37,8 +46,8 @@ const REGISTERED: Record<string, Borrower> = {
   },
 }
 
-/** Phones this account has signed in on before. Mock: only the first sample. */
-const KNOWN_DEVICE = new Set(['901234567'])
+/** Phones this account has signed in on before. Mock: Dilnoza's and Bobur's. */
+const KNOWN_DEVICE = new Set(['901234567', '945556677'])
 const FACE_FAILS = new Set(['991112233'])
 
 export const WRONG_PASSWORD = 'wrong1234'
