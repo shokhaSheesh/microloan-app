@@ -24,8 +24,8 @@ import { HomeHero } from '../components/HomeHero'
 /**
  * Asosiy, top to bottom: the theme header with the greeting and the story tiles; an ariza still
  * in play (being checked, or an offer to sign); the overdue card when a payment is late; the
- * four quick actions (Kreditlar, Toʻlov, Kartalar, Yordam); the banners; and, before the first
- * loan, how it works. The running loan itself is on Qarzlarim.
+ * four quick actions (Kreditlar, Toʻlov, Kartalar, Yordam); the banners; and how a loan is
+ * taken, always. The running loan itself is on Qarzlarim.
  */
 export function HomePage() {
   const { t } = useI18n()
@@ -57,26 +57,24 @@ export function HomePage() {
 
       <BannerCarousel />
 
-      {!active && (
-        <Section title={t('home.how')}>
-          <ol className="flex flex-col rounded-card border border-line bg-canvas px-4">
-            {(['calc', 'apply', 'sign', 'card'] as const).map((step, i) => (
-              <li
-                key={step}
-                className="flex items-start gap-3 border-b border-line py-3.5 last:border-b-0"
-              >
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-accent-200 text-sm font-bold text-brand">
-                  {i + 1}
-                </span>
-                <div className="flex flex-col gap-0.5">
-                  <p className="font-semibold">{t(`home.how.${step}`)}</p>
-                  <p className="text-sm text-ink-muted">{t(`home.how.${step}.hint`)}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Section>
-      )}
+      <Section title={t('home.how')}>
+        <ol className="flex flex-col rounded-card border border-line bg-canvas px-4">
+          {(['calc', 'apply', 'sign', 'card'] as const).map((step, i) => (
+            <li
+              key={step}
+              className="flex items-start gap-3 border-b border-line py-3.5 last:border-b-0"
+            >
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-accent-200 text-sm font-bold text-brand">
+                {i + 1}
+              </span>
+              <div className="flex flex-col gap-0.5">
+                <p className="font-semibold">{t(`home.how.${step}`)}</p>
+                <p className="text-sm text-ink-muted">{t(`home.how.${step}.hint`)}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Section>
     </div>
   )
 }

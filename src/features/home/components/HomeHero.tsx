@@ -67,7 +67,7 @@ export function HomeHero({ borrower, unread }: { borrower: Borrower; unread: boo
 
       <ul
         aria-label={t('home.stories')}
-        className="relative -mx-5 mt-5 flex gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]"
+        className="relative -mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-1 [scrollbar-width:none]"
       >
         {STORIES.map((story, i) => (
           <li key={story.id} className="shrink-0">
