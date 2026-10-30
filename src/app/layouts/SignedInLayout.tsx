@@ -36,7 +36,7 @@ export function SignedInLayout() {
 
   if (!borrower || !session.hasPin()) return <Navigate to={ROUTES.auth} replace />
   return (
-    <div className="relative h-full">
+    <div className="relative flex h-full min-h-0 flex-col">
       <Outlet />
       {locked && (
         <div className="absolute inset-0 z-50">
