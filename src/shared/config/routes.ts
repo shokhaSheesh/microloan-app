@@ -20,6 +20,12 @@ export const ROUTES = {
   notifications: '/notifications',
   cards: '/profile/cards',
   security: '/profile/security',
+  sessions: '/profile/security/sessions',
+  fraudSchemes: '/profile/fraud',
+  fraudReport: '/profile/fraud/report',
+  /** «Holatlar namunasi»: the states sample data never shows. */
+  states: '/profile/states',
+  state: '/profile/states/:id',
   language: '/profile/language',
   faq: '/profile/faq',
   chat: '/profile/chat',
@@ -41,6 +47,9 @@ export const loanPath = (id: string) => `/loans/${id}`
 /** Kreditlar, optionally just some products (a banner's). */
 export const creditsPath = (ids?: string[]) =>
   ids?.length ? `/credits?ids=${ids.join(',')}` : '/credits'
+
+/** One screen of «Holatlar namunasi». */
+export const statePath = (id: string) => `/profile/states/${id}`
 
 /** One product's «Batafsil shartlar». */
 export const productTermsPath = (id: string) => `/credits/${id}`

@@ -4,7 +4,6 @@ import {
   ChevronRight,
   CircleCheck,
   CircleX,
-  Clock,
   CreditCard,
   FileText,
   LoaderCircle,
@@ -42,6 +41,7 @@ import { SelfCheckSheet, type SelfCheckAction } from '@/shared/ui/SelfCheck'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
 import { TextField } from '@/shared/ui/TextField'
 import { decide, payOut, sendSignCode, verifySignCode, type Decision } from '../api/mockApply'
+import { PayoutFailed } from '../components/PayoutFailed'
 import { RefuseSheet } from '../components/RefuseSheet'
 import { ScheduleSheet } from '../components/ScheduleSheet'
 
@@ -465,33 +465,15 @@ export function ApplicationPage() {
 
   if (step === 'payoutFailed')
     return (
-      <FormScreen
-        onSubmit={() => {
+      <PayoutFailed
+        amount={amount}
+        card={cardText(card)}
+        onDone={() => {
           setLeaving(true)
           navigate(loansPath('applications'), { replace: true })
           setDraft(null)
         }}
-        footer={
-          <Button type="submit" block>
-            {t('payoutFailed.toArizalar')}
-          </Button>
-        }
-      >
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-          <span className="grid size-20 place-items-center rounded-full bg-warning-soft text-warning">
-            <Clock size={36} />
-          </span>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-bold text-balance">{t('payoutFailed.title')}</h1>
-            <p className="text-ink-muted">
-              {t('payoutFailed.text', { sum: formatSum(amount), card: cardText(card) })}
-            </p>
-          </div>
-          <p className="rounded-control border border-line bg-canvas px-4 py-3 text-sm">
-            {t('payoutFailed.schedule')}
-          </p>
-        </div>
-      </FormScreen>
+      />
     )
 
   if (step === 'done')

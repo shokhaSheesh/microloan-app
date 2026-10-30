@@ -20,6 +20,11 @@ import { LanguagePage } from '@/features/profile/pages/LanguagePage'
 import { PersonalPage } from '@/features/profile/pages/PersonalPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { SecurityPage } from '@/features/profile/pages/SecurityPage'
+import { SessionsPage } from '@/features/profile/pages/SessionsPage'
+import { FraudReportPage } from '@/features/profile/pages/FraudReportPage'
+import { FraudSchemesPage } from '@/features/profile/pages/FraudSchemesPage'
+import { StatePreviewPage } from '@/features/states/pages/StatePreviewPage'
+import { StatesPage } from '@/features/states/pages/StatesPage'
 import { BRAND_BASE } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { DeviceLayout } from './layouts/DeviceLayout'
@@ -50,6 +55,11 @@ export const router = createBrowserRouter(
             { path: ROUTES.notifications, element: <NotificationsPage /> },
             { path: ROUTES.cards, element: <CardsPage /> },
             { path: ROUTES.security, element: <SecurityPage /> },
+            { path: ROUTES.sessions, element: <SessionsPage /> },
+            { path: ROUTES.fraudSchemes, element: <FraudSchemesPage /> },
+            { path: ROUTES.fraudReport, element: <FraudReportPage /> },
+            { path: ROUTES.states, element: <StatesPage /> },
+            { path: ROUTES.state, element: <StatePreviewPage /> },
             { path: ROUTES.language, element: <LanguagePage /> },
             { path: ROUTES.faq, element: <FaqPage /> },
             { path: ROUTES.chat, element: <ChatPage /> },

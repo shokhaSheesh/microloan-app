@@ -1,10 +1,11 @@
-import { MessageSquareText, ShieldAlert } from 'lucide-react'
+import { MessageSquareText } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { CODE_BLOCK_MINUTES, CODE_LENGTH, RESEND_AFTER_SECONDS } from '@/shared/config/otp'
+import { CODE_LENGTH, RESEND_AFTER_SECONDS } from '@/shared/config/otp'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { otpBlock } from '@/shared/lib/otpBlock'
 import { useCountdown } from '@/shared/lib/useCountdown'
 import { Button } from './Button'
+import { CodeBlocked } from './CodeBlocked'
 import { FormScreen } from './FormScreen'
 import { IconBadge } from './IconBadge'
 import { OtpField } from './OtpField'
@@ -27,8 +28,6 @@ type Props = {
 }
 
 const secondsTo = (end: number | null) => (end ? Math.ceil((end - Date.now()) / 1000) : 0)
-const formatTimer = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 
 /**
  * The SMS code step. Every place that asks for a code uses this screen. Codes are 6 letters and
@@ -80,34 +79,7 @@ export function OtpScreen({
     setSecondsLeft(RESEND_AFTER_SECONDS)
   }
 
-  if (blockedFor > 0)
-    return (
-      <FormScreen
-        onSubmit={onBack}
-        onBack={onBack}
-        footer={
-          <Button type="submit" block variant="secondary">
-            {t('common.back')}
-          </Button>
-        }
-      >
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-          <span className="grid size-20 place-items-center rounded-full bg-danger-soft text-danger">
-            <ShieldAlert size={36} />
-          </span>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-bold text-balance">{t('code.blocked.title')}</h1>
-            <p className="text-ink-muted">
-              {t('code.blocked.text', { minutes: String(CODE_BLOCK_MINUTES) })}
-            </p>
-          </div>
-          <div role="timer" className="flex flex-col items-center gap-1">
-            <span className="text-sm text-ink-muted">{t('code.blocked.timer')}</span>
-            <span className="text-4xl font-bold tabular-nums">{formatTimer(blockedFor)}</span>
-          </div>
-        </div>
-      </FormScreen>
-    )
+  if (blockedFor > 0) return <CodeBlocked seconds={blockedFor} onBack={onBack} />
 
   return (
     <FormScreen

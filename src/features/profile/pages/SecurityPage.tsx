@@ -1,4 +1,4 @@
-import { Fingerprint, KeyRound, ScanFace } from 'lucide-react'
+import { Fingerprint, KeyRound, ScanFace, MonitorSmartphone } from 'lucide-react'
 import { useState } from 'react'
 import { session, type Biometric } from '@/entities/session/session'
 import { BiometricPrompt } from '@/features/auth/components/BiometricPrompt'
@@ -37,6 +37,7 @@ export function SecurityPage() {
             label={t('security.changePin')}
             to={`${ROUTES.pinSetup}?change=1`}
           />
+          <MenuRow icon={MonitorSmartphone} label={t('sessions.title')} to={ROUTES.sessions} />
         </MenuList>
         <MenuList>
           <SwitchRow

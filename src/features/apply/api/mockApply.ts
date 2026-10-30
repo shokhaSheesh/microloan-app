@@ -2,7 +2,7 @@
 // - The decision allows a monthly payment up to half the stated income. Above that it offers the
 //   largest sum that fits; below 1 mln it declines.
 // - Any 6-character signing code works except "000000".
-// - The payout to the sample Uzcard •••• 8812 fails (Atmos: the bank did not answer); others succeed.
+// - The payout always succeeds; the failed payout is shown in «Holatlar namunasi».
 
 import { quote } from '@/entities/loans/loans'
 
@@ -32,10 +32,7 @@ export async function verifySignCode(code: string) {
   if (code === '000000') throw new Error('invalid_code')
 }
 
-const PAYOUT_FAILS = new Set(['8812'])
-
 /** Atmos sends the money to the card. Rejects when the bank does not take it; it is retried later. */
-export async function payOut(last4: string) {
+export async function payOut(_last4: string) {
   await delay(2600)
-  if (PAYOUT_FAILS.has(last4)) throw new Error('payout_failed')
 }

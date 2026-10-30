@@ -249,23 +249,21 @@ const SAMPLES_BY_BRAND: Record<BrandId, { sample: Loan[] }> = {
   },
 }
 const SAMPLES: Record<string, Loan[]> = {}
-// Bobur (94 555 66 77) is behind on the running loan, so the overdue screens have something to show
-const LATE_OWNERS = new Set(['AE5556677'])
-const behind = (list: Loan[]) =>
-  list.map((loan) =>
-    loan.closedAt
-      ? loan
-      : {
-          ...loan,
-          paidCount: loan.paidCount - 1,
-          overdueSince: scheduleOf(loan)[loan.paidCount - 1].due,
-        },
-  )
 // A borrower's list starts as the samples the first time it is asked for
-const ownLoans = (owner: string) =>
-  (SAMPLES[owner] ??= LATE_OWNERS.has(owner)
-    ? behind(SAMPLES_BY_BRAND[BRAND.id].sample)
-    : SAMPLES_BY_BRAND[BRAND.id].sample)
+const ownLoans = (owner: string) => (SAMPLES[owner] ??= SAMPLES_BY_BRAND[BRAND.id].sample)
+
+/** The brand's running sample loan, one payment behind, for the overdue state in «Holatlar namunasi». */
+export function lateSample(): Loan {
+  const loan = SAMPLES_BY_BRAND[BRAND.id].sample.find((item) => !item.closedAt)!
+  return {
+    ...loan,
+    paidCount: loan.paidCount - 1,
+    overdueSince: scheduleOf(loan)[loan.paidCount - 1].due,
+  }
+}
+
+/** The brand's running sample loan as it is, for the «credit» state of Asosiy. */
+export const runningSample = () => SAMPLES_BY_BRAND[BRAND.id].sample.find((item) => !item.closedAt)!
 
 const NONE: Loan[] = []
 const listeners = new Set<() => void>()

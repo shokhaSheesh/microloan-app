@@ -12,7 +12,6 @@ import {
   Smartphone,
   Sun,
   Zap,
-  type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -37,6 +36,7 @@ import { OtpScreen } from '@/shared/ui/OtpScreen'
 import { PassportField } from '@/shared/ui/PassportField'
 import { PasswordField } from '@/shared/ui/PasswordField'
 import { PhoneField } from '@/shared/ui/PhoneField'
+import { ResultScreen } from '@/shared/ui/ResultScreen'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
 import { otpBlock } from '@/shared/lib/otpBlock'
 import { toast } from '@/shared/lib/toast'
@@ -453,7 +453,7 @@ export function AuthPage() {
 
   if (step === 'deviceFailed')
     return (
-      <Result
+      <ResultScreen
         tone="danger"
         icon={ShieldAlert}
         title={t('device.failed.title')}
@@ -465,7 +465,7 @@ export function AuthPage() {
 
   if (step === 'blocked')
     return (
-      <Result
+      <ResultScreen
         tone="danger"
         icon={Ban}
         title={t('blocked.title')}
@@ -480,7 +480,7 @@ export function AuthPage() {
 
   if (step === 'notOwner')
     return (
-      <Result
+      <ResultScreen
         tone="danger"
         icon={Phone}
         title={t('owner.title')}
@@ -491,7 +491,7 @@ export function AuthPage() {
 
   if (step === 'cardsGone' && found)
     return (
-      <Result
+      <ResultScreen
         tone="warning"
         icon={CreditCard}
         title={t('device.cards.title')}
@@ -570,57 +570,6 @@ function Checking() {
         <div role="status" className="flex flex-col gap-1.5">
           <h1 className="text-2xl font-bold">{t('myid.checking')}</h1>
           <p className="text-ink-muted">{t('myid.checking.hint')}</p>
-        </div>
-      </div>
-    </FormScreen>
-  )
-}
-
-type Action = { label: string; onClick: () => void }
-
-/** A full-screen outcome: an icon, what happened, and what to do next. */
-function Result({
-  tone,
-  icon: Icon,
-  title,
-  text,
-  primary,
-  secondary,
-}: {
-  tone: 'danger' | 'warning'
-  icon: LucideIcon
-  title: string
-  text: string
-  primary: Action
-  secondary?: Action
-}) {
-  return (
-    <FormScreen
-      onSubmit={primary.onClick}
-      footer={
-        <div className="flex flex-col gap-1">
-          {secondary && (
-            <Button variant="ghost" block onClick={secondary.onClick}>
-              {secondary.label}
-            </Button>
-          )}
-          <Button type="submit" block>
-            {primary.label}
-          </Button>
-        </div>
-      }
-    >
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-        <span
-          className={`grid size-20 place-items-center rounded-full ${
-            tone === 'danger' ? 'bg-danger-soft text-danger' : 'bg-warning-soft text-warning'
-          }`}
-        >
-          <Icon size={36} />
-        </span>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-balance">{title}</h1>
-          <p className="text-ink-muted">{text}</p>
         </div>
       </div>
     </FormScreen>

@@ -11,15 +11,6 @@ import type { Borrower } from '@/entities/session/session'
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const REGISTERED: Record<string, Borrower> = {
-  // Late on the running loan (see loans.ts), on a known phone
-  '945556677': {
-    fullName: 'Qodirov Bobur Ilhom oʻgʻli',
-    firstName: 'Bobur',
-    phone: '945556677',
-    passport: 'AE5556677',
-    birthDate: '14.11.1992',
-    address: 'Fargʻona sh., Mustaqillik koʻchasi, 41-uy',
-  },
   '901234567': {
     fullName: 'Karimova Dilnoza Rustam qizi',
     firstName: 'Dilnoza',
@@ -46,27 +37,26 @@ const REGISTERED: Record<string, Borrower> = {
   },
 }
 
-/** Phones this account has signed in on before. Mock: Dilnoza's and Bobur's. */
-const KNOWN_DEVICE = new Set(['901234567', '945556677'])
+/** Phones this account has signed in on before. Mock: only the first sample. */
+const KNOWN_DEVICE = new Set(['901234567'])
 const FACE_FAILS = new Set(['991112233'])
 
 export const WRONG_PASSWORD = 'wrong1234'
 
-/** Clients the brand blocked in the admin: no code is sent to them. */
-const BLOCKED = new Set(['977777777'])
-/** Numbers PlayMobile says belong to someone else than the person MyID confirmed. */
-const NOT_OWNER = new Set(['977009988'])
-
-/** Rejects with `client_blocked` when the brand blocked this client; then no SMS goes out. */
-export async function sendCode(phone: string) {
+/**
+ * Rejects with `client_blocked` when the brand blocked this client; then no SMS goes out. The
+ * mock never does: that screen is shown in «Holatlar namunasi».
+ */
+export async function sendCode(_phone: string) {
   await delay(700)
-  if (BLOCKED.has(phone)) throw new Error('client_blocked')
 }
 
-/** PlayMobile: is this number registered to the person with this PINFL? Rejects when not. */
-export async function checkPhoneOwner(phone: string, _pinfl: string) {
+/**
+ * PlayMobile: is this number registered to the person with this PINFL? Rejects when not. The
+ * mock always says yes; the mismatch screen is shown in «Holatlar namunasi».
+ */
+export async function checkPhoneOwner(_phone: string, _pinfl: string) {
   await delay(600)
-  if (NOT_OWNER.has(phone)) throw new Error('not_owner')
 }
 
 /** Rejects on a wrong code. Resolves with the borrower when this number already has an account. */

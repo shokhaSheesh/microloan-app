@@ -118,7 +118,7 @@ export function HomePage() {
 }
 
 /** The running loan on a dark card: what is left, how far along, and the next payment. */
-function ActiveLoan({ loan }: { loan: Loan }) {
+export function ActiveLoan({ loan }: { loan: Loan }) {
   const { t } = useI18n()
   const { next, remaining, principalLeft, paid, total } = progressOf(loan)
   const product = productOf(loan)
@@ -183,7 +183,7 @@ function ActiveLoan({ loan }: { loan: Loan }) {
 }
 
 /** No loan yet: the biggest sum on offer and the way in. */
-function Offer() {
+export function Offer() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const max = BRAND.maxAmount
