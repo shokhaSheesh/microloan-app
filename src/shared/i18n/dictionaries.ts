@@ -11,6 +11,8 @@ export const LANG_NAMES: Record<Lang, string> = {
 
 const uz = {
   'common.close': 'Yopish',
+  'home.stories': 'Yangiliklar',
+  'stories.next': 'Keyingisi',
   'common.select': 'Tanlang',
   'common.back': 'Orqaga',
   'common.clear': 'Tozalash',
@@ -205,7 +207,7 @@ const uz = {
   'nav.home': 'Asosiy',
   'nav.loans': 'Qarzlarim',
   'nav.apply': 'Qarz olish',
-  'nav.payments': 'Toʻlovlar',
+  'nav.payments': 'Monitoring',
   'nav.profile': 'Profil',
   'home.notifications': 'Bildirishnomalar',
   'home.how': 'Qanday olinadi',
@@ -629,6 +631,8 @@ export type TranslationKey = keyof typeof uz
 
 const ru: Record<TranslationKey, string> = {
   'common.close': 'Закрыть',
+  'home.stories': 'Новости',
+  'stories.next': 'Дальше',
   'common.select': 'Выберите',
   'common.back': 'Назад',
   'common.clear': 'Очистить',
@@ -821,7 +825,7 @@ const ru: Record<TranslationKey, string> = {
   'nav.home': 'Главная',
   'nav.loans': 'Мои займы',
   'nav.apply': 'Взять займ',
-  'nav.payments': 'Платежи',
+  'nav.payments': 'Мониторинг',
   'nav.profile': 'Профиль',
   'home.notifications': 'Уведомления',
   'home.how': 'Как получить',

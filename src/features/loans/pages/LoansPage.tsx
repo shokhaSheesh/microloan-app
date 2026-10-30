@@ -17,6 +17,7 @@ import { cn } from '@/shared/lib/cn'
 import { formatDate, formatDateTime, formatSum } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/Button'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { ActiveLoanCard } from '../components/ActiveLoanCard'
 import { SegmentedTabs } from '@/shared/ui/SegmentedTabs'
 import { StatusBadge, type StatusTone } from '@/shared/ui/StatusBadge'
 
@@ -99,7 +100,7 @@ export function LoansPage() {
         <ul className="flex flex-col gap-3">
           {shown.map((loan) => (
             <li key={loan.id}>
-              <LoanCard loan={loan} />
+              {loan.closedAt ? <LoanCard loan={loan} /> : <ActiveLoanCard loan={loan} />}
             </li>
           ))}
         </ul>

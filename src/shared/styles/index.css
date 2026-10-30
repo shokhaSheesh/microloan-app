@@ -175,6 +175,15 @@ body {
   }
 }
 
+@keyframes story {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

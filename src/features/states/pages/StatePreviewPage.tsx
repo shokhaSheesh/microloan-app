@@ -4,7 +4,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { lateSample, runningSample } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
 import { PayoutFailed } from '@/features/apply/components/PayoutFailed'
-import { ActiveLoan, Offer } from '@/features/home/pages/HomePage'
+import { OfferCard } from '@/features/home/components/OfferCard'
+import { ActiveLoanCard } from '@/features/loans/components/ActiveLoanCard'
 import { CODE_BLOCK_MINUTES } from '@/shared/config/otp'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
@@ -38,11 +39,11 @@ export function StatePreviewPage() {
 
   switch (id) {
     case 'credit':
-      return card('states.home.credit', <ActiveLoan loan={runningSample()} />)
+      return card('states.home.credit', <ActiveLoanCard loan={runningSample()} />)
     case 'noCredit':
-      return card('states.home.noCredit', <Offer />)
+      return card('states.home.noCredit', <OfferCard />)
     case 'overdue':
-      return card('states.home.overdue', <ActiveLoan loan={lateSample()} />)
+      return card('states.home.overdue', <ActiveLoanCard loan={lateSample()} />)
     case 'codeBlocked':
       return <CodeBlocked seconds={blockedFor} onBack={back} />
     case 'clientBlocked':
