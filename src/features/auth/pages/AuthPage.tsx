@@ -1,12 +1,10 @@
 import {
   CalendarCheck,
-  CircleUserRound,
   CreditCard,
   Glasses,
   Phone,
   IdCard,
   KeyRound,
-  LoaderCircle,
   ShieldAlert,
   Smartphone,
   Sun,
@@ -48,9 +46,11 @@ import {
   setPassword as savePassword,
   verifyCode,
   verifyDeviceFace,
+  verifyResetFace,
   verifyFace,
 } from '../api/mockAuth'
 import { PasswordRules, passwordOk } from '../components/PasswordRules'
+import { Checking, FaceCapture } from '../components/FaceCapture'
 import { PinLock } from '../components/PinLock'
 
 /**
@@ -60,7 +60,8 @@ import { PinLock } from '../components/PinLock'
  * phone -> code -> signIn -> deviceFace -> deviceChecking -> cardsGone -> PIN
  *                                                                       registered, new phone
  *                                          deviceChecking -> deviceFailed (MyID said no)
- * signIn -> resetCode -> resetPassword -> home, or deviceFace on a new phone   forgot password
+ * signIn -> resetFace -> resetChecking -> resetPassword -> home (cards unlinked on a new phone)
+ *                        resetChecking -> resetFailed (MyID said no)            forgot password
  * lock -> home                                                          returning, PIN set here
  */
 type Step =
@@ -73,7 +74,9 @@ type Step =
   | 'checking'
   | 'password'
   | 'signIn'
-  | 'resetCode'
+  | 'resetFace'
+  | 'resetChecking'
+  | 'resetFailed'
   | 'resetPassword'
   | 'deviceFace'
   | 'deviceChecking'
@@ -177,13 +180,20 @@ export function AuthPage() {
     }
   }
 
-  const forgot = async () => {
-    setLoading(true)
-    await sendCode(phone)
-    goTo('resetCode')
+  // A forgotten password is reset with MyID, not an SMS code: whoever holds the phone gets the SMS
+  const captureReset = async () => {
+    goTo('resetChecking')
+    try {
+      await verifyResetFace(phone)
+      setPassword('')
+      setRepeat('')
+      goTo('resetPassword')
+    } catch {
+      goTo('resetFailed')
+    }
   }
 
-  // A new password goes on like a correct one: a new phone still passes MyID
+  // MyID has just confirmed the face, so a new phone needs no second check; its cards are unlinked
   const submitReset = async () => {
     setSubmitted(true)
     if (!found || !passwordOk(password) || password !== repeat) return
@@ -191,7 +201,10 @@ export function AuthPage() {
     const { knownDevice } = await resetPassword(phone, password)
     toast(t('password.reset.done'))
     if (knownDevice) toHome(found)
-    else goTo('deviceFace')
+    else {
+      unlinkAll(found.passport)
+      goTo('cardsGone')
+    }
   }
 
   const captureDevice = async () => {
@@ -302,7 +315,8 @@ export function AuthPage() {
       </FormScreen>
     )
 
-  if (step === 'checking' || step === 'deviceChecking') return <Checking />
+  if (step === 'checking' || step === 'deviceChecking' || step === 'resetChecking')
+    return <Checking />
 
   if (step === 'password' || step === 'resetPassword') {
     const reset = step === 'resetPassword'
@@ -385,7 +399,7 @@ export function AuthPage() {
         />
         <button
           type="button"
-          onClick={() => void forgot()}
+          onClick={() => goTo('resetFace')}
           disabled={loading}
           className="-mx-1 self-start rounded-full px-1 py-0.5 text-sm font-semibold text-brand active:bg-neutral-100"
         >
@@ -394,51 +408,36 @@ export function AuthPage() {
       </FormScreen>
     )
 
-  if (step === 'resetCode')
+  if (step === 'resetFace')
     return (
-      <OtpScreen
-        subtitle={t('password.reset.code', { phone: formatPhone(phone) })}
-        blockKey={phone}
+      <FaceCapture
+        title={t('password.reset.face.title')}
+        subtitle={t('password.reset.face.subtitle')}
+        onCapture={() => void captureReset()}
         onBack={() => goTo('signIn')}
-        resend={() => sendCode(phone)}
-        verify={async (code) => {
-          await verifyCode(phone, code)
-          setPassword('')
-          setRepeat('')
-          goTo('resetPassword')
-        }}
-        onVerified={() => {}}
+      />
+    )
+
+  if (step === 'resetFailed')
+    return (
+      <ResultScreen
+        tone="danger"
+        icon={ShieldAlert}
+        title={t('password.reset.failed.title')}
+        text={t('password.reset.failed.text')}
+        primary={{ label: t('device.failed.retry'), onClick: () => goTo('resetFace') }}
+        secondary={{ label: t('device.failed.other'), onClick: () => goTo('phone') }}
       />
     )
 
   if (step === 'deviceFace')
     return (
-      <FormScreen
-        onSubmit={() => void captureDevice()}
+      <FaceCapture
+        title={t('device.title')}
+        subtitle={t('device.subtitle')}
+        onCapture={() => void captureDevice()}
         onBack={() => goTo('signIn')}
-        footer={
-          <Button type="submit" block>
-            {t('myid.capture')}
-          </Button>
-        }
-      >
-        <ScreenIntro title={t('device.title')} subtitle={t('device.subtitle')} />
-        <CameraView guide="face" facing="user" unavailableText={t('myid.noCamera')} />
-        <ul className="flex flex-col gap-2 text-sm text-ink-muted">
-          {(
-            [
-              [Sun, 'myid.tip.light'],
-              [Glasses, 'myid.tip.glasses'],
-              [Smartphone, 'myid.tip.still'],
-            ] as const
-          ).map(([Icon, text]) => (
-            <li key={text} className="flex items-center gap-2.5">
-              <Icon size={18} className="shrink-0 text-brand" />
-              {t(text)}
-            </li>
-          ))}
-        </ul>
-      </FormScreen>
+      />
     )
 
   if (step === 'deviceFailed')
@@ -525,30 +524,6 @@ export function AuthPage() {
     )
 
   return <Welcome onStart={() => goTo('phone')} />
-}
-
-/** MyID at work: a spinning ring round the face icon. */
-function Checking() {
-  const { t } = useI18n()
-  return (
-    <FormScreen onSubmit={() => {}}>
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-        <span className="relative grid size-24 place-items-center rounded-full bg-accent-200 text-brand">
-          <CircleUserRound size={44} strokeWidth={1.6} />
-          <LoaderCircle
-            size={96}
-            strokeWidth={1.2}
-            className="absolute inset-0 animate-spin text-accent-500"
-            aria-hidden
-          />
-        </span>
-        <div role="status" className="flex flex-col gap-1.5">
-          <h1 className="text-2xl font-bold">{t('myid.checking')}</h1>
-          <p className="text-ink-muted">{t('myid.checking.hint')}</p>
-        </div>
-      </div>
-    </FormScreen>
-  )
 }
 
 /**

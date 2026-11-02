@@ -1,6 +1,7 @@
 import { CircleCheck, Smartphone } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Checking, FaceCapture } from '@/features/auth/components/FaceCapture'
 import { changePhone, isRegistered, sendCode, verifyCode } from '@/features/auth/api/mockAuth'
 import { session, useBorrower } from '@/entities/session/session'
 import { useI18n } from '@/shared/i18n/useI18n'
@@ -15,8 +16,8 @@ import { ScreenIntro } from '@/shared/ui/ScreenIntro'
 
 /**
  * A new phone number for the account: the new number, a code to the old number (the owner
- * agrees), then a code to the new one (it is really theirs). Both numbers get an SMS about the
- * change. Loans and cards stay, they belong to the person, not the number.
+ * agrees), a code to the new one (it is really theirs), then a MyID face check. Both numbers get
+ * an SMS about the change. Loans and cards stay, they belong to the person, not the number.
  */
 export function ChangePhonePage() {
   const { t } = useI18n()
@@ -25,7 +26,9 @@ export function ChangePhonePage() {
   const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState<'phone' | 'oldCode' | 'newCode' | 'done'>('phone')
+  const [step, setStep] = useState<'phone' | 'oldCode' | 'newCode' | 'face' | 'checking' | 'done'>(
+    'phone',
+  )
   // Kept for the done screen: the borrower's phone is the new one by then
   const [oldPhone] = useState(() => borrower?.phone ?? '')
   if (!borrower) return null
@@ -79,13 +82,26 @@ export function ChangePhonePage() {
         verify={async (code) => {
           await verifyCode(phone, code)
         }}
-        onVerified={async () => {
+        onVerified={() => setStep('face')}
+      />
+    )
+
+  if (step === 'face')
+    return (
+      <FaceCapture
+        title={t('phone.face.title')}
+        subtitle={t('phone.face.subtitle')}
+        onBack={() => setStep('phone')}
+        onCapture={async () => {
+          setStep('checking')
           await changePhone(oldPhone, phone)
           session.setBorrower({ ...borrower, phone })
           setStep('done')
         }}
       />
     )
+
+  if (step === 'checking') return <Checking />
 
   if (step === 'done')
     return (

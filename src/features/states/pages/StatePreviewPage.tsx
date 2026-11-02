@@ -1,4 +1,4 @@
-import { Ban, CreditCard, Phone, ShieldAlert } from 'lucide-react'
+import { Ban, CreditCard, LogOut, Phone, ShieldAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { lateSample, runningSample } from '@/entities/loans/loans'
@@ -101,6 +101,18 @@ export function StatePreviewPage() {
           title={t('device.cards.title')}
           text={t('device.cards.text')}
           primary={{ label: t('device.cards.next'), onClick: back }}
+          onBack={back}
+        />
+      )
+    case 'otherDevice':
+      return (
+        <ResultScreen
+          tone="warning"
+          icon={LogOut}
+          title={t('otherDevice.title')}
+          text={t('otherDevice.text')}
+          primary={{ label: t('otherDevice.signIn'), onClick: back }}
+          secondary={{ label: t('otherDevice.help'), onClick: back }}
           onBack={back}
         />
       )

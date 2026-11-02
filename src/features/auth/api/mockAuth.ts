@@ -102,6 +102,12 @@ export async function resetPassword(phone: string, _password: string) {
   return { knownDevice: KNOWN_DEVICE.has(phone) }
 }
 
+/** «Parolni unutdingizmi?»: MyID compares the face with the account's. Rejects when it does not match. */
+export async function verifyResetFace(phone: string) {
+  await delay(2200)
+  if (FACE_FAILS.has(phone)) throw new Error('face_mismatch')
+}
+
 /** A new device: MyID compares the face with the account's. Rejects when it does not match. */
 export async function verifyDeviceFace(phone: string) {
   await delay(2200)
@@ -115,7 +121,7 @@ export const isRegistered = (phone: string) => phone in REGISTERED
 
 /** After the code to the new number fits: the account now signs in with it. */
 export async function changePhone(from: string, to: string) {
-  await delay(500)
+  await delay(2200)
   const account = REGISTERED[from]
   if (!account) return
   delete REGISTERED[from]

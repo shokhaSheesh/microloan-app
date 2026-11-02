@@ -20,6 +20,7 @@ import {
 } from '@/entities/applications/applications'
 import { setDraft, useDraft, type Draft } from '@/entities/apply/draft'
 import { useContacts } from '@/entities/contacts/contacts'
+import { AddCardSheet } from '@/features/cards/components/AddCardSheet'
 import { ContactSheet } from '@/features/contacts/components/ContactSheet'
 import { cardText, useCards } from '@/entities/cards/cards'
 import { addLoan, DEFAULT_PAY_DAY, quote, rateFor, type Loan } from '@/entities/loans/loans'
@@ -46,17 +47,26 @@ import { RefuseSheet } from '../components/RefuseSheet'
 import { ScheduleSheet } from '../components/ScheduleSheet'
 
 type Step =
-  'details' | 'sent' | 'decision' | 'contract' | 'sign' | 'payout' | 'payoutFailed' | 'done'
+  | 'details'
+  | 'sent'
+  | 'decision'
+  | 'contract'
+  | 'payoutCard'
+  | 'sign'
+  | 'payout'
+  | 'payoutFailed'
+  | 'done'
 /** Contacts every ariza must name, so the brand can reach someone. */
 const MIN_CONTACTS = 2
 /** A unique number for the new loan, until the API issues one. */
 const stamp = () => Date.now()
 
 /**
- * Qarz olish after the calculator: the application (income, work, at least two contacts, the card to receive
- * the money, consent to the credit check), then «Ariza yuborildi»: it waits in «Koʻrib
+ * Qarz olish after the calculator: the application (income, work, at least two contacts, the card
+ * with the highest turnover for the income check and auto-debit, consent to the credit check), then «Ariza yuborildi»: it waits in «Koʻrib
  * chiqilmoqda» until FlexSoft decides. An offer opened from Arizalar shows the decision (approved, a smaller
- * counter-offer, or declined), the contract, signing by SMS code, and the payout to the card.
+ * counter-offer, or declined), the contract, «Qaysi kartaga oʻtkazay?», signing by SMS code, and the
+ * payout to that card.
  * Every step is kept on the ariza, which Qarzlarim → Arizalar lists. An offer left with
  * "Keyinroq" is opened again from there (`?ariza=<id>`), straight at the decision.
  */
@@ -102,6 +112,8 @@ export function ApplicationPage() {
   const [schedule, setSchedule] = useState(false)
   const [today] = useState(() => new Date())
   const [leaving, setLeaving] = useState(false)
+  const [payoutId, setPayoutId] = useState<string | undefined>(undefined)
+  const [addingPayoutCard, setAddingPayoutCard] = useState(false)
 
   if (!draft || !borrower) return leaving ? null : <Navigate to={ROUTES.apply} replace />
   const product = BRAND.products.find((item) => item.id === draft.productId)!
@@ -112,6 +124,11 @@ export function ApplicationPage() {
   const card: Loan['card'] = picked
     ? { brand: picked.brand, last4: picked.last4 }
     : { brand: 'uzcard', last4: '' }
+  // Where the money goes, picked after the contract; the ariza's card stays for auto-debit
+  const payoutPicked = cards.find((item) => item.id === payoutId) ?? picked
+  const payoutCard: Loan['card'] = payoutPicked
+    ? { brand: payoutPicked.brand, last4: payoutPicked.last4 }
+    : card
   const firstDue = new Date(today.getFullYear(), today.getMonth() + 1, draft.payDay)
 
   const errors = {
@@ -151,7 +168,7 @@ export function ApplicationPage() {
     setStep('payout')
     if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'signed' })
     try {
-      await payOut(card.last4)
+      await payOut(payoutCard.last4)
     } catch {
       // Atmos is asked again in the background; the ariza says so until the money arrives
       if (arizaId) updateAriza(borrower.passport, arizaId, { status: 'payoutRetry' })
@@ -310,7 +327,9 @@ export function ApplicationPage() {
       <FormScreen
         onSubmit={() => {
           setSubmitted(true)
-          if (read) setSelfCheck('sign')
+          if (!read) return
+          setSubmitted(false)
+          setStep('payoutCard')
         }}
         onBack={() => setStep('decision')}
         footer={
@@ -357,17 +376,6 @@ export function ApplicationPage() {
             </button>
           ))}
         </div>
-        <SelfCheckSheet
-          open={selfCheck === 'sign'}
-          action="sign"
-          onCancel={() => setSelfCheck(null)}
-          onConfirm={() => {
-            setSelfCheck(null)
-            setSubmitted(false)
-            void sendSignCode()
-            setStep('sign')
-          }}
-        />
         <ScheduleSheet
           open={schedule}
           onClose={() => setSchedule(false)}
@@ -380,12 +388,87 @@ export function ApplicationPage() {
       </FormScreen>
     )
 
+  if (step === 'payoutCard')
+    return (
+      <FormScreen
+        onSubmit={() => setSelfCheck('sign')}
+        onBack={() => setStep('contract')}
+        footer={
+          <Button type="submit" block disabled={!payoutPicked}>
+            {t('common.continue')}
+          </Button>
+        }
+      >
+        <ScreenIntro title={t('payoutCard.title')} subtitle={t('payoutCard.subtitle')} />
+        <div role="radiogroup" aria-label={t('payoutCard.title')} className="flex flex-col gap-2">
+          {cards.map((item) => {
+            const on = item.id === payoutPicked?.id
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setPayoutId(item.id)}
+                className={cn(
+                  'flex items-center gap-3 rounded-control border-[1.5px] bg-canvas p-3.5 text-left font-medium',
+                  on ? 'border-primary' : 'border-line',
+                )}
+              >
+                <CreditCard size={20} className="text-brand" />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="tabular-nums">{cardText(item)}</span>
+                  <span className="text-sm font-normal text-ink-muted">
+                    {holderOf(borrower.fullName)}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    'grid size-5 place-items-center rounded-full border-2',
+                    on ? 'border-primary' : 'border-neutral-400',
+                  )}
+                >
+                  {on && <span className="size-2.5 rounded-full bg-primary" />}
+                </span>
+              </button>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => setAddingPayoutCard(true)}
+            className="flex items-center gap-3 rounded-control border-[1.5px] border-dashed border-line bg-canvas p-3.5 text-left font-semibold text-brand"
+          >
+            <Plus size={20} />
+            {t('cards.add')}
+          </button>
+        </div>
+        <SelfCheckSheet
+          open={selfCheck === 'sign'}
+          action="sign"
+          onCancel={() => setSelfCheck(null)}
+          onConfirm={() => {
+            setSelfCheck(null)
+            setSubmitted(false)
+            void sendSignCode()
+            setStep('sign')
+          }}
+        />
+        {addingPayoutCard && (
+          <AddCardSheet
+            owner={borrower.passport}
+            onClose={() => setAddingPayoutCard(false)}
+            onAdded={(added) => setPayoutId(added.id)}
+          />
+        )}
+      </FormScreen>
+    )
+
   if (step === 'sign')
     return (
       <OtpScreen
         subtitle={t('contract.code', { phone: formatPhone(borrower.phone) })}
         blockKey={borrower.phone}
-        onBack={() => setStep('contract')}
+        onBack={() => setStep('payoutCard')}
         resend={sendSignCode}
         verify={verifySignCode}
         onVerified={pay}
@@ -407,7 +490,7 @@ export function ApplicationPage() {
           </span>
           <div role="status" className="flex flex-col gap-1.5">
             <h1 className="text-2xl font-bold">{t('payout.title')}</h1>
-            <p className="text-ink-muted">{t('payout.hint', { card: cardText(card) })}</p>
+            <p className="text-ink-muted">{t('payout.hint', { card: cardText(payoutCard) })}</p>
           </div>
         </div>
       </FormScreen>
@@ -417,7 +500,7 @@ export function ApplicationPage() {
     return (
       <PayoutFailed
         amount={amount}
-        card={cardText(card)}
+        card={cardText(payoutCard)}
         onDone={() => {
           setLeaving(true)
           navigate(loansPath('applications'), { replace: true })
@@ -443,7 +526,7 @@ export function ApplicationPage() {
           <div className="flex flex-col gap-1.5">
             <p className="font-semibold text-ink-muted">{t('done.money')}</p>
             <h1 className="text-[32px] leading-none font-bold tabular-nums">{formatSum(amount)}</h1>
-            <p className="text-ink-muted">{cardText(card)}</p>
+            <p className="text-ink-muted">{cardText(payoutCard)}</p>
           </div>
           <p className="rounded-control border border-line bg-canvas px-4 py-3 text-sm">
             {t('done.firstPayment', { date: formatDate(firstDue), sum: formatSum(monthly) })}

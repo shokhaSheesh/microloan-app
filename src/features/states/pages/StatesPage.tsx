@@ -6,6 +6,7 @@ import {
   CreditCard,
   FileSignature,
   House,
+  LogOut,
   ShieldAlert,
   ShieldCheck,
   Smartphone,
@@ -35,6 +36,7 @@ const SECURITY: Row[] = [
   ['cardPhone', CreditCard, 'states.cardPhone'],
   ['deviceFailed', ShieldAlert, 'states.deviceFailed'],
   ['cardsGone', CreditCard, 'states.cardsGone'],
+  ['otherDevice', LogOut, 'states.otherDevice'],
 ]
 const SELF_CHECKS: [SelfCheckAction, LucideIcon, TranslationKey][] = [
   ['apply', ShieldCheck, 'states.selfcheck.apply'],
