@@ -224,26 +224,23 @@ function ArizaCard({ ariza }: { ariza: Ariza }) {
           {t('apply.months', { n: String(ariza.term) })} ·{' '}
           <span className="font-bold text-ink tabular-nums">{formatSum(sum)}</span>
         </span>
-        {isOffer(ariza.status) && (
-          <span className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="px-3! text-danger!"
-              onClick={() => setRefusing(true)}
-            >
-              {t('refuse.open')}
-            </Button>
-            <Button
-              size="sm"
-              className="px-4!"
-              onClick={() => navigate(`${ROUTES.application}?ariza=${ariza.id}`)}
-            >
-              {t('ariza.sign')}
-            </Button>
-          </span>
-        )}
       </div>
+      {/* An offer's two answers on their own row, so longer labels never push off the card */}
+      {isOffer(ariza.status) && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="text-danger!"
+            onClick={() => setRefusing(true)}
+          >
+            {t('refuse.open')}
+          </Button>
+          <Button size="sm" onClick={() => navigate(`${ROUTES.application}?ariza=${ariza.id}`)}>
+            {t('ariza.sign')}
+          </Button>
+        </div>
+      )}
     </>
   )
   const box = 'flex flex-col gap-3 rounded-card border border-line bg-canvas p-4'

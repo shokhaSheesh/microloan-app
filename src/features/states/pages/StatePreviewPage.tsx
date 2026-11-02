@@ -1,5 +1,5 @@
-import { Ban, CreditCard, LogOut, Phone, ShieldAlert } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Ban, CircleX, CreditCard, LogOut, Phone, ShieldAlert } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { lateSample, runningSample } from '@/entities/loans/loans'
 import { useBorrower } from '@/entities/session/session'
@@ -11,8 +11,12 @@ import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import type { TranslationKey } from '@/shared/i18n/dictionaries'
 import { useI18n } from '@/shared/i18n/useI18n'
+import { formatDate, formatSum } from '@/shared/lib/format'
 import { formatPhone } from '@/shared/lib/phone'
 import { useCountdown } from '@/shared/lib/useCountdown'
+import { Button } from '@/shared/ui/Button'
+import { NumberField } from '@/shared/ui/NumberField'
+import { Slider } from '@/shared/ui/Slider'
 import { CodeBlocked } from '@/shared/ui/CodeBlocked'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { ResultScreen } from '@/shared/ui/ResultScreen'
@@ -25,6 +29,7 @@ export function StatePreviewPage() {
   const borrower = useBorrower()
   const [blockedFor] = useCountdown(CODE_BLOCK_MINUTES * 60)
   const back = () => navigate(-1)
+  const [in30] = useState(() => new Date(Date.now() + 30 * 86_400_000))
   const phone = formatPhone(borrower?.phone ?? '')
 
   // Asosiy's loan card, on its own under a header
@@ -116,6 +121,20 @@ export function StatePreviewPage() {
           onBack={back}
         />
       )
+    case 'declinedBlock':
+      return (
+        <ResultScreen
+          tone="danger"
+          icon={CircleX}
+          title={t('decision.declined')}
+          text={t('declinedBlock.text', { days: '30', date: formatDate(in30) })}
+          note={t('declinedBlock.note')}
+          primary={{ label: t('decision.home'), onClick: back }}
+          onBack={back}
+        />
+      )
+    case 'biggerSum':
+      return <BiggerSum onBack={back} />
     case 'payoutFailed':
       return (
         <PayoutFailed amount={10_000_000} card="Uzcard •••• 8812" onDone={back} onBack={back} />
@@ -123,4 +142,60 @@ export function StatePreviewPage() {
     default:
       return <Navigate to={ROUTES.states} replace />
   }
+}
+
+const ASKED = 10_000_000
+const APPROVED = 15_000_000
+const STEP = 500_000
+
+/**
+ * FlexSoft approved more than the client asked for: the bigger sum on the card, and the client picks
+ * how much to take, from the sum asked up to the one approved, before the contract.
+ */
+function BiggerSum({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n()
+  const [sum, setSum] = useState<number | null>(ASKED)
+  const ok = sum !== null && sum >= STEP && sum <= APPROVED
+  return (
+    <div className="flex h-full flex-col bg-page">
+      <PageHeader title={t('biggerSum.title')} />
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pt-2 pb-6">
+        <div className="flex flex-col items-center gap-1 rounded-[28px] bg-tile p-5 text-center text-on-tile">
+          <span className="text-sm opacity-70">{t('biggerSum.approved')}</span>
+          <span className="text-[30px] leading-none font-bold tabular-nums">
+            {formatSum(APPROVED)}
+          </span>
+          <span className="text-sm opacity-80">
+            {t('biggerSum.asked', { sum: formatSum(ASKED) })}
+          </span>
+        </div>
+        <section className="flex flex-col gap-4 rounded-card border border-line bg-canvas p-4">
+          <NumberField
+            label={t('biggerSum.pick')}
+            value={sum}
+            onChange={setSum}
+            suffix={t('common.currency')}
+            error={
+              sum !== null && sum > APPROVED
+                ? t('apply.amount.max', { sum: formatSum(APPROVED) })
+                : undefined
+            }
+          />
+          <Slider
+            label={t('biggerSum.pick')}
+            min={STEP}
+            max={APPROVED}
+            step={STEP}
+            value={Math.min(APPROVED, Math.max(STEP, sum ?? STEP))}
+            onChange={setSum}
+          />
+        </section>
+      </div>
+      <div className="shrink-0 border-t border-line bg-page px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <Button block disabled={!ok} onClick={onBack}>
+          {t('decision.toContract')}
+        </Button>
+      </div>
+    </div>
+  )
 }

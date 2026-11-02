@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Smartphone,
+  TrendingUp,
   Wallet,
   type LucideIcon,
 } from 'lucide-react'
@@ -70,7 +71,11 @@ export function StatesPage() {
         </Section>
         <Section title={t('states.money')}>
           <MenuList>
-            {rows([['payoutFailed', Banknote, 'states.payoutFailed']])}
+            {rows([
+              ['payoutFailed', Banknote, 'states.payoutFailed'],
+              ['declinedBlock', Ban, 'states.declinedBlock'],
+              ['biggerSum', TrendingUp, 'states.biggerSum'],
+            ])}
             {SELF_CHECKS.map(([action, icon, label]) => (
               <MenuRow key={action} icon={icon} label={t(label)} onClick={() => setCheck(action)} />
             ))}

@@ -12,58 +12,55 @@ import { OverdueNotice } from './OverdueNotice'
  */
 export function ActiveLoanCard({ loan }: { loan: Loan }) {
   const { t } = useI18n()
-  const { next, remaining, principalLeft, paid, total } = progressOf(loan)
+  const { next, principalLeft, paid, total } = progressOf(loan)
   const product = productOf(loan)
   const late = !!loan.overdueSince
 
   return (
     <section className="flex flex-col gap-3">
       {late && <OverdueNotice loan={loan} />}
-      <div className="relative flex flex-col gap-5 overflow-hidden rounded-[28px] bg-tile p-5 text-on-tile">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col">
-            <span className="font-semibold">{product?.name}</span>
-            <span className="text-xs opacity-60 tabular-nums">№ {loan.number}</span>
-          </div>
+      {/* Compact, about a third of the screen (client, 31.10) */}
+      <div className="relative flex flex-col gap-3 overflow-hidden rounded-3xl bg-tile p-4 text-on-tile">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-semibold">
+            {product?.name} <span className="font-normal opacity-80">· № {loan.number}</span>
+          </span>
           <Link
             to={loanPath(loan.id)}
-            className="flex items-center gap-0.5 text-sm font-semibold opacity-80"
+            className="flex items-center gap-0.5 text-sm font-semibold opacity-90"
           >
             {t('home.loan.details')}
             <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm opacity-60">{t('home.loan.left')}</span>
-          <span className="text-[32px] leading-none font-bold tracking-tight tabular-nums">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs opacity-80">{t('home.loan.left')}</span>
+          <span className="text-[26px] leading-none font-bold tracking-tight tabular-nums">
             {formatSum(principalLeft)}
           </span>
-          <span className="text-xs opacity-60 tabular-nums">
-            {t('home.loan.withInterest', { sum: formatSum(remaining) })}
-          </span>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <div className="h-2 overflow-hidden rounded-full bg-white/15">
+        <div className="flex items-center gap-3">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/25">
             <div
               className="h-full rounded-full bg-white"
               style={{ width: `${(paid / total) * 100}%` }}
             />
           </div>
-          <span className="text-xs opacity-60 tabular-nums">
+          <span className="text-xs opacity-90 tabular-nums">
             {t('home.loan.progress', { paid: String(paid), total: String(total) })}
           </span>
         </div>
         {next && (
-          <div className="relative flex items-center gap-3 rounded-control bg-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-control bg-white/15 px-3 py-2">
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-xs opacity-70">
+              <span className="text-xs opacity-90">
                 {t('home.loan.next', { date: formatDate(next.due) })}
               </span>
-              <span className="text-lg font-bold tabular-nums">{formatSum(next.amount)}</span>
+              <span className="font-bold tabular-nums">{formatSum(next.amount)}</span>
             </div>
             <Link
               to={payPath(loan.id)}
-              className="grid h-10 place-items-center rounded-control bg-white px-5 text-sm font-semibold text-primary-pressed active:bg-neutral-100"
+              className="grid h-9 place-items-center rounded-control bg-white px-4 text-sm font-semibold text-primary-pressed active:bg-neutral-100"
             >
               {t('home.loan.pay')}
             </Link>

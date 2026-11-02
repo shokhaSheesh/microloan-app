@@ -2,44 +2,41 @@ import {
   ArrowLeftRight,
   ChevronRight,
   CircleHelp,
-  CreditCard,
   FileText,
-  Globe,
-  LogOut,
-  MessageCircle,
-  Phone,
-  ShieldCheck,
-  Users,
   LayoutGrid,
-  MonitorSmartphone,
+  LogOut,
+  Settings,
+  Wallet,
+  type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useContacts } from '@/entities/contacts/contacts'
-import { useCards } from '@/entities/cards/cards'
 import { session, useBorrower } from '@/entities/session/session'
 import { ALL_BRANDS, BRAND, switchBrand } from '@/shared/config/brand'
-import { ROUTES } from '@/shared/config/routes'
-import { LANG_NAMES } from '@/shared/i18n/dictionaries'
+import { profileSectionPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { formatPhone } from '@/shared/lib/phone'
-import { toast } from '@/shared/lib/toast'
 import { ActionCard } from '@/shared/ui/ActionCard'
 import { ConfirmSheet } from '@/shared/ui/ConfirmSheet'
 import { MenuList, MenuRow } from '@/shared/ui/MenuList'
-import { Section } from '@/shared/ui/Section'
+import { PROFILE_SECTIONS, SECTION_TITLES, type ProfileSection } from './ProfileSectionPage'
+
+const SECTION_ICONS: Record<ProfileSection, LucideIcon> = {
+  account: Wallet,
+  settings: Settings,
+  help: CircleHelp,
+  documents: FileText,
+}
 
 /**
- * Profil: who is signed in (opens the personal data), then Hisob (cards), Sozlamalar (security,
- * language), Yordam (FAQ, chat, contacts), the documents, the prototype's switch to the other
- * brand's app, and "Chiqish".
+ * Profil: who is signed in (opens the personal data), then four rows that each open their own
+ * page (Hisob, Sozlamalar, Yordam, Hujjatlar), «Holatlar namunasi» for the design, the
+ * prototype's switch to the other brand's app, and "Chiqish".
  */
 export function ProfilePage() {
-  const { t, lang } = useI18n()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const borrower = useBorrower()
-  const cards = useCards(borrower?.passport)
-  const contacts = useContacts(borrower?.passport)
   const [leaving, setLeaving] = useState(false)
   if (!borrower) return null
   const initials = borrower.fullName
@@ -66,66 +63,21 @@ export function ProfilePage() {
         <ChevronRight size={20} className="shrink-0 text-ink-subtle" />
       </Link>
 
-      <Section title={t('profile.account')}>
-        <MenuList>
+      <MenuList>
+        {PROFILE_SECTIONS.map((section) => (
           <MenuRow
-            icon={CreditCard}
-            label={t('cards.title')}
-            to={ROUTES.cards}
-            value={String(cards.length)}
+            key={section}
+            icon={SECTION_ICONS[section]}
+            label={t(SECTION_TITLES[section])}
+            to={profileSectionPath(section)}
           />
-          <MenuRow
-            icon={Users}
-            label={t('myContacts.title')}
-            to={ROUTES.myContacts}
-            value={String(contacts.length)}
-          />
-        </MenuList>
-      </Section>
+        ))}
+      </MenuList>
 
-      <Section title={t('profile.settings')}>
-        <MenuList>
-          <MenuRow icon={ShieldCheck} label={t('profile.security')} to={ROUTES.security} />
-          <MenuRow icon={MonitorSmartphone} label={t('sessions.title')} to={ROUTES.sessions} />
-          <MenuRow
-            icon={Globe}
-            label={t('lang.title')}
-            to={ROUTES.language}
-            value={LANG_NAMES[lang]}
-          />
-        </MenuList>
-      </Section>
-
-      <Section title={t('profile.help')}>
-        <MenuList>
-          <MenuRow icon={CircleHelp} label={t('profile.faq')} to={ROUTES.faq} />
-          <MenuRow icon={MessageCircle} label={t('profile.chat')} to={ROUTES.chat} />
-          <MenuRow icon={Phone} label={t('profile.contacts')} to={ROUTES.contacts} />
-        </MenuList>
-      </Section>
-
-      <Section title={t('profile.design')}>
-        <MenuList>
-          <MenuRow icon={LayoutGrid} label={t('states.title')} to={ROUTES.states} />
-        </MenuList>
-      </Section>
-
-      <Section title={t('profile.documents')}>
-        <ul className="rounded-card border border-line bg-canvas px-4">
-          {(['offer', 'privacy'] as const).map((doc) => (
-            <li key={doc} className="border-b border-line last:border-b-0">
-              <button
-                type="button"
-                onClick={() => toast(t('loan.pdf.sample'))}
-                className="flex min-h-13 w-full items-center gap-3 py-2 text-left"
-              >
-                <FileText size={22} className="shrink-0 text-brand" />
-                <span className="min-w-0 flex-1 font-medium">{t(`profile.doc.${doc}`)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {/* Design only: the states sample data never shows; not part of the client's app */}
+      <MenuList>
+        <MenuRow icon={LayoutGrid} label={t('states.title')} to={ROUTES.states} />
+      </MenuList>
 
       {ALL_BRANDS.filter((brand) => brand.id !== BRAND.id).map((brand) => (
         <ActionCard

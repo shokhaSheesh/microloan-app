@@ -19,6 +19,7 @@ import { FaqPage } from '@/features/profile/pages/FaqPage'
 import { LanguagePage } from '@/features/profile/pages/LanguagePage'
 import { PersonalPage } from '@/features/profile/pages/PersonalPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
+import { ProfileSectionPage } from '@/features/profile/pages/ProfileSectionPage'
 import { SecurityPage } from '@/features/profile/pages/SecurityPage'
 import { SessionsPage } from '@/features/profile/pages/SessionsPage'
 import { StatePreviewPage } from '@/features/states/pages/StatePreviewPage'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.productTerms, element: <ProductTermsPage /> },
             { path: ROUTES.loan, element: <LoanPage /> },
             { path: ROUTES.personal, element: <PersonalPage /> },
+            { path: ROUTES.profileSection, element: <ProfileSectionPage /> },
             { path: ROUTES.changePhone, element: <ChangePhonePage /> },
             { path: ROUTES.notifications, element: <NotificationsPage /> },
             { path: ROUTES.cards, element: <CardsPage /> },

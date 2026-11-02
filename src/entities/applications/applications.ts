@@ -72,8 +72,8 @@ export type RefusalReason = (typeof REFUSAL_REASONS)[number]
 export const DECLINE_REASONS = ['load', 'history', 'noHistory', 'age'] as const
 export type DeclineReason = (typeof DECLINE_REASONS)[number]
 
-/** How long an offer waits for the signature. */
-export const OFFER_DAYS = 3
+/** How long an offer waits for the signature; unsigned, it becomes «Bekor qilindi». */
+export const OFFER_DAYS = 1
 
 const PREFIX = BRAND.id === 'fortuna' ? 'FB' : 'VT'
 /** A new ariza number, until the API issues one. */
@@ -126,8 +126,8 @@ function samplesFor(owner: string): Ariza[] {
       offered: 6_000_000,
       term: 12,
       status: 'counter',
-      createdAt: ago(1, 2),
-      expiresOn: addDays(ago(1, 2), OFFER_DAYS),
+      createdAt: ago(0, 2),
+      expiresOn: addDays(ago(0, 2), OFFER_DAYS),
     },
     {
       id: 'a-approved',
@@ -137,8 +137,8 @@ function samplesFor(owner: string): Ariza[] {
       offered: 5_000_000,
       term: 6,
       status: 'approved',
-      createdAt: ago(2, 3),
-      expiresOn: addDays(ago(2, 3), OFFER_DAYS),
+      createdAt: ago(0, 3),
+      expiresOn: addDays(ago(0, 3), OFFER_DAYS),
     },
     {
       id: 'a-signed',

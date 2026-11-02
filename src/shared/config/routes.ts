@@ -16,6 +16,8 @@ export const ROUTES = {
   payments: '/payments',
   profile: '/profile',
   personal: '/profile/me',
+  /** One Profil section on its own page: Hisob, Sozlamalar, Yordam, Hujjatlar. */
+  profileSection: '/profile/section/:id',
   changePhone: '/profile/me/phone',
   notifications: '/notifications',
   cards: '/profile/cards',
@@ -45,6 +47,9 @@ export const loanPath = (id: string) => `/loans/${id}`
 /** Kreditlar, optionally just some products (a banner's). */
 export const creditsPath = (ids?: string[]) =>
   ids?.length ? `/credits?ids=${ids.join(',')}` : '/credits'
+
+/** One Profil section's page. */
+export const profileSectionPath = (id: string) => `/profile/section/${id}`
 
 /** One screen of «Holatlar namunasi». */
 export const statePath = (id: string) => `/profile/states/${id}`

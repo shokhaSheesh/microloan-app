@@ -35,8 +35,9 @@
   --color-on-primary: #ffffff;
   /* Links and icons: a deeper Fortuna blue, readable on white */
   --color-brand: #0081bd;
-  /* Dark cards (the loan, the offer): a deep Fortuna blue, chosen by the client over black */
-  --color-tile: #00699a;
+  /* Coloured cards (the loan, Asosiy's header, the calculator): a bright Fortuna blue, the client
+     asked for brighter than the earlier #00699a (31.10) */
+  --color-tile: #0089cc;
   --color-on-tile: #ffffff;
 
   /* Surfaces and text: grey screen, white bordered cards */
@@ -113,7 +114,8 @@
   --color-primary: #2f8247;
   --color-primary-pressed: #256b3a;
   --color-brand: #393089;
-  --color-tile: #221d5c;
+  /* Brighter than the logo's navy (#221d5c), as the client asked on 31.10 */
+  --color-tile: #3a32a6;
 }
 
 :root[data-brand='vodiy'][data-theme='dark'] {

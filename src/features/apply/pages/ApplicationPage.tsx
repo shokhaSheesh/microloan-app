@@ -65,7 +65,7 @@ const stamp = () => Date.now()
  * Qarz olish after the calculator: the application (income, work, at least two contacts, the card
  * with the highest turnover for the income check and auto-debit, consent to the credit check), then «Ariza yuborildi»: it waits in «Koʻrib
  * chiqilmoqda» until FlexSoft decides. An offer opened from Arizalar shows the decision (approved, a smaller
- * counter-offer, or declined), the contract, «Qaysi kartaga oʻtkazay?», signing by SMS code, and the
+ * counter-offer, or declined), the contract, «Pul qaysi kartaga tushsin?», signing by SMS code, and the
  * payout to that card.
  * Every step is kept on the ariza, which Qarzlarim → Arizalar lists. An offer left with
  * "Keyinroq" is opened again from there (`?ariza=<id>`), straight at the decision.
