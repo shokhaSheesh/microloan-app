@@ -35,7 +35,6 @@ import { Button } from '@/shared/ui/Button'
 import { Checkbox } from '@/shared/ui/Checkbox'
 import { FormScreen } from '@/shared/ui/FormScreen'
 import { InfoList, InfoRow } from '@/shared/ui/InfoList'
-import { NumberField } from '@/shared/ui/NumberField'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
 import { ResultScreen } from '@/shared/ui/ResultScreen'
 import { SelfCheckSheet, type SelfCheckAction } from '@/shared/ui/SelfCheck'
@@ -62,7 +61,7 @@ const MIN_CONTACTS = 2
 const stamp = () => Date.now()
 
 /**
- * Qarz olish after the calculator: the application (income, work, at least two contacts, the card
+ * Qarz olish after the calculator: the application (work, at least two contacts, the card
  * with the highest turnover for the income check and auto-debit, consent to the credit check), then «Ariza yuborildi»: it waits in «Koʻrib
  * chiqilmoqda» until FlexSoft decides. An offer opened from Arizalar shows the decision (approved, a smaller
  * counter-offer, or declined), the contract, «Pul qaysi kartaga tushsin?», signing by SMS code, and the
@@ -97,7 +96,6 @@ export function ApplicationPage() {
   const [contactIds, setContactIds] = useState<string[]>([])
   const [addingContact, setAddingContact] = useState(false)
   const [refusing, setRefusing] = useState(false)
-  const [income, setIncome] = useState<number | null>(null)
   const [work, setWork] = useState('')
   // Picked from the cards linked in Profil → Kartalar; none here means linking one there first
   const cards = useCards(borrower?.passport)
@@ -133,18 +131,16 @@ export function ApplicationPage() {
 
   const errors = {
     contacts: contactIds.length < MIN_CONTACTS,
-    income: !income,
     work: !work.trim(),
     card: !picked,
     agreed: !agreed,
   }
   const submit = () => {
     setSubmitted(true)
-    if (Object.values(errors).some(Boolean) || !income) return
+    if (Object.values(errors).some(Boolean)) return
     setSelfCheck('apply')
   }
   const send = async () => {
-    if (!income) return
     setSelfCheck(null)
     const id = `a${stamp()}`
     const number = arizaNumber(today)
@@ -578,14 +574,6 @@ export function ApplicationPage() {
       </button>
 
       <div className="flex flex-col gap-4">
-        <NumberField
-          label={t('details.income')}
-          value={income}
-          onChange={setIncome}
-          suffix={t('common.currency')}
-          hint={t('details.income.hint')}
-          error={submitted && errors.income ? t('error.required') : undefined}
-        />
         <TextField
           label={t('details.work')}
           placeholder={t('details.work.placeholder')}

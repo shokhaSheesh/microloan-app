@@ -15,7 +15,10 @@ const KEYS = {
 /** How the borrower unlocks the app besides the PIN. */
 export type Biometric = 'face' | 'finger'
 
-/** The person MyID confirmed. */
+export const MARITAL_STATUSES = ['single', 'married', 'divorced', 'widowed'] as const
+export type MaritalStatus = (typeof MARITAL_STATUSES)[number]
+
+/** The person MyID confirmed, plus what they typed at sign-up and can change in Profil. */
 export type Borrower = {
   fullName: string
   firstName: string
@@ -23,6 +26,9 @@ export type Borrower = {
   passport: string
   birthDate: string
   address: string
+  maritalStatus: MaritalStatus
+  /** UZS a month, from all sources after tax. */
+  monthlyIncome: number
 }
 
 const read = (k: string) => {

@@ -18,6 +18,8 @@ const REGISTERED: Record<string, Borrower> = {
     passport: 'AB1234567',
     birthDate: '12.05.1995',
     address: 'Toshkent sh., Chilonzor tumani, 9-kvartal, 12-uy',
+    maritalStatus: 'married',
+    monthlyIncome: 9_500_000,
   },
   '935554433': {
     fullName: 'Rahimov Sardor Akmal oʻgʻli',
@@ -26,6 +28,8 @@ const REGISTERED: Record<string, Borrower> = {
     passport: 'AC7654321',
     birthDate: '03.09.1990',
     address: 'Toshkent sh., Mirobod tumani, Nukus koʻchasi, 7-uy',
+    maritalStatus: 'single',
+    monthlyIncome: 7_000_000,
   },
   '991112233': {
     fullName: 'Yoʻldosheva Malika Anvar qizi',
@@ -34,6 +38,8 @@ const REGISTERED: Record<string, Borrower> = {
     passport: 'AD1122334',
     birthDate: '21.01.1998',
     address: 'Samarqand sh., Registon koʻchasi, 15-uy',
+    maritalStatus: 'single',
+    monthlyIncome: 6_000_000,
   },
 }
 
@@ -68,8 +74,16 @@ export async function checkDocument(_passport: string, _birthDate: Date) {
   await delay(800)
 }
 
-/** MyID: matches the captured face with the passport and answers with the person's data. */
-export async function verifyFace(phone: string, passport: string, birthDate: string) {
+/**
+ * MyID through FlexSoft, synchronous: matches the captured face with the passport and answers with
+ * the person's data. Marital status and income go along with the MyID code.
+ */
+export async function verifyFace(
+  phone: string,
+  passport: string,
+  birthDate: string,
+  extra: Pick<Borrower, 'maritalStatus' | 'monthlyIncome'>,
+) {
   await delay(2200)
   return {
     fullName: 'Toshmatov Jasur Bahodir oʻgʻli',
@@ -78,6 +92,7 @@ export async function verifyFace(phone: string, passport: string, birthDate: str
     passport,
     birthDate,
     address: 'Toshkent sh., Yunusobod tumani, 11-mavze, 23-uy',
+    ...extra,
   } satisfies Borrower
 }
 

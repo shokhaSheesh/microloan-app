@@ -13,7 +13,12 @@ import {
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { unlinkAll } from '@/entities/cards/cards'
-import { session, type Borrower } from '@/entities/session/session'
+import {
+  MARITAL_STATUSES,
+  session,
+  type Borrower,
+  type MaritalStatus,
+} from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
@@ -29,12 +34,14 @@ import { FormScreen } from '@/shared/ui/FormScreen'
 import { IconBadge } from '@/shared/ui/IconBadge'
 import { Interpolate } from '@/shared/ui/Interpolate'
 import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher'
+import { NumberField } from '@/shared/ui/NumberField'
 import { OtpScreen } from '@/shared/ui/OtpScreen'
 import { PassportField } from '@/shared/ui/PassportField'
 import { PasswordField } from '@/shared/ui/PasswordField'
 import { PhoneField } from '@/shared/ui/PhoneField'
 import { ResultScreen } from '@/shared/ui/ResultScreen'
 import { ScreenIntro } from '@/shared/ui/ScreenIntro'
+import { Select } from '@/shared/ui/Select'
 import { otpBlock } from '@/shared/lib/otpBlock'
 import { toast } from '@/shared/lib/toast'
 import {
@@ -100,6 +107,8 @@ export function AuthPage() {
   const [phone, setPhone] = useState('')
   const [passport, setPassport] = useState('')
   const [birthDate, setBirthDate] = useState<Date | null>(null)
+  const [maritalStatus, setMaritalStatus] = useState<MaritalStatus | null>(null)
+  const [monthlyIncome, setMonthlyIncome] = useState<number | null>(null)
   const [found, setFound] = useState<Borrower | null>(null)
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
@@ -135,15 +144,19 @@ export function AuthPage() {
 
   const submitId = async () => {
     setSubmitted(true)
-    if (!isPassport(passport) || !birthDate) return
+    if (!isPassport(passport) || !birthDate || !maritalStatus || !monthlyIncome) return
     setLoading(true)
     await checkDocument(passport, birthDate)
     goTo('face')
   }
 
   const capture = async () => {
+    if (!maritalStatus || !monthlyIncome) return
     goTo('checking')
-    const person = await verifyFace(phone, passport, birthDate ? ddmmyyyy(birthDate) : '')
+    const person = await verifyFace(phone, passport, birthDate ? ddmmyyyy(birthDate) : '', {
+      maritalStatus,
+      monthlyIncome,
+    })
     // Only now is the PINFL known, so the number's owner is checked here
     try {
       await checkPhoneOwner(phone, person.passport)
@@ -279,6 +292,21 @@ export function AuthPage() {
             max={latestBirthDate}
             hint={t('auth.id.age')}
             error={submitted && !birthDate ? t('error.required') : undefined}
+          />
+          <Select
+            label={t('field.maritalStatus')}
+            options={MARITAL_STATUSES.map((value) => ({ value, label: t(`marital.${value}`) }))}
+            value={maritalStatus}
+            onChange={setMaritalStatus}
+            error={submitted && !maritalStatus ? t('error.required') : undefined}
+          />
+          <NumberField
+            label={t('field.monthlyIncome')}
+            value={monthlyIncome}
+            onChange={setMonthlyIncome}
+            suffix={t('common.currency')}
+            hint={t('field.monthlyIncome.hint')}
+            error={submitted && !monthlyIncome ? t('error.required') : undefined}
           />
         </div>
       </FormScreen>
