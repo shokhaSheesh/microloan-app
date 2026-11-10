@@ -62,7 +62,7 @@ export function ProductTermsPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('terms.open')} />
+      <PageHeader sample title={t('terms.open')} />
       <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-5 pt-2 pb-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-bold">{product.name}</h2>

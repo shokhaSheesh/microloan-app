@@ -1,3 +1,4 @@
+import { SampleBadge } from '@/shared/ui/SampleBadge'
 import { CalendarClock, Check, CircleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -79,7 +80,10 @@ export function PaymentsPage() {
   if (!borrower) return null
   return (
     <div className="flex min-h-full flex-col gap-7 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-tabbar">
-      <h1 className="text-2xl font-bold">{t('nav.payments')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">{t('nav.payments')}</h1>
+        <SampleBadge />
+      </div>
 
       {loans.length === 0 ? (
         <EmptyState title={t('history.empty')} hint={t('pay.empty.hint')} />

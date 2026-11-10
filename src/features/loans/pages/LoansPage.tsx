@@ -1,3 +1,4 @@
+import { SampleBadge } from '@/shared/ui/SampleBadge'
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -60,7 +61,10 @@ export function LoansPage() {
 
   return (
     <div className="flex min-h-full flex-col gap-5 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-tabbar">
-      <h1 className="text-2xl font-bold">{t('nav.loans')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">{t('nav.loans')}</h1>
+        <SampleBadge />
+      </div>
       <SegmentedTabs
         label={t('nav.loans')}
         options={[

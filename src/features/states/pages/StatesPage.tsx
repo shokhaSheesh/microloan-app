@@ -60,7 +60,7 @@ export function StatesPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('states.title')} />
+      <PageHeader sample title={t('states.title')} />
       <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-5 pt-2 pb-8">
         <p className="text-ink-muted">{t('states.hint')}</p>
         <Section title={t('states.home')}>

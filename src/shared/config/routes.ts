@@ -24,6 +24,8 @@ export const ROUTES = {
   security: '/profile/security',
   sessions: '/profile/sessions',
   /** «Holatlar namunasi»: the states sample data never shows. */
+  /** «API holati»: which screens read the backend (this branch only). */
+  apiStatus: '/profile/api',
   states: '/profile/states',
   state: '/profile/states/:id',
   language: '/profile/language',

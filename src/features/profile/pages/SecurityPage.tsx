@@ -29,7 +29,7 @@ export function SecurityPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('profile.security')} />
+      <PageHeader sample title={t('profile.security')} />
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pt-2 pb-6">
         <MenuList>
           <MenuRow

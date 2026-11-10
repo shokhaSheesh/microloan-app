@@ -9,4 +9,10 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // The staging backend, same-origin so it needs no CORS change
+  server: {
+    proxy: {
+      '/api': { target: 'https://api.birzumnasiya.uz', changeOrigin: true, secure: true },
+    },
+  },
 })

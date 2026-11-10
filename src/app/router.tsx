@@ -23,6 +23,7 @@ import { ProfileSectionPage } from '@/features/profile/pages/ProfileSectionPage'
 import { SecurityPage } from '@/features/profile/pages/SecurityPage'
 import { SessionsPage } from '@/features/profile/pages/SessionsPage'
 import { StatePreviewPage } from '@/features/states/pages/StatePreviewPage'
+import { ApiStatusPage } from '@/features/states/pages/ApiStatusPage'
 import { StatesPage } from '@/features/states/pages/StatesPage'
 import { BRAND_BASE } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
@@ -30,7 +31,6 @@ import { DeviceLayout } from './layouts/DeviceLayout'
 import { SignedInLayout } from './layouts/SignedInLayout'
 import { MyContactsPage } from '@/features/contacts/pages/MyContactsPage'
 import { TabLayout } from './layouts/TabLayout'
-import { tabs } from './tabs'
 
 // Every route sits under the brand's path, e.g. /vodiy/home
 export const router = createBrowserRouter(
@@ -57,6 +57,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.security, element: <SecurityPage /> },
             { path: ROUTES.sessions, element: <SessionsPage /> },
             { path: ROUTES.states, element: <StatesPage /> },
+            { path: ROUTES.apiStatus, element: <ApiStatusPage /> },
             { path: ROUTES.state, element: <StatePreviewPage /> },
             { path: ROUTES.language, element: <LanguagePage /> },
             { path: ROUTES.faq, element: <FaqPage /> },
@@ -64,7 +65,7 @@ export const router = createBrowserRouter(
             { path: ROUTES.contacts, element: <ContactsPage /> },
             { path: ROUTES.myContacts, element: <MyContactsPage /> },
             {
-              element: <TabLayout tabs={tabs} />,
+              element: <TabLayout />,
               children: [
                 { path: ROUTES.home, element: <HomePage /> },
                 { path: ROUTES.loans, element: <LoansPage /> },

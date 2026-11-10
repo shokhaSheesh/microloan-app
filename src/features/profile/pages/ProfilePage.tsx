@@ -1,4 +1,6 @@
+import { SampleBadge } from '@/shared/ui/SampleBadge'
 import {
+  Activity,
   ArrowLeftRight,
   ChevronRight,
   CircleHelp,
@@ -47,7 +49,10 @@ export function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col gap-7 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-tabbar">
-      <h1 className="text-2xl font-bold">{t('nav.profile')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">{t('nav.profile')}</h1>
+        <SampleBadge />
+      </div>
 
       <Link
         to={ROUTES.personal}
@@ -77,6 +82,7 @@ export function ProfilePage() {
       {/* Design only: the states sample data never shows; not part of the client's app */}
       <MenuList>
         <MenuRow icon={LayoutGrid} label={t('states.title')} to={ROUTES.states} />
+        <MenuRow icon={Activity} label={t('api.status.title')} to={ROUTES.apiStatus} />
       </MenuList>
 
       {ALL_BRANDS.filter((brand) => brand.id !== BRAND.id).map((brand) => (

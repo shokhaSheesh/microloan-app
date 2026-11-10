@@ -29,7 +29,7 @@ export function PersonalPage() {
   if (!borrower) return null
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('profile.personal')} />
+      <PageHeader sample title={t('profile.personal')} />
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 pt-2 pb-6">
         <InfoList>
           <InfoRow label={t('myid.name')} value={borrower.fullName} />

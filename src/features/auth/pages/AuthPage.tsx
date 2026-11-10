@@ -27,6 +27,7 @@ import { isPassport } from '@/shared/lib/passport'
 import { formatPhone, PHONE_DIGITS } from '@/shared/lib/phone'
 import { BrandLogo, BrandMark } from '@/shared/ui/BrandMark'
 import { Button } from '@/shared/ui/Button'
+import { DocLink } from '@/shared/ui/DocLink'
 import { CameraView } from '@/shared/ui/CameraView'
 import { Checkbox } from '@/shared/ui/Checkbox'
 import { DatePicker } from '@/shared/ui/DatePicker'
@@ -520,16 +521,8 @@ export function AuthPage() {
                   <Interpolate
                     text={t('auth.consent')}
                     parts={{
-                      offer: (
-                        <span className="font-semibold text-brand underline underline-offset-2">
-                          {t('auth.consent.offer')}
-                        </span>
-                      ),
-                      privacy: (
-                        <span className="font-semibold text-brand underline underline-offset-2">
-                          {t('auth.consent.privacy')}
-                        </span>
-                      ),
+                      offer: <DocLink kind="offer">{t('auth.consent.offer')}</DocLink>,
+                      privacy: <DocLink kind="privacy">{t('auth.consent.privacy')}</DocLink>,
                     }}
                   />
                 </span>

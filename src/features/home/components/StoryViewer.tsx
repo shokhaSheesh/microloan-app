@@ -80,9 +80,13 @@ export function StoryViewer({
         </button>
       </div>
       <div className="relative flex flex-1 flex-col justify-center gap-5 px-7 pb-24">
-        <span className="grid size-20 place-items-center rounded-3xl bg-white/15">
-          <story.icon size={40} />
-        </span>
+        {story.imageUrl ? (
+          <img src={story.imageUrl} alt="" className="max-h-64 w-full rounded-3xl object-cover" />
+        ) : (
+          <span className="grid size-20 place-items-center rounded-3xl bg-white/15">
+            <story.icon size={40} />
+          </span>
+        )}
         <h2 className="text-3xl leading-tight font-bold">{tl(story.title)}</h2>
         <p className="text-lg leading-relaxed opacity-90">{tl(story.text)}</p>
       </div>

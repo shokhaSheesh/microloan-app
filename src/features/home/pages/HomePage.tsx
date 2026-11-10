@@ -1,7 +1,9 @@
 import {
+  CalendarDays,
   ChevronRight,
   Clock,
   CreditCard,
+  FileText,
   Headset,
   Layers,
   Wallet,
@@ -14,7 +16,12 @@ import { OverdueNotice } from '@/features/loans/components/OverdueNotice'
 import { useLoans } from '@/entities/loans/loans'
 import { session, useBorrower } from '@/entities/session/session'
 import { BRAND } from '@/shared/config/brand'
-import { loansPath, payPath, ROUTES } from '@/shared/config/routes'
+import { useApi } from '@/shared/api/useApi'
+import type { HomeData } from '@/shared/api/types'
+import { bannersFromApi } from '@/entities/banners/banners'
+import { storiesFromApi } from '@/entities/stories/stories'
+import type { LocalizedText } from '@/shared/i18n/dictionaries'
+import { loanPath, loansPath, payPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { formatSum } from '@/shared/lib/format'
 import { Section } from '@/shared/ui/Section'
@@ -29,6 +36,7 @@ import { HomeHero } from '../components/HomeHero'
  */
 export function HomePage() {
   const { t } = useI18n()
+  const home = useApi<HomeData>('/client/home')
   const borrower = useBorrower()
   const loans = useLoans(borrower?.passport)
   const pending = useArizalar(borrower?.passport).find((item) => isPending(item.status))
@@ -38,24 +46,28 @@ export function HomePage() {
 
   return (
     <div className="flex min-h-full flex-col gap-7 px-5 pb-tabbar">
-      <HomeHero borrower={borrower} unread={unread} />
+      <HomeHero
+        borrower={borrower}
+        unread={unread}
+        stories={storiesFromApi(home.data?.tiles ?? [])}
+      />
 
       {pending && <PendingAriza ariza={pending} />}
 
       {/* The loan itself lives in Qarzlarim; Asosiy only warns when a payment is late */}
       {active?.overdueSince && <OverdueNotice loan={active} />}
 
-      {/* Kreditlar, Toʻlov, Kartalar, Yordam, as the brand's admin orders them */}
+      {/* The buttons, their order and labels come from GET /client/home */}
       <QuickActions
-        actions={[
-          [Layers, 'home.action.credits', ROUTES.credits],
-          [Wallet, 'home.action.pay', active ? payPath(active.id) : ROUTES.payments],
-          [CreditCard, 'home.action.cards', ROUTES.cards],
-          [Headset, 'home.action.support', ROUTES.chat],
-        ]}
+        actions={(home.data?.actions ?? []).flatMap((action) => {
+          const found = ACTIONS[action.key]?.(active?.id)
+          return found
+            ? [{ key: action.key, icon: found[0], to: found[1], label: action.label }]
+            : []
+        })}
       />
 
-      <BannerCarousel />
+      <BannerCarousel banners={bannersFromApi(home.data?.banners ?? [])} />
 
       <Section title={t('home.how')}>
         <ol className="flex flex-col rounded-card border border-line bg-canvas px-4">
@@ -79,23 +91,33 @@ export function HomePage() {
   )
 }
 
-type Action = readonly [LucideIcon, Parameters<ReturnType<typeof useI18n>['t']>[0], string]
+/** Icon and destination of each quick-action key the backend can send. */
+const ACTIONS: Record<string, (loanId?: string) => [LucideIcon, string]> = {
+  credits: () => [Layers, ROUTES.credits],
+  pay: (loanId) => [Wallet, loanId ? payPath(loanId) : ROUTES.payments],
+  cards: () => [CreditCard, ROUTES.cards],
+  support: () => [Headset, ROUTES.chat],
+  schedule: (loanId) => [CalendarDays, loanId ? loanPath(loanId) : ROUTES.loans],
+  applications: () => [FileText, loansPath('applications')],
+}
 
-/** Four round-cornered buttons under the card. */
+type Action = { key: string; icon: LucideIcon; to: string; label: LocalizedText }
+
+/** Round-cornered buttons under the card, four to a row. */
 function QuickActions({ actions }: { actions: Action[] }) {
-  const { t } = useI18n()
+  const { t, tl } = useI18n()
   return (
     <nav aria-label={t('home.actions')} className="grid grid-cols-4 gap-2">
-      {actions.map(([Icon, label, to]) => (
+      {actions.map(({ key, icon: Icon, to, label }) => (
         <Link
-          key={label}
+          key={key}
           to={to}
           className="flex flex-col items-center gap-2 text-center text-xs leading-tight font-medium"
         >
           <span className="grid size-14 place-items-center rounded-card border border-line bg-canvas text-brand">
             <Icon size={24} />
           </span>
-          {t(label)}
+          {tl(label)}
         </Link>
       ))}
     </nav>

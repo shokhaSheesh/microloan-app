@@ -63,6 +63,7 @@ export function ChatPage() {
   return (
     <div className="relative flex h-full flex-col bg-page">
       <PageHeader
+        sample
         title={t('profile.chat')}
         end={
           <span className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1 text-xs font-semibold text-success">

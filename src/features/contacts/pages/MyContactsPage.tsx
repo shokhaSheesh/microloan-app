@@ -26,7 +26,7 @@ export function MyContactsPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title={t('myContacts.title')} />
+      <PageHeader sample title={t('myContacts.title')} />
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pt-2 pb-6">
         {contacts.length === 0 ? (
           <EmptyState title={t('myContacts.empty')} hint={t('myContacts.empty.hint')} />

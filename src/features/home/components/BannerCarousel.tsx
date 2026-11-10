@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { banners } from '@/entities/banners/banners'
-import { applyPath, creditsPath } from '@/shared/config/routes'
+import type { Banner } from '@/entities/banners/banners'
+import { ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
 
@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/cn'
  * its title. One product opens its calculator, several open Kreditlar
  * with just those. Light and dark alternate.
  */
-export function BannerCarousel() {
+export function BannerCarousel({ banners }: { banners: Banner[] }) {
   const { t, tl, lang } = useI18n()
   const row = useRef<HTMLDivElement>(null)
   const [current, setCurrent] = useState(0)
@@ -23,6 +23,7 @@ export function BannerCarousel() {
     setCurrent(Math.round(el.scrollLeft / (first.offsetWidth + 12)))
   }
 
+  if (banners.length === 0) return null
   return (
     <section aria-label={t('home.banners')} className="flex flex-col gap-2.5">
       <div
@@ -32,11 +33,8 @@ export function BannerCarousel() {
       >
         {banners.map((banner, index) => {
           const dark = index % 2 === 1
-          const to =
-            banner.productIds.length === 1
-              ? applyPath(banner.productIds[0])
-              : creditsPath(banner.productIds)
-          const image = banner.image?.[lang] ?? Object.values(banner.image ?? {})[0]
+          const to = ROUTES.credits
+          const image = banner.image[lang] || Object.values(banner.image).find(Boolean)
           if (image)
             return (
               <Link

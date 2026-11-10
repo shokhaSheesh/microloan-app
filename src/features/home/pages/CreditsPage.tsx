@@ -15,7 +15,7 @@ export function CreditsPage() {
   const shown = ids ? BRAND.products.filter((product) => ids.includes(product.id)) : BRAND.products
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title={t('home.action.credits')} />
+      <PageHeader sample title={t('home.action.credits')} />
       <ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-2 pb-6">
         {shown.map((product) => (
           <li key={product.id}>

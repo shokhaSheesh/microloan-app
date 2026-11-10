@@ -17,6 +17,9 @@ import { useBorrower } from '@/entities/session/session'
 import { ROUTES } from '@/shared/config/routes'
 import { LANG_NAMES, type TranslationKey } from '@/shared/i18n/dictionaries'
 import { useI18n } from '@/shared/i18n/useI18n'
+import { useApi } from '@/shared/api/useApi'
+import type { DocumentsData } from '@/shared/api/types'
+import { documentUrl } from '@/shared/api/documents'
 import { toast } from '@/shared/lib/toast'
 import { MenuList, MenuRow } from '@/shared/ui/MenuList'
 import { PageHeader } from '@/shared/ui/PageHeader'
@@ -32,7 +35,14 @@ export const SECTION_TITLES: Record<ProfileSection, TranslationKey> = {
   documents: 'profile.documents',
 }
 
-type Item = { icon: LucideIcon; label: TranslationKey; to?: string; value?: string; doc?: boolean }
+type Item = {
+  icon: LucideIcon
+  label: TranslationKey
+  to?: string
+  value?: string
+  /** A legal document: opens its PDF from GET /client/documents. */
+  doc?: 'offer' | 'privacy'
+}
 
 /**
  * One section of Profil on its own page, so the root shows only four rows: Hisob (cards,
@@ -45,6 +55,7 @@ export function ProfileSectionPage() {
   const borrower = useBorrower()
   const cards = useCards(borrower?.passport)
   const contacts = useContacts(borrower?.passport)
+  const docs = useApi<DocumentsData>(id === 'documents' ? '/client/documents' : null)
   if (!PROFILE_SECTIONS.includes(id as ProfileSection))
     return <Navigate to={ROUTES.profile} replace />
   const section = id as ProfileSection
@@ -70,9 +81,15 @@ export function ProfileSectionPage() {
       { icon: Phone, label: 'profile.contacts', to: ROUTES.contacts },
     ],
     documents: [
-      { icon: FileText, label: 'profile.doc.offer', doc: true },
-      { icon: FileText, label: 'profile.doc.privacy', doc: true },
+      { icon: FileText, label: 'profile.doc.offer', doc: 'offer' },
+      { icon: FileText, label: 'profile.doc.privacy', doc: 'privacy' },
     ],
+  }
+
+  const openDoc = (kind: 'offer' | 'privacy') => {
+    const url = documentUrl(docs.data, kind, lang)
+    if (url) window.open(url, '_blank', 'noopener')
+    else toast(t('docs.pending'), 'error')
   }
 
   return (
@@ -87,7 +104,7 @@ export function ProfileSectionPage() {
               label={t(item.label)}
               to={item.to}
               value={item.value}
-              onClick={item.doc ? () => toast(t('loan.pdf.sample')) : undefined}
+              onClick={item.doc ? () => openDoc(item.doc!) : undefined}
             />
           ))}
         </MenuList>

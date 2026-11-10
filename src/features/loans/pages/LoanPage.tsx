@@ -70,7 +70,7 @@ export function LoanPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={`${product?.name ?? ''} · № ${loan.number}`} />
+      <PageHeader sample title={`${product?.name ?? ''} · № ${loan.number}`} />
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pt-2 pb-8">
         <section className="flex flex-col gap-4 rounded-[28px] bg-tile p-5 text-on-tile">
           {loan.closedAt ? (

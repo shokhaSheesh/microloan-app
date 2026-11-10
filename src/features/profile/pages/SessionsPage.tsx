@@ -24,7 +24,7 @@ export function SessionsPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('sessions.title')} />
+      <PageHeader sample title={t('sessions.title')} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-2 pb-6">
         <p className="text-sm text-ink-muted">{t('sessions.hint')}</p>
         {sorted.map((session) => (

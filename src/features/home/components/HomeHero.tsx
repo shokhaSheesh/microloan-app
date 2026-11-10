@@ -2,7 +2,7 @@ import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Borrower } from '@/entities/session/session'
-import { STORIES, type Story } from '@/entities/stories/stories'
+import { type Story } from '@/entities/stories/stories'
 import { BRAND } from '@/shared/config/brand'
 import { ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
@@ -17,7 +17,15 @@ const seen = new Set<string>()
  * the bell, and the story tiles (like AVO's) in a row that scrolls sideways. A tile opens its
  * story; unseen ones have a bright ring.
  */
-export function HomeHero({ borrower, unread }: { borrower: Borrower; unread: boolean }) {
+export function HomeHero({
+  borrower,
+  unread,
+  stories,
+}: {
+  borrower: Borrower
+  unread: boolean
+  stories: Story[]
+}) {
   const { t, tl } = useI18n()
   const [open, setOpen] = useState<number | null>(null)
   const [, rerender] = useState(0)
@@ -65,34 +73,40 @@ export function HomeHero({ borrower, unread }: { borrower: Borrower; unread: boo
         </Link>
       </header>
 
-      <ul
-        aria-label={t('home.stories')}
-        className="relative -mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-1 [scrollbar-width:none]"
-      >
-        {STORIES.map((story, i) => (
-          <li key={story.id} className="shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                show(story)
-                setOpen(i)
-              }}
-              className={cn(
-                'flex size-[84px] flex-col justify-between rounded-2xl bg-white/12 p-2.5 text-left ring-2 transition-colors active:bg-white/20',
-                seen.has(story.id) ? 'ring-white/15' : 'ring-accent-300',
-              )}
-            >
-              <story.icon size={22} />
-              <span className="line-clamp-2 text-xs leading-tight font-bold">
-                {tl(story.title)}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      {stories.length > 0 && (
+        <ul
+          aria-label={t('home.stories')}
+          className="relative -mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-1 [scrollbar-width:none]"
+        >
+          {stories.map((story, i) => (
+            <li key={story.id} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  show(story)
+                  setOpen(i)
+                }}
+                className={cn(
+                  'flex size-[84px] flex-col justify-between rounded-2xl bg-white/12 p-2.5 text-left ring-2 transition-colors active:bg-white/20',
+                  seen.has(story.id) ? 'ring-white/15' : 'ring-accent-300',
+                )}
+              >
+                {story.imageUrl ? (
+                  <img src={story.imageUrl} alt="" className="size-[22px] rounded object-cover" />
+                ) : (
+                  <story.icon size={22} />
+                )}
+                <span className="line-clamp-2 text-xs leading-tight font-bold">
+                  {tl(story.title)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {open !== null && (
-        <StoryViewer stories={STORIES} start={open} onSeen={show} onClose={() => setOpen(null)} />
+        <StoryViewer stories={stories} start={open} onSeen={show} onClose={() => setOpen(null)} />
       )}
     </section>
   )

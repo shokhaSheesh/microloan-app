@@ -78,6 +78,7 @@ export function NotificationsPage() {
   return (
     <div className="flex h-full flex-col bg-page">
       <PageHeader
+        sample
         title={t('home.notifications')}
         end={
           <button

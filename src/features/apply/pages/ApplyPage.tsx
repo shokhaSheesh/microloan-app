@@ -71,7 +71,7 @@ export function ApplyPage() {
 
   return (
     <div className="flex h-full flex-col bg-page">
-      <PageHeader title={t('nav.apply')} />
+      <PageHeader sample title={t('nav.apply')} />
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 pt-2 pb-6">
         <p className="-mt-1 text-ink-muted">{t('apply.subtitle')}</p>
 

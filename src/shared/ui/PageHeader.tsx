@@ -2,15 +2,18 @@ import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '@/shared/i18n/useI18n'
+import { SampleBadge } from './SampleBadge'
 
 type Props = {
   title?: string
   /** Icon buttons for the top right corner. */
   end?: ReactNode
+  /** The screen has no backend endpoint yet: show the "Namuna maʼlumot" badge. */
+  sample?: boolean
 }
 
 /** Top bar of a pushed screen: back arrow, a short title, and optional actions on the right. */
-export function PageHeader({ title, end }: Props) {
+export function PageHeader({ title, end, sample }: Props) {
   const { t } = useI18n()
   const navigate = useNavigate()
 
@@ -25,6 +28,7 @@ export function PageHeader({ title, end }: Props) {
         <ArrowLeft size={24} />
       </button>
       <h1 className="min-w-0 flex-1 truncate text-lg font-bold">{title}</h1>
+      {sample && <SampleBadge />}
       {end && <div className="-mr-2 flex shrink-0 items-center">{end}</div>}
     </header>
   )
