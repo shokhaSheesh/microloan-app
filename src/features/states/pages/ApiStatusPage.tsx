@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { apiGet, APP_CODE, ApiError } from '@/shared/api/client'
+import { apiGet, APP_CODE, ApiError, chatHeaders } from '@/shared/api/client'
 import { ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
@@ -17,8 +17,14 @@ const ROWS: Row[] = [
   { page: 'Kontaktlar va filiallar', route: ROUTES.contacts, endpoint: '/client/contacts' },
   { page: 'Hujjatlar, kirishdagi oferta/maxfiylik', endpoint: '/client/documents' },
   { page: 'Xarita kalitlari (ilovada xarita yoʻq, faqat tekshiruv)', endpoint: '/client/geo/keys' },
-  { page: 'Kalkulyator: toʻlov kunlari', note: 'GET /client/pay-days hujjatda yoʻq, namuna' },
-  { page: 'Yordam chati', note: 'Mijoz chati hujjatda yoʻq, namuna' },
+  { page: 'Kalkulyator: toʻlov kuni tugmalari', route: ROUTES.apply, endpoint: '/client/pay-days' },
+  { page: 'Yordam chati: mavzular', route: ROUTES.chat, endpoint: '/client/chat/topics' },
+  {
+    page: 'Yordam chati: chatlarim (X-Client-Id)',
+    route: ROUTES.chat,
+    endpoint: '/client/chats',
+    note: 'Yozish: POST /client/chats, POST /client/chats/{id}/messages (≤ 5 rasm), POST .../read, 5 soniyada bir GET /client/chats/{id}',
+  },
   { page: 'Kirish, SMS, MyID, PIN', note: 'Mijoz logini yoʻq, namuna' },
   {
     page: 'Qarzlar, toʻlovlar, kartalar, arizalar, bildirishnomalar, profil',
@@ -36,7 +42,9 @@ export function ApiStatusPage() {
   const run = async (endpoint: string) => {
     setResults((r) => ({ ...r, [endpoint]: 'running' }))
     try {
-      const res = await apiGet<unknown>(endpoint)
+      const res = await apiGet<unknown>(endpoint, {
+        headers: endpoint.startsWith('/client/chats') ? chatHeaders() : undefined,
+      })
       setResults((r) => ({
         ...r,
         [endpoint]: {

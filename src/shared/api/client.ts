@@ -45,20 +45,51 @@ const currentLang = (): Lang => {
 
 export type ApiResult<T> = { data: T; status: number; requestId: string; ms: number }
 
-/** GET a path under /api/v1 and unwrap the `{data, meta}` envelope. */
-export async function apiGet<T>(
-  path: string,
-  options: { signal?: AbortSignal; headers?: Record<string, string> } = {},
-): Promise<ApiResult<T>> {
+/**
+ * The chat has no login yet: the app makes a uuid v4 once, keeps it in localStorage and sends it
+ * as X-Client-Id on the chat calls.
+ */
+export function clientId(): string {
+  const key = 'microloan.clientId'
+  try {
+    const stored = localStorage.getItem(key)
+    if (stored) return stored
+    const made = crypto.randomUUID()
+    localStorage.setItem(key, made)
+    return made
+  } catch {
+    return (memoryId ??= crypto.randomUUID())
+  }
+}
+let memoryId: string | undefined
+
+type Options = {
+  signal?: AbortSignal
+  headers?: Record<string, string>
+  method?: 'GET' | 'POST'
+  /** JSON object, or FormData for the chat photos. */
+  body?: object | FormData
+}
+
+/** Call a path under /api/v1 and unwrap the `{data, meta}` envelope. */
+export async function apiCall<T>(path: string, options: Options = {}): Promise<ApiResult<T>> {
   const lang = currentLang()
   const started = performance.now()
+  const form = options.body instanceof FormData
   let response: Response
   try {
     response = await fetch(`${BASE}${path}`, {
+      method: options.method ?? 'GET',
       signal: options.signal,
+      body: options.body
+        ? form
+          ? (options.body as FormData)
+          : JSON.stringify(options.body)
+        : undefined,
       headers: {
         'X-App': APP_CODE,
         'Accept-Language': lang,
+        ...(options.body && !form && { 'Content-Type': 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
@@ -88,3 +119,11 @@ export async function apiGet<T>(
     ms: performance.now() - started,
   }
 }
+
+export const apiGet = <T>(
+  path: string,
+  options: { signal?: AbortSignal; headers?: Record<string, string> } = {},
+) => apiCall<T>(path, options)
+
+/** The headers every chat call carries. */
+export const chatHeaders = () => ({ 'X-Client-Id': clientId() })

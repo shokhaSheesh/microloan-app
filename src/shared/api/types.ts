@@ -63,3 +63,31 @@ export type DocumentsData = {
 }
 
 export type GeoKeysData = { items: { id: string; kind: string; key: string }[] }
+
+export type PayDaysData = { days: number[]; next_first: boolean; day: number }
+
+export type ChatTopicsData = { items: { code: string; label: LocalizedText }[] }
+
+export type ChatSummary = {
+  id: string
+  topic: string
+  status: 'open' | 'closed'
+  unread: number
+  last_message: { from: string; text: string; has_image: boolean; at: string } | null
+  created_at: string
+  updated_at: string
+}
+
+export type ChatMessage = {
+  id: string
+  from: 'client' | 'operator' | 'system'
+  text: string
+  images: string[]
+  /** System lines: took, handed, closed, reopened. */
+  key?: string
+  name?: string
+  to_name?: string
+  at: string
+}
+
+export type ChatDetail = ChatSummary & { messages: ChatMessage[] }

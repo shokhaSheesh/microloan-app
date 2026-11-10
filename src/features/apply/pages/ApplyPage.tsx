@@ -2,7 +2,10 @@ import { Info } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { setDraft } from '@/entities/apply/draft'
-import { DEFAULT_PAY_DAY, PAY_DAYS, quote, rateFor, termsOf } from '@/entities/loans/loans'
+import { DEFAULT_PAY_DAY, quote, rateFor, termsOf } from '@/entities/loans/loans'
+import { useApi } from '@/shared/api/useApi'
+import type { PayDaysData } from '@/shared/api/types'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { BRAND, type PayType, type Product } from '@/shared/config/brand'
 import { productTermsPath, ROUTES } from '@/shared/config/routes'
 import { useI18n } from '@/shared/i18n/useI18n'
@@ -37,7 +40,12 @@ export function ApplyPage() {
   const [amount, setAmount] = useState(clamp(10_000_000, product))
   const [typed, setTyped] = useState<number | null>(amount)
   const [term, setTerm] = useState(Math.min(12, product.termMax))
-  const [payDay, setPayDay] = useState(DEFAULT_PAY_DAY)
+  const [pickedDay, setPickedDay] = useState(DEFAULT_PAY_DAY)
+  // The chips come from GET /client/pay-days, worked out for today
+  const payDays = useApi<PayDaysData>('/client/pay-days').data
+  const days = payDays?.days ?? []
+  const payDay = days.includes(pickedDay) ? pickedDay : (days[0] ?? pickedDay)
+  const setPayDay = setPickedDay
   const [payType, setPayType] = useState<PayType>(product.payTypes[0])
 
   const terms = termsOf(product)
@@ -177,8 +185,14 @@ export function ApplyPage() {
             <h2 className="font-bold">{t('apply.payDay')}</h2>
             <p className="text-sm text-ink-muted">{t('apply.payDay.hint')}</p>
           </div>
-          <div role="radiogroup" aria-label={t('apply.payDay')} className="grid grid-cols-5 gap-2">
-            {PAY_DAYS.map((day) => (
+          <div
+            role="radiogroup"
+            aria-label={t('apply.payDay')}
+            className={cn('grid gap-2', payDays?.next_first ? 'grid-cols-1' : 'grid-cols-5')}
+          >
+            {!payDays &&
+              [1, 2, 3, 4, 5].map((n) => <Skeleton key={n} className="h-11 rounded-full" />)}
+            {days.map((day) => (
               <button
                 key={day}
                 type="button"
@@ -192,7 +206,7 @@ export function ApplyPage() {
                     : 'border-line bg-canvas active:bg-neutral-100',
                 )}
               >
-                {day}
+                {payDays?.next_first ? t('apply.payDay.nextFirst') : day}
               </button>
             ))}
           </div>

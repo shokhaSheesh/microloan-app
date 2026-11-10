@@ -1,138 +1,216 @@
 import { ImagePlus, SendHorizontal, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { apiCall, chatHeaders } from '@/shared/api/client'
+import type { ChatDetail, ChatMessage, ChatSummary, ChatTopicsData } from '@/shared/api/types'
+import { useApi } from '@/shared/api/useApi'
 import { BRAND } from '@/shared/config/brand'
+import type { TranslationKey } from '@/shared/i18n/dictionaries'
 import { useI18n } from '@/shared/i18n/useI18n'
 import { cn } from '@/shared/lib/cn'
+import { toast } from '@/shared/lib/toast'
 import { BrandMark } from '@/shared/ui/BrandMark'
 import { PageHeader } from '@/shared/ui/PageHeader'
 
-/** `photos` are local object URLs; the real app uploads them first. */
-type Message = { id: number; from: 'me' | 'support'; text: string; at: string; photos?: string[] }
-
 const MAX_PHOTOS = 5
+const POLL_MS = 5000
 
-const time = (date: Date) =>
-  `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-const now = () => new Date()
-let nextId = 10
+type Photo = { file: File; preview: string }
+
+const time = (iso: string) => {
+  const date = new Date(iso)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
 
 /**
- * Yordam chati with an operator: a greeting, quick topics to start with, and the conversation.
- * Photos (up to five at a time, e.g. a receipt or a card) go with the message or on their own.
- * The prototype's operator answers every message with the same line after a moment.
+ * Yordam chati with an operator, on the client chat API: topics from the backend, the newest
+ * chat is opened (or a new one starts with the first message), the open chat is polled every
+ * 5 seconds and marked read. Up to five photos go with a message in one multipart request.
  */
 export function ChatPage() {
-  const { t } = useI18n()
-  const [messages, setMessages] = useState<Message[]>(() => [
-    { id: 1, from: 'support', text: t('chat.hello', { brand: BRAND.name }), at: time(now()) },
-  ])
+  const { t, tl } = useI18n()
+  const topics = useApi<ChatTopicsData>('/client/chat/topics')
+  const [chatId, setChatId] = useState<string>()
+  const [chat, setChat] = useState<ChatDetail>()
+  const [ready, setReady] = useState(false)
+  const [sending, setSending] = useState(false)
   const [text, setText] = useState('')
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photos, setPhotos] = useState<Photo[]>([])
   const [viewing, setViewing] = useState<string | null>(null)
   const end = useRef<HTMLDivElement>(null)
   const picker = useRef<HTMLInputElement>(null)
-  const topics = [
-    'chat.topic.pay',
-    'chat.topic.early',
-    'chat.topic.card',
-    'chat.topic.status',
-  ] as const
+  const messages = chat?.messages ?? []
+
+  const fail = useCallback((error: unknown) => {
+    toast(error instanceof Error ? error.message : String(error), 'error')
+  }, [])
+
+  const refresh = useCallback(async (id: string) => {
+    const { data } = await apiCall<ChatDetail>(`/client/chats/${id}`, { headers: chatHeaders() })
+    setChat(data)
+    if (data.unread > 0)
+      void apiCall(`/client/chats/${id}/read`, { method: 'POST', headers: chatHeaders() }).catch(
+        () => undefined,
+      )
+  }, [])
+
+  // Open the newest chat, if the client has one
+  useEffect(() => {
+    apiCall<{ items: ChatSummary[] }>('/client/chats', { headers: chatHeaders() })
+      .then(({ data }) => setChatId(data.items[0]?.id))
+      .catch(fail)
+      .finally(() => setReady(true))
+  }, [fail])
+
+  // Poll the open chat
+  useEffect(() => {
+    if (!chatId) return
+    let stopped = false
+    const load = () => refresh(chatId).catch((error) => !stopped && fail(error))
+    void load()
+    const timer = setInterval(load, POLL_MS)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
+  }, [chatId, refresh, fail])
 
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages.length])
 
-  const send = (body: string, attached: string[] = []) => {
-    if (!body.trim() && attached.length === 0) return
-    setMessages((list) => [
-      ...list,
-      { id: nextId++, from: 'me', text: body.trim(), at: time(now()), photos: attached },
-    ])
-    setText('')
-    setPhotos([])
-    setTimeout(
-      () =>
-        setMessages((list) => [
-          ...list,
-          { id: nextId++, from: 'support', text: t('chat.reply'), at: time(now()) },
-        ]),
-      1200,
-    )
+  const send = async (body: string, attached: Photo[] = [], topic = 'other') => {
+    if ((!body.trim() && attached.length === 0) || sending) return
+    setSending(true)
+    try {
+      let id = chatId
+      if (!id) {
+        const created = await apiCall<ChatSummary>('/client/chats', {
+          method: 'POST',
+          headers: chatHeaders(),
+          body: { topic, text: body.trim() || t('chat.photo.add') },
+        })
+        id = created.data.id
+        setChatId(id)
+        // The first message is the chat's text; photos follow as their own message
+        if (attached.length > 0) await postMessage(id, '', attached)
+      } else {
+        await postMessage(id, body.trim(), attached)
+      }
+      setText('')
+      attached.forEach((photo) => URL.revokeObjectURL(photo.preview))
+      setPhotos([])
+      await refresh(id)
+    } catch (error) {
+      fail(error)
+    } finally {
+      setSending(false)
+    }
   }
+
+  const postMessage = (id: string, body: string, attached: Photo[]) => {
+    const form = new FormData()
+    form.append('text', body)
+    attached.forEach((photo) => form.append('images', photo.file))
+    return apiCall<ChatMessage>(`/client/chats/${id}/messages`, {
+      method: 'POST',
+      headers: chatHeaders(),
+      body: form,
+    })
+  }
+
+  const systemLine = (message: ChatMessage) =>
+    t(`chat.sys.${message.key}` as TranslationKey, {
+      name: message.name ?? '',
+      to: message.to_name ?? '',
+    })
 
   return (
     <div className="relative flex h-full flex-col bg-page">
-      <PageHeader
-        sample
-        title={t('profile.chat')}
-        end={
-          <span className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1 text-xs font-semibold text-success">
-            <span className="size-2 rounded-full bg-success" />
-            {t('chat.online')}
-          </span>
-        }
-      />
+      <PageHeader title={t('profile.chat')} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-2 pb-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn('flex items-end gap-2', message.from === 'me' && 'flex-row-reverse')}
-          >
-            {message.from === 'support' && (
-              <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-canvas">
-                <BrandMark className="h-3.5 w-auto" />
-              </span>
-            )}
-            <div
-              className={cn(
-                'max-w-[78%] rounded-2xl px-3.5 py-2.5',
-                message.from === 'me'
-                  ? 'rounded-br-md bg-primary text-on-primary'
-                  : 'rounded-bl-md border border-line bg-canvas',
-              )}
-            >
-              {!!message.photos?.length && (
-                <div
-                  className={cn(
-                    '-mx-1.5 -mt-1 mb-1 grid gap-1',
-                    message.photos.length > 1 && 'grid-cols-2',
-                  )}
-                >
-                  {message.photos.map((src) => (
-                    <button
-                      key={src}
-                      type="button"
-                      onClick={() => setViewing(src)}
-                      aria-label={t('chat.photo.open')}
-                      className="overflow-hidden rounded-xl"
-                    >
-                      <img src={src} alt="" className="aspect-square w-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-              {message.text && <p className="whitespace-pre-line">{message.text}</p>}
-              <p
-                className={cn(
-                  'mt-1 text-right text-[11px]',
-                  message.from === 'me' ? 'opacity-70' : 'text-ink-subtle',
-                )}
-              >
-                {message.at}
-              </p>
+        {!chatId && ready && (
+          <div className="flex items-end gap-2">
+            <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-canvas">
+              <BrandMark className="h-3.5 w-auto" />
+            </span>
+            <div className="max-w-[78%] rounded-2xl rounded-bl-md border border-line bg-canvas px-3.5 py-2.5">
+              {t('chat.hello', { brand: BRAND.name })}
             </div>
           </div>
-        ))}
-        {messages.length === 1 && (
+        )}
+        {messages.map((message) => {
+          if (message.from === 'system')
+            return message.key ? (
+              <p key={message.id} className="text-center text-xs text-ink-subtle">
+                {systemLine(message)}
+              </p>
+            ) : null
+          const mine = message.from === 'client'
+          return (
+            <div
+              key={message.id}
+              className={cn('flex items-end gap-2', mine && 'flex-row-reverse')}
+            >
+              {!mine && (
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-canvas">
+                  <BrandMark className="h-3.5 w-auto" />
+                </span>
+              )}
+              <div
+                className={cn(
+                  'max-w-[78%] rounded-2xl px-3.5 py-2.5',
+                  mine
+                    ? 'rounded-br-md bg-primary text-on-primary'
+                    : 'rounded-bl-md border border-line bg-canvas',
+                )}
+              >
+                {!mine && message.name && (
+                  <p className="text-xs font-semibold text-brand">{message.name}</p>
+                )}
+                {message.images.length > 0 && (
+                  <div
+                    className={cn(
+                      '-mx-1.5 -mt-1 mb-1 grid gap-1',
+                      message.images.length > 1 && 'grid-cols-2',
+                    )}
+                  >
+                    {message.images.map((src) => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => setViewing(src)}
+                        aria-label={t('chat.photo.open')}
+                        className="overflow-hidden rounded-xl"
+                      >
+                        <img src={src} alt="" className="aspect-square w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {message.text && <p className="whitespace-pre-line">{message.text}</p>}
+                <p
+                  className={cn(
+                    'mt-1 text-right text-[11px]',
+                    mine ? 'opacity-70' : 'text-ink-subtle',
+                  )}
+                >
+                  {time(message.at)}
+                </p>
+              </div>
+            </div>
+          )
+        })}
+        {!chatId && ready && (
           <div className="flex flex-wrap gap-2 pl-10">
-            {topics.map((topic) => (
+            {(topics.data?.items ?? []).map((topic) => (
               <button
-                key={topic}
+                key={topic.code}
                 type="button"
-                onClick={() => send(t(topic))}
+                disabled={sending}
+                onClick={() => void send(tl(topic.label), [], topic.code)}
                 className="rounded-full border border-line bg-canvas px-3.5 py-2 text-sm font-medium text-brand active:bg-neutral-100"
               >
-                {t(topic)}
+                {tl(topic.label)}
               </button>
             ))}
           </div>
@@ -142,19 +220,19 @@ export function ChatPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          send(text, photos)
+          void send(text, photos)
         }}
         className="flex shrink-0 flex-col gap-2 border-t border-line bg-canvas px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         {photos.length > 0 && (
           <ul className="flex gap-2 overflow-x-auto pt-1">
-            {photos.map((src) => (
+            {photos.map(({ preview: src }) => (
               <li key={src} className="relative shrink-0">
                 <img src={src} alt="" className="size-16 rounded-xl object-cover" />
                 <button
                   type="button"
                   aria-label={t('chat.photo.remove')}
-                  onClick={() => setPhotos((list) => list.filter((item) => item !== src))}
+                  onClick={() => setPhotos((list) => list.filter((item) => item.preview !== src))}
                   className="absolute -top-1.5 -right-1.5 grid size-6 place-items-center rounded-full bg-neutral-950/70 text-white"
                 >
                   <X size={14} />
@@ -167,11 +245,14 @@ export function ChatPage() {
           <input
             ref={picker}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             multiple
             hidden
             onChange={(e) => {
-              const picked = [...(e.target.files ?? [])].map((file) => URL.createObjectURL(file))
+              const picked = [...(e.target.files ?? [])].map((file) => ({
+                file,
+                preview: URL.createObjectURL(file),
+              }))
               setPhotos((list) => [...list, ...picked].slice(0, MAX_PHOTOS))
               e.target.value = ''
             }}
@@ -197,7 +278,7 @@ export function ChatPage() {
           <button
             type="submit"
             aria-label={t('chat.send')}
-            disabled={!text.trim() && photos.length === 0}
+            disabled={sending || (!text.trim() && photos.length === 0)}
             className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-on-primary disabled:opacity-40"
           >
             <SendHorizontal size={20} />
